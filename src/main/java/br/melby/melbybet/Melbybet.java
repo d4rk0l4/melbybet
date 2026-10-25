@@ -10,8 +10,9 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageTypes;
-import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
+import net.minecraft.world.entity.boss.wither.WitherBoss;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -73,8 +74,8 @@ public class Melbybet implements ModInitializer {
             return;
         }
         Bolao.Gatilho g = null;
-        if (entidade.getType() == EntityType.WITHER) g = Bolao.Gatilho.WITHER;
-        else if (entidade.getType() == EntityType.ENDER_DRAGON) g = Bolao.Gatilho.DRAGAO;
+        if (entidade instanceof WitherBoss) g = Bolao.Gatilho.WITHER;
+        else if (entidade instanceof EnderDragon) g = Bolao.Gatilho.DRAGAO;
         if (g == null) return;
         if (fonte.getEntity() instanceof ServerPlayer matador) {
             resolverPorJogador(g, matador.getGameProfile().name());
