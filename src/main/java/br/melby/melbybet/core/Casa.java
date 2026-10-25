@@ -22,6 +22,14 @@ public class Casa {
         public int cashoutTaxaPct = 10;
         /** Os nicks da Gangue; viram as opções dos bolões de jogador. */
         public List<String> roster = new ArrayList<>(List.of("d4rk_4g10t4", "vitorcs201012", "saya_neku", "has_edu", "patricksmirnoff", "davigamer58GB"));
+        /** Títulos dados por OP: nick (minúsculo) -> título. */
+        public Map<String, Titulo> titulos = new LinkedHashMap<>();
+        public List<String> msgEntrar = new ArrayList<>(List.of(
+            "{nick} chegou na Gangue!", "Olha quem apareceu: {nick}", "{nick} entrou para perder diamantes",
+            "{nick} voltou do além", "A casa agradece a visita de {nick}"));
+        public List<String> msgSair = new ArrayList<>(List.of(
+            "{nick} foi buscar pão", "{nick} desistiu (por enquanto)", "{nick} saiu com os diamantes... ou sem",
+            "Tchau, {nick}! A casa sempre ganha", "{nick} sumiu no Void do mundo real"));
         /** Minutos parado até ficar AFK sozinho (0 = só pelo /afk). */
         public int afkAutoMinutos = 5;
         /** Nicks dos moderadores: usam /inv, /ec e /freeze sem precisar ser OP. */
@@ -38,6 +46,25 @@ public class Casa {
         public int acertos;
         public long gasto;
         public long ganho;
+    }
+
+    /** Título que um OP deu a um jogador (degradê entre duas cores). */
+    public static class Titulo {
+        public String texto = "";
+        public int cor1 = 0xFFAA00;
+        public int cor2 = 0xFFE066;
+    }
+
+    /** Quando cada jogador entrou e saiu pela última vez. */
+    public static class Visto {
+        public String nome = "";
+        public String uuid = "";
+        public long primeira;
+        public long entrou;
+        public long saiu;
+        public boolean online;
+        public String dimensao = "";
+        public int x, y, z;
     }
 
     public static class Registro {
@@ -80,6 +107,8 @@ public class Casa {
     public Map<String, String> conhecidos = new LinkedHashMap<>();
     /** uuids de quem já recebeu o livro de boas-vindas. */
     public List<String> tutorial = new ArrayList<>();
+    /** nick (minúsculo) -> última vez visto. */
+    public Map<String, Visto> vistos = new LinkedHashMap<>();
 
     // ---------- consultas ----------
 

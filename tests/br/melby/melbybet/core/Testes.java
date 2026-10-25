@@ -34,6 +34,7 @@ public class Testes {
 
     public static void main(String[] args) throws Exception {
         formato();
+        degrade();
         apostas();
         pagamento();
         semGanhador();
@@ -57,6 +58,23 @@ public class Testes {
         igual("1.738 itens", StatCat.CRAFTOU.formatar(1738), "itens");
         igual("161 mobs", StatCat.MATOU.formatar(161), "mobs");
         igual("8,90h", StatCat.TEMPO.formatar(8.9), "horas");
+    }
+
+    static void degrade() {
+        int[] c = Gradiente.cores(3, 0xFF0000, 0x0000FF);
+        igual(3, c.length, "3 cores");
+        igual(0xFF0000, c[0], "começa na cor 1");
+        igual(0x800080, c[1], "meio");
+        igual(0x0000FF, c[2], "termina na cor 2");
+        igual(0xFFAA00, Gradiente.cores(1, 0xFFAA00, 0x000000)[0], "uma letra só");
+        igual(0, Gradiente.cores(0, 1, 2).length, "vazio");
+        igual(0xFF8A24, Gradiente.hex("#ff8a24"), "hex válido");
+        igual(-1, Gradiente.hex("ff8a24"), "hex sem #");
+        igual(-1, Gradiente.hex("#ff8a2"), "hex curto");
+        igual("menos de 1 min", Fmt.duracao(30_000), "duração curta");
+        igual("5 min", Fmt.duracao(5 * 60_000), "minutos");
+        igual("3h 12min", Fmt.duracao((3 * 60 + 12) * 60_000L), "horas");
+        igual("2d 4h", Fmt.duracao((2 * 24 + 4) * 3_600_000L), "dias");
     }
 
     static void apostas() {

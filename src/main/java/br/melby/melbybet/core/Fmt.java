@@ -22,4 +22,14 @@ public final class Fmt {
         while (frac.length() < casas) frac = "0" + frac;
         return (v < 0 ? "-" : "") + inteiro(x / fator) + (casas > 0 ? "," + frac : "");
     }
+
+    /** Tempo em português curto: "5 min", "3h 12min", "2d 4h". */
+    public static String duracao(long ms) {
+        long min = ms / 60_000;
+        if (min < 1) return "menos de 1 min";
+        if (min < 60) return min + " min";
+        long h = min / 60;
+        if (h < 24) return h + "h " + (min % 60) + "min";
+        return (h / 24) + "d " + (h % 24) + "h";
+    }
 }

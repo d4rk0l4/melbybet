@@ -32,7 +32,11 @@ public class Melbybet implements ModInitializer {
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> Comandos.registrar(dispatcher));
 
         ServerLifecycleEvents.SERVER_STARTED.register(Jogo::iniciar);
-        ServerLifecycleEvents.SERVER_STOPPING.register(server -> Jogo.salvar());
+        ServerLifecycleEvents.SERVER_STOPPING.register(server -> {
+            Presenca.aoDesligar();
+            Jogo.salvar();
+        });
+        Presenca.registrar();
         ServerTickEvents.END_SERVER_TICK.register(server -> aCadaTick());
         ServerLivingEntityEvents.AFTER_DEATH.register(Melbybet::aoMorrer);
         ServerMessageDecoratorEvent.EVENT.register(ServerMessageDecoratorEvent.CONTENT_PHASE, Extras::decorar);

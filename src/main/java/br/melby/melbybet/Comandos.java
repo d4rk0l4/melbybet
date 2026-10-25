@@ -51,6 +51,16 @@ public final class Comandos {
             Extras.alternarAfk(p);
             return 1;
         }));
+        d.register(literal("seen").then(argument("nick", word()).executes(c -> {
+            String nick = StringArgumentType.getString(c, "nick");
+            Casa.Visto v = Jogo.casa.vistos.get(nick.toLowerCase());
+            if (v == null) return erro(c, "Nunca vi " + nick + " por aqui.");
+            long agora = System.currentTimeMillis();
+            if (v.online) return ok(c, v.nome + " está online há " + br.melby.melbybet.core.Fmt.duracao(agora - v.entrou) + ".");
+            String msg = v.nome + " foi visto há " + br.melby.melbybet.core.Fmt.duracao(agora - v.saiu) + ".";
+            if (adminOuMod("seen").test(c.getSource())) msg += " Última posição: " + v.dimensao + " " + v.x + " " + v.y + " " + v.z + ".";
+            return ok(c, msg);
+        })));
         d.register(literal("topbet").executes(c -> {
             ServerPlayer p = c.getSource().getPlayer();
             if (p == null) return erro(c, "Só jogadores podem usar.");
@@ -122,6 +132,33 @@ public final class Comandos {
             Jogo.salvar();
             return ok(c, m == 0 ? "AFK automático desligado (só pelo /afk)." : "Fica AFK sozinho depois de " + m + " min parado.");
         })));
+        adm.then(literal("titulo").then(argument("nick", word())
+            .then(literal("off").executes(c -> {
+                String nick = StringArgumentType.getString(c, "nick");
+                Jogo.casa.config.titulos.remove(nick.toLowerCase());
+                Jogo.salvar();
+                Prefixos.esquecer();
+                return ok(c, "Título de " + nick + " removido.");
+            }))
+            .then(argument("texto", greedyString()).executes(c -> {
+                String nick = StringArgumentType.getString(c, "nick");
+                String[] t = StringArgumentType.getString(c, "texto").trim().split("\\s+", 3);
+                Casa.Titulo ti = new Casa.Titulo();
+                int c1 = t.length >= 3 ? br.melby.melbybet.core.Gradiente.hex(t[0]) : -1;
+                int c2 = t.length >= 3 ? br.melby.melbybet.core.Gradiente.hex(t[1]) : -1;
+                if (c1 >= 0 && c2 >= 0) {
+                    ti.cor1 = c1;
+                    ti.cor2 = c2;
+                    ti.texto = t[2];
+                } else {
+                    ti.texto = StringArgumentType.getString(c, "texto").trim();
+                }
+                if (ti.texto.length() > 20) return erro(c, "O título pode ter até 20 letras.");
+                Jogo.casa.config.titulos.put(nick.toLowerCase(), ti);
+                Jogo.salvar();
+                Prefixos.esquecer();
+                return ok(c, "Título de " + nick + ": " + ti.texto);
+            }))));
         adm.then(literal("lista").executes(Comandos::lista));
         adm.then(literal("cofre").executes(c -> {
             Casa casa = Jogo.casa;
