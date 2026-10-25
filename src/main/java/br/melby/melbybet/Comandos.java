@@ -35,7 +35,19 @@ public final class Comandos {
         d.register(literal("bet").executes(c -> {
             ServerPlayer p = c.getSource().getPlayer();
             if (p == null) return erro(c, "Só jogadores podem abrir o menu.");
+            Tutorial.primeiraVez(p);
             MenuBet.abrir(p);
+            return 1;
+        }).then(literal("ajuda").executes(c -> {
+            ServerPlayer p = c.getSource().getPlayer();
+            if (p == null) return erro(c, "Só jogadores podem ler o livro.");
+            Tutorial.ajuda(p);
+            return 1;
+        })));
+        d.register(literal("topbet").executes(c -> {
+            ServerPlayer p = c.getSource().getPlayer();
+            if (p == null) return erro(c, "Só jogadores podem usar.");
+            MenuBet.rankingApostadores(p);
             return 1;
         }));
         d.register(literal("top").executes(c -> {
@@ -63,6 +75,24 @@ public final class Comandos {
             .then(argument("vencedor", greedyString()).executes(Comandos::resolver))));
         adm.then(literal("prazo").then(argument("id", integer(1))
             .then(argument("minutos", integer(1, 1440)).executes(Comandos::prazo))));
+        adm.then(literal("webhook")
+            .then(literal("off").executes(c -> {
+                Jogo.casa.config.discordWebhook = "";
+                Jogo.salvar();
+                return ok(c, "Webhook do Discord desligado.");
+            }))
+            .then(literal("teste").executes(c -> {
+                if (Jogo.casa.config.discordWebhook.isBlank()) return erro(c, "Nenhum webhook configurado.");
+                Jogo.webhook("✅ MelbyBet conectado ao Discord!");
+                return ok(c, "Mensagem de teste enviada.");
+            }))
+            .then(argument("url", greedyString()).executes(c -> {
+                String url = StringArgumentType.getString(c, "url").trim();
+                if (!url.startsWith("https://")) return erro(c, "A URL do webhook começa com https://");
+                Jogo.casa.config.discordWebhook = url;
+                Jogo.salvar();
+                return ok(c, "Webhook salvo. Teste com /melbybet webhook teste");
+            })));
         adm.then(literal("lista").executes(Comandos::lista));
         adm.then(literal("cofre").executes(c -> {
             Casa casa = Jogo.casa;
@@ -109,6 +139,13 @@ public final class Comandos {
                 boolean agora = Extras.alternarVanish(quem);
                 return ok(c, agora ? "Vanish ligado: você está invisível e fora do tab." : "Vanish desligado: todo mundo te vê de novo.");
             }));
+        d.register(literal("freeze")
+            .requires(PermissionPredicates.require(PermissionNode.of("melbybet", "freeze"), PermissionLevel.ADMINS))
+            .then(argument("alvo", EntityArgument.player()).executes(c -> {
+                ServerPlayer alvo = EntityArgument.getPlayer(c, "alvo");
+                boolean congelou = Extras.alternarFreeze(alvo);
+                return ok(c, alvo.getGameProfile().name() + (congelou ? " congelado." : " descongelado."));
+            })));
         // aberto a todos: é o clique em [Inventário de fulano] no chat
         d.register(literal("mbver").then(argument("id", integer(1)).executes(c -> {
             ServerPlayer quem = c.getSource().getPlayerOrException();
@@ -148,7 +185,10 @@ public final class Comandos {
         switch (acao) {
             case "abrir" -> {
                 erro = Jogo.casa.abrir(b);
-                if (erro == null) Jogo.avisar("Novo bolão aberto: \"" + b.titulo + "\". Use /bet para apostar!");
+                if (erro == null) {
+                    Jogo.avisar("Novo bolão aberto: \"" + b.titulo + "\". Use /bet para apostar!");
+                    Jogo.webhook("🎲 **Novo bolão aberto!** #" + b.id + " — " + b.titulo + "\nOpções: " + String.join(", ", b.opcoes));
+                }
             }
             case "fechar" -> {
                 erro = Jogo.casa.fechar(b);

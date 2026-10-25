@@ -74,6 +74,8 @@ public class Casa {
     public List<Registro> historico = new ArrayList<>();
     /** uuid -> nick de todo mundo que já entrou (usado para achar os arquivos de stats). */
     public Map<String, String> conhecidos = new LinkedHashMap<>();
+    /** uuids de quem já recebeu o livro de boas-vindas. */
+    public List<String> tutorial = new ArrayList<>();
 
     // ---------- consultas ----------
 

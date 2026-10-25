@@ -58,11 +58,37 @@ public final class Extras {
         }
     }
 
+    // ---------- freeze ----------
+
+    private static final Set<UUID> CONGELADOS = new HashSet<>();
+
+    public static boolean alternarFreeze(ServerPlayer alvo) {
+        UUID id = alvo.getUUID();
+        if (CONGELADOS.remove(id)) {
+            alvo.removeEffect(MobEffects.SLOWNESS);
+            alvo.removeEffect(MobEffects.JUMP_BOOST);
+            alvo.sendSystemMessage(Jogo.prefixo("Você foi descongelado."));
+            return false;
+        }
+        CONGELADOS.add(id);
+        manterCongelado(alvo);
+        alvo.sendSystemMessage(Jogo.prefixo("Um admin congelou você. Não saia do jogo."));
+        return true;
+    }
+
+    private static void manterCongelado(ServerPlayer p) {
+        // Efeitos curtos e renovados: se o servidor reiniciar, o congelamento acaba sozinho.
+        p.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 60, 10, false, false));
+        p.addEffect(new MobEffectInstance(MobEffects.JUMP_BOOST, 60, 128, false, false));
+        p.sendSystemMessage(Component.literal("Você está congelado por um admin.").withStyle(ChatFormatting.AQUA), true);
+    }
+
     /** Chamado a cada segundo. */
     public static void aCadaSegundo() {
-        if (SUMIDOS.isEmpty()) return;
+        if (SUMIDOS.isEmpty() && CONGELADOS.isEmpty()) return;
         for (ServerPlayer p : Jogo.server.getPlayerList().getPlayers()) {
             if (SUMIDOS.contains(p.getUUID())) manterSumido(p);
+            if (CONGELADOS.contains(p.getUUID())) manterCongelado(p);
         }
     }
 

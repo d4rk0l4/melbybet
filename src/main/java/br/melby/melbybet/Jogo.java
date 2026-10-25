@@ -160,8 +160,14 @@ public final class Jogo {
         }
         entregarTodos();
         salvar();
-        webhook("**Bolão #" + b.id + " — " + b.titulo + "**\nVencedor: **" + vencedor + "**"
-            + (pag.isEmpty() ? "\nNinguém acertou. Jackpot: " + casa.jackpot + " 💎" : "\nPago: " + b.pagoTotal + " 💎"));
+        StringBuilder w = new StringBuilder("🏆 **Bolão #" + b.id + " — " + b.titulo + "**\nResultado: **" + vencedor + "**\n");
+        if (pag.isEmpty()) {
+            w.append("Ninguém acertou. Jackpot acumulado: **").append(casa.jackpot).append("** 💎");
+        } else {
+            w.append("Quem acertou:\n");
+            for (Casa.Pagamento x : pag) w.append("• ").append(x.nome).append(" ganhou **").append(x.valor).append("** 💎\n");
+        }
+        webhook(w.toString());
     }
 
     public static void entregarTodos() {

@@ -55,6 +55,8 @@ public final class MenuBet {
                 .addLoreLine(t("Um OP cria com /melbybet criar", ChatFormatting.DARK_GRAY)).build());
         }
 
+        gui.setSlot(45, botao(Items.WRITTEN_BOOK, "Como funciona", ChatFormatting.YELLOW)
+            .setCallback((i, ty, a, g) -> Tutorial.ajuda(p)).build());
         gui.setSlot(46, botao(Items.BOOK, "Meu histórico", ChatFormatting.GREEN)
             .setCallback((i, ty, a, g) -> historico(p)).build());
         gui.setSlot(48, botao(Items.GOLD_INGOT, "Ranking de apostadores", ChatFormatting.GOLD)
@@ -210,7 +212,7 @@ public final class MenuBet {
         }
     }
 
-    private static void rankingApostadores(ServerPlayer p) {
+    public static void rankingApostadores(ServerPlayer p) {
         Casa casa = Jogo.casa;
         List<Casa.Jogador> r = casa.rankingApostadores();
         p.sendSystemMessage(t("== Ranking de apostadores (temporada " + casa.temporada + ") ==", ChatFormatting.GOLD, ChatFormatting.BOLD));
