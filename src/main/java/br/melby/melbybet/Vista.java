@@ -4,12 +4,11 @@ import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.SimpleGui;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.Container;
 import net.minecraft.world.inventory.MenuType;
-import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /** Janelas que mostram inventário e ender chest: ao vivo (OP mexe de verdade) ou foto (só olhar). */
@@ -29,26 +28,18 @@ public final class Vista {
         return new GuiElementBuilder(Items.STAINED_GLASS_PANE.gray()).setName(Component.empty()).hideTooltip();
     }
 
-    /** Inventário de outro jogador ao vivo: quem abre pode pegar e colocar itens. */
+    /** Inventário de outro jogador, só para olhar: nada pode ser pego nem colocado. */
     public static void inventarioAoVivo(ServerPlayer quem, ServerPlayer alvo) {
-        SimpleGui gui = new SimpleGui(MenuType.GENERIC_9x6, quem, false);
-        gui.setTitle(Component.literal("Inventário de " + alvo.getGameProfile().name()));
-        Container inv = alvo.getInventory();
-        for (int i = 0; i < 54; i++) {
-            int idx = indiceDoInventario(i);
-            if (idx < 0) gui.setSlot(i, enfeite().build());
-            else gui.setSlot(i, new Slot(inv, idx, 0, 0));
-        }
-        gui.open();
+        List<ItemStack> itens = new ArrayList<>();
+        for (int i = 0; i < alvo.getInventory().getContainerSize(); i++) itens.add(alvo.getInventory().getItem(i).copy());
+        foto(quem, alvo.getGameProfile().name(), false, itens);
     }
 
-    /** Ender chest ao vivo (de si mesmo ou de outro jogador). */
+    /** Ender chest de outro jogador, só para olhar. */
     public static void enderAoVivo(ServerPlayer quem, ServerPlayer alvo) {
-        SimpleGui gui = new SimpleGui(MenuType.GENERIC_9x3, quem, false);
-        gui.setTitle(Component.literal("Ender Chest de " + alvo.getGameProfile().name()));
-        Container ec = alvo.getEnderChestInventory();
-        for (int i = 0; i < 27; i++) gui.setSlot(i, new Slot(ec, i, 0, 0));
-        gui.open();
+        List<ItemStack> itens = new ArrayList<>();
+        for (int i = 0; i < alvo.getEnderChestInventory().getContainerSize(); i++) itens.add(alvo.getEnderChestInventory().getItem(i).copy());
+        foto(quem, alvo.getGameProfile().name(), true, itens);
     }
 
     /** Foto de um inventário compartilhado no chat: só olhar, nada sai dali. */

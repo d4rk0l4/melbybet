@@ -45,8 +45,8 @@ Regras: não pode apostar em si mesmo, limite por bolão (64), all-in pede confi
 
 | Comando | Quem | O que faz |
 |---|---|---|
-| `/inv <jogador>` | OP | abre o inventário (mochila, hotbar, armadura, mão secundária) de um jogador online; dá para pegar e colocar itens |
-| `/ec` e `/ec <jogador>` | OP | abre o seu ender chest ou o de outro jogador online |
+| `/inv <jogador>` | OP | mostra o inventário (mochila, hotbar, armadura, mão secundária) de um jogador online, só para olhar |
+| `/ec <jogador>` | OP | mostra o ender chest de um jogador online, só para olhar (não abre o seu, para não virar ender chest portátil) |
 | `/vanish` | OP | liga/desliga: invisível e fora do tab |
 
 No chat, qualquer jogador pode escrever:

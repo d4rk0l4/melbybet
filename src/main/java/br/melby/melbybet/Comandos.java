@@ -97,11 +97,6 @@ public final class Comandos {
             })));
         d.register(literal("ec")
             .requires(PermissionPredicates.require(PermissionNode.of("melbybet", "ec"), PermissionLevel.ADMINS))
-            .executes(c -> {
-                ServerPlayer quem = c.getSource().getPlayerOrException();
-                Vista.enderAoVivo(quem, quem);
-                return 1;
-            })
             .then(argument("alvo", EntityArgument.player()).executes(c -> {
                 ServerPlayer quem = c.getSource().getPlayerOrException();
                 Vista.enderAoVivo(quem, EntityArgument.getPlayer(c, "alvo"));
