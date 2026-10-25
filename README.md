@@ -48,6 +48,7 @@ Regras: não pode apostar em si mesmo, limite por bolão (64), all-in pede confi
 | `/inv <jogador>` | OP | mostra o inventário (mochila, hotbar, armadura, mão secundária) de um jogador online, só para olhar |
 | `/ec <jogador>` | OP | mostra o ender chest de um jogador online, só para olhar (não abre o seu, para não virar ender chest portátil) |
 | `/freeze <jogador>` | OP | liga/desliga: o jogador não anda nem pula |
+| `/melbybet mod add <nick>` | OP | cria um moderador: usa `/inv`, `/ec` e `/freeze` sem ser OP (`remove` e `lista` também existem) |
 | `/melbybet webhook <url>` | OP | liga os avisos no Discord (`off` desliga, `teste` manda uma mensagem de teste) |
 | `/topbet` | todos | ranking de quem mais ganhou nas apostas |
 | `/bet ajuda` | todos | abre o livro de boas-vindas (na primeira vez que a pessoa usa `/bet`, ela recebe o livro e um aviso na tela) |

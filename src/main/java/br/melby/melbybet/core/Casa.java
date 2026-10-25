@@ -22,6 +22,8 @@ public class Casa {
         public int cashoutTaxaPct = 10;
         /** Os nicks da Gangue; viram as opções dos bolões de jogador. */
         public List<String> roster = new ArrayList<>(List.of("d4rk_4g10t4", "vitorcs201012", "saya_neku", "has_edu", "patricksmirnoff", "davigamer58GB"));
+        /** Nicks dos moderadores: usam /inv, /ec e /freeze sem precisar ser OP. */
+        public List<String> moderadores = new ArrayList<>();
         /** Opcional: URL de webhook do Discord para resultados. Vazio = desligado. */
         public String discordWebhook = "";
         /** Pasta do mundo. Vazio = lê o level-name do server.properties. */

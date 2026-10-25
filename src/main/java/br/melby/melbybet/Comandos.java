@@ -19,6 +19,7 @@ import net.minecraft.server.permissions.PermissionLevel;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Predicate;
 
 import static com.mojang.brigadier.arguments.IntegerArgumentType.integer;
 import static com.mojang.brigadier.arguments.StringArgumentType.greedyString;
@@ -93,6 +94,22 @@ public final class Comandos {
                 Jogo.salvar();
                 return ok(c, "Webhook salvo. Teste com /melbybet webhook teste");
             })));
+        adm.then(literal("mod")
+            .then(literal("add").then(argument("nick", word()).executes(c -> {
+                String nick = StringArgumentType.getString(c, "nick");
+                List<String> l = Jogo.casa.config.moderadores;
+                if (l.stream().anyMatch(n -> n.equalsIgnoreCase(nick))) return erro(c, nick + " já é moderador.");
+                l.add(nick);
+                Jogo.salvar();
+                return ok(c, nick + " agora é moderador (/inv, /ec e /freeze).");
+            })))
+            .then(literal("remove").then(argument("nick", word()).executes(c -> {
+                String nick = StringArgumentType.getString(c, "nick");
+                boolean tirou = Jogo.casa.config.moderadores.removeIf(n -> n.equalsIgnoreCase(nick));
+                Jogo.salvar();
+                return tirou ? ok(c, nick + " não é mais moderador.") : erro(c, nick + " não está na lista.");
+            })))
+            .then(literal("lista").executes(c -> ok(c, "Moderadores: " + (Jogo.casa.config.moderadores.isEmpty() ? "nenhum" : String.join(", ", Jogo.casa.config.moderadores))))));
         adm.then(literal("lista").executes(Comandos::lista));
         adm.then(literal("cofre").executes(c -> {
             Casa casa = Jogo.casa;
@@ -115,25 +132,38 @@ public final class Comandos {
         d.register(adm);
     }
 
+    private static boolean ehMod(CommandSourceStack s) {
+        ServerPlayer p = s.getPlayer();
+        if (p == null) return false;
+        String nome = p.getGameProfile().name();
+        return Jogo.casa.config.moderadores.stream().anyMatch(n -> n.equalsIgnoreCase(nome));
+    }
+
+    /** Admin (OP) ou moderador da lista do mod. */
+    private static Predicate<CommandSourceStack> adminOuMod(String no) {
+        Predicate<CommandSourceStack> admin = PermissionPredicates.require(PermissionNode.of("melbybet", no), PermissionLevel.ADMINS);
+        return s -> admin.test(s) || ehMod(s);
+    }
+
     // ---------- inventário, ender chest, vanish ----------
 
     private static void extras(CommandDispatcher<CommandSourceStack> d) {
         d.register(literal("inv")
-            .requires(PermissionPredicates.require(PermissionNode.of("melbybet", "inv"), PermissionLevel.ADMINS))
+            .requires(adminOuMod("inv"))
             .then(argument("alvo", EntityArgument.player()).executes(c -> {
                 ServerPlayer quem = c.getSource().getPlayerOrException();
                 Vista.inventarioAoVivo(quem, EntityArgument.getPlayer(c, "alvo"));
                 return 1;
             })));
         d.register(literal("ec")
-            .requires(PermissionPredicates.require(PermissionNode.of("melbybet", "ec"), PermissionLevel.ADMINS))
+            .requires(adminOuMod("ec"))
             .then(argument("alvo", EntityArgument.player()).executes(c -> {
                 ServerPlayer quem = c.getSource().getPlayerOrException();
                 Vista.enderAoVivo(quem, EntityArgument.getPlayer(c, "alvo"));
                 return 1;
             })));
         d.register(literal("freeze")
-            .requires(PermissionPredicates.require(PermissionNode.of("melbybet", "freeze"), PermissionLevel.ADMINS))
+            .requires(adminOuMod("freeze"))
             .then(argument("alvo", EntityArgument.player()).executes(c -> {
                 ServerPlayer alvo = EntityArgument.getPlayer(c, "alvo");
                 boolean congelou = Extras.alternarFreeze(alvo);
