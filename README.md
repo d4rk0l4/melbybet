@@ -41,13 +41,12 @@ Regras: não pode apostar em si mesmo, limite por bolão (64), all-in pede confi
 
 **Importante:** confira os nicks com `/melbybet roster` antes de criar bolões. O `/top` mostra quem já entrou no servidor depois de instalar o mod; os números vêm das stats do próprio Minecraft (acumuladas desde que o mundo existe).
 
-## Inventário, ender chest, vanish e chat
+## Inventário, ender chest, freeze e chat
 
 | Comando | Quem | O que faz |
 |---|---|---|
 | `/inv <jogador>` | OP | mostra o inventário (mochila, hotbar, armadura, mão secundária) de um jogador online, só para olhar |
 | `/ec <jogador>` | OP | mostra o ender chest de um jogador online, só para olhar (não abre o seu, para não virar ender chest portátil) |
-| `/vanish` | OP | liga/desliga: invisível e fora do tab |
 | `/freeze <jogador>` | OP | liga/desliga: o jogador não anda nem pula |
 | `/melbybet webhook <url>` | OP | liga os avisos no Discord (`off` desliga, `teste` manda uma mensagem de teste) |
 | `/topbet` | todos | ranking de quem mais ganhou nas apostas |
@@ -57,8 +56,6 @@ No chat, qualquer jogador pode escrever:
 - `@inv`: vira **[Inventário de Nick]**; quem clicar vê uma foto do inventário daquele momento (só olhar).
 - `@ec`: o mesmo para o ender chest.
 - `@item`: mostra o item que está na mão, com balão de encantamentos e descrição.
-
-Limites do vanish: o efeito de invisibilidade esconde o corpo, mas armadura e item na mão ainda podem aparecer, e a mensagem de entrada e saída do servidor continua aparecendo. O `/inv` e o `/ec` só funcionam com o jogador online.
 
 ## Config (`config/melbybet/casa.json`, bloco `config`)
 

@@ -132,13 +132,6 @@ public final class Comandos {
                 Vista.enderAoVivo(quem, EntityArgument.getPlayer(c, "alvo"));
                 return 1;
             })));
-        d.register(literal("vanish")
-            .requires(PermissionPredicates.require(PermissionNode.of("melbybet", "vanish"), PermissionLevel.ADMINS))
-            .executes(c -> {
-                ServerPlayer quem = c.getSource().getPlayerOrException();
-                boolean agora = Extras.alternarVanish(quem);
-                return ok(c, agora ? "Vanish ligado: você está invisível e fora do tab." : "Vanish desligado: todo mundo te vê de novo.");
-            }));
         d.register(literal("freeze")
             .requires(PermissionPredicates.require(PermissionNode.of("melbybet", "freeze"), PermissionLevel.ADMINS))
             .then(argument("alvo", EntityArgument.player()).executes(c -> {

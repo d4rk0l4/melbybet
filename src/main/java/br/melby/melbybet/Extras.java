@@ -5,8 +5,6 @@ import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.protocol.game.ClientboundPlayerInfoRemovePacket;
-import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -22,41 +20,9 @@ import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/** Vanish e os atalhos de chat: @inv, @ec e @item. */
+/** Freeze e os atalhos de chat: @inv, @ec e @item. */
 public final class Extras {
     private Extras() {}
-
-    // ---------- vanish ----------
-
-    private static final Set<UUID> SUMIDOS = new HashSet<>();
-
-    public static boolean alternarVanish(ServerPlayer p) {
-        UUID id = p.getUUID();
-        if (SUMIDOS.remove(id)) {
-            p.removeEffect(MobEffects.INVISIBILITY);
-            mostrar(p);
-            return false;
-        }
-        SUMIDOS.add(id);
-        manterSumido(p);
-        return true;
-    }
-
-    private static void manterSumido(ServerPlayer p) {
-        // Dura pouco e é renovado a cada segundo: se o servidor reiniciar, o efeito some sozinho.
-        p.addEffect(new MobEffectInstance(MobEffects.INVISIBILITY, 100, 0, false, false));
-        var pacote = new ClientboundPlayerInfoRemovePacket(List.of(p.getUUID()));
-        for (ServerPlayer o : Jogo.server.getPlayerList().getPlayers()) {
-            if (o != p) o.connection.send(pacote);
-        }
-    }
-
-    private static void mostrar(ServerPlayer p) {
-        var pacote = ClientboundPlayerInfoUpdatePacket.createPlayerInitializing(List.of(p));
-        for (ServerPlayer o : Jogo.server.getPlayerList().getPlayers()) {
-            if (o != p) o.connection.send(pacote);
-        }
-    }
 
     // ---------- freeze ----------
 
@@ -85,9 +51,8 @@ public final class Extras {
 
     /** Chamado a cada segundo. */
     public static void aCadaSegundo() {
-        if (SUMIDOS.isEmpty() && CONGELADOS.isEmpty()) return;
+        if (CONGELADOS.isEmpty()) return;
         for (ServerPlayer p : Jogo.server.getPlayerList().getPlayers()) {
-            if (SUMIDOS.contains(p.getUUID())) manterSumido(p);
             if (CONGELADOS.contains(p.getUUID())) manterCongelado(p);
         }
     }
