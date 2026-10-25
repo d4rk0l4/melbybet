@@ -11,6 +11,7 @@ import net.fabricmc.fabric.api.permission.v1.PermissionNode;
 import net.fabricmc.fabric.api.permission.v1.PermissionPredicates;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.permissions.PermissionLevel;
@@ -43,6 +44,8 @@ public final class Comandos {
             MenuTop.abrir(p);
             return 1;
         }));
+
+        extras(d);
 
         LiteralArgumentBuilder<CommandSourceStack> adm = literal("melbybet")
             .requires(PermissionPredicates.require(ADMIN, PermissionLevel.ADMINS));
@@ -80,6 +83,43 @@ public final class Comandos {
             return 1;
         })));
         d.register(adm);
+    }
+
+    // ---------- inventário, ender chest, vanish ----------
+
+    private static void extras(CommandDispatcher<CommandSourceStack> d) {
+        d.register(literal("inv")
+            .requires(PermissionPredicates.require(PermissionNode.of("melbybet", "inv"), PermissionLevel.ADMINS))
+            .then(argument("alvo", EntityArgument.player()).executes(c -> {
+                ServerPlayer quem = c.getSource().getPlayerOrException();
+                Vista.inventarioAoVivo(quem, EntityArgument.getPlayer(c, "alvo"));
+                return 1;
+            })));
+        d.register(literal("ec")
+            .requires(PermissionPredicates.require(PermissionNode.of("melbybet", "ec"), PermissionLevel.ADMINS))
+            .executes(c -> {
+                ServerPlayer quem = c.getSource().getPlayerOrException();
+                Vista.enderAoVivo(quem, quem);
+                return 1;
+            })
+            .then(argument("alvo", EntityArgument.player()).executes(c -> {
+                ServerPlayer quem = c.getSource().getPlayerOrException();
+                Vista.enderAoVivo(quem, EntityArgument.getPlayer(c, "alvo"));
+                return 1;
+            })));
+        d.register(literal("vanish")
+            .requires(PermissionPredicates.require(PermissionNode.of("melbybet", "vanish"), PermissionLevel.ADMINS))
+            .executes(c -> {
+                ServerPlayer quem = c.getSource().getPlayerOrException();
+                boolean agora = Extras.alternarVanish(quem);
+                return ok(c, agora ? "Vanish ligado: você está invisível e fora do tab." : "Vanish desligado: todo mundo te vê de novo.");
+            }));
+        // aberto a todos: é o clique em [Inventário de fulano] no chat
+        d.register(literal("mbver").then(argument("id", integer(1)).executes(c -> {
+            ServerPlayer quem = c.getSource().getPlayerOrException();
+            if (!Extras.verFoto(quem, IntegerArgumentType.getInteger(c, "id"))) return erro(c, "Essa foto de inventário expirou.");
+            return 1;
+        })));
     }
 
     // ---------- admin ----------

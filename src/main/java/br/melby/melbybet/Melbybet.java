@@ -5,6 +5,7 @@ import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+import net.fabricmc.fabric.api.message.v1.ServerMessageDecoratorEvent;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
@@ -34,6 +35,7 @@ public class Melbybet implements ModInitializer {
         ServerLifecycleEvents.SERVER_STOPPING.register(server -> Jogo.salvar());
         ServerTickEvents.END_SERVER_TICK.register(server -> aCadaTick());
         ServerLivingEntityEvents.AFTER_DEATH.register(Melbybet::aoMorrer);
+        ServerMessageDecoratorEvent.EVENT.register(ServerMessageDecoratorEvent.CONTENT_PHASE, Extras::decorar);
 
         LOGGER.info("MelbyBet carregado. /bet e /top estão prontos.");
     }
@@ -62,6 +64,7 @@ public class Melbybet implements ModInitializer {
             }
             if (mudou) Jogo.salvar();
         }
+        if (tick % 20 == 0) Extras.aCadaSegundo();
         if (tick % 600 == 0) Jogo.conferirConquistas();
         if (tick % 6000 == 0) Jogo.salvar();
     }
