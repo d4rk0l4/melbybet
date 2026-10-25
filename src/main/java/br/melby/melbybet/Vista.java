@@ -26,7 +26,7 @@ public final class Vista {
     }
 
     private static GuiElementBuilder enfeite() {
-        return new GuiElementBuilder(Items.GRAY_STAINED_GLASS_PANE).setName(Component.empty()).hideTooltip();
+        return new GuiElementBuilder(Items.STAINED_GLASS_PANE.gray()).setName(Component.empty()).hideTooltip();
     }
 
     /** Inventário de outro jogador ao vivo: quem abre pode pegar e colocar itens. */
