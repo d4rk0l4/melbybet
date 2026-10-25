@@ -1,0 +1,35 @@
+# Compila o mod e entrega o .jar pronto na aba Actions (Artifacts).
+name: build
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: checkout repository
+        uses: actions/checkout@v6
+      - name: validate gradle wrapper
+        uses: gradle/actions/wrapper-validation@v6
+      - name: setup jdk
+        uses: actions/setup-java@v5
+        with:
+          java-version: '25'
+          distribution: 'microsoft'
+      - name: make gradle wrapper executable
+        run: chmod +x ./gradlew
+      - name: build
+        run: ./gradlew build
+      - name: testes da lógica (apostas, pagamento, ranking)
+        run: |
+          GSON=$(find ~/.gradle -name 'gson-*.jar' ! -name '*sources*' | head -1)
+          mkdir -p out
+          javac -d out -cp "$GSON" src/main/java/br/melby/melbybet/core/*.java tests/br/melby/melbybet/core/Testes.java
+          java -cp "out:$GSON" br.melby.melbybet.core.Testes
+      - name: capture build artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: melbybet-jar
+          path: build/libs/*.jar

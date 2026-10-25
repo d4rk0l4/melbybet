@@ -1,0 +1,37 @@
+{
+	"schemaVersion": 1,
+	"id": "melbybet",
+	"version": "${version}",
+	"name": "MelbyBet",
+	"description": "Casa de apostas satírica da Gangue do Melby: bolões com diamantes e ranking de stats (/bet e /top). Só no servidor.",
+	"authors": [
+		"Guilherme"
+	],
+	"contact": {
+		"homepage": "https://fabricmc.net/"
+	},
+	"license": "CC0-1.0",
+	"icon": "assets/melbybet/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"br.melby.melbybet.Melbybet"
+		],
+		"client": [
+			"br.melby.melbybet.client.MelbybetClient"
+		]
+	},
+	"mixins": [
+		"melbybet.mixins.json",
+		{
+			"config": "melbybet.client.mixins.json",
+			"environment": "client"
+		}
+	],
+	"depends": {
+		"fabricloader": ">=0.20.1",
+		"minecraft": "~26.2",
+		"java": ">=25",
+		"fabric-api": "*"
+	}
+}
