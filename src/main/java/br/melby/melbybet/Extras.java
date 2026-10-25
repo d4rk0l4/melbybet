@@ -98,7 +98,6 @@ public final class Extras {
         PlayerTeam time = sb.getPlayerTeam(TIME_AFK);
         if (time == null) time = sb.addPlayerTeam(TIME_AFK);
         time.setPlayerPrefix(Component.literal("[AFK] ").withStyle(ChatFormatting.GRAY));
-        time.setColor(ChatFormatting.GRAY);
         String nome = p.getScoreboardName();
         PlayerTeam atual = sb.getPlayersTeam(nome);
         e.timeAnterior = (atual != null && atual != time) ? atual.getName() : null;
