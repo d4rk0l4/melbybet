@@ -45,6 +45,12 @@ public final class Comandos {
             Tutorial.ajuda(p);
             return 1;
         })));
+        d.register(literal("afk").executes(c -> {
+            ServerPlayer p = c.getSource().getPlayer();
+            if (p == null) return erro(c, "Só jogadores podem usar.");
+            Extras.alternarAfk(p);
+            return 1;
+        }));
         d.register(literal("topbet").executes(c -> {
             ServerPlayer p = c.getSource().getPlayer();
             if (p == null) return erro(c, "Só jogadores podem usar.");
@@ -110,6 +116,12 @@ public final class Comandos {
                 return tirou ? ok(c, nick + " não é mais moderador.") : erro(c, nick + " não está na lista.");
             })))
             .then(literal("lista").executes(c -> ok(c, "Moderadores: " + (Jogo.casa.config.moderadores.isEmpty() ? "nenhum" : String.join(", ", Jogo.casa.config.moderadores))))));
+        adm.then(literal("afk").then(argument("minutos", integer(0, 120)).executes(c -> {
+            int m = IntegerArgumentType.getInteger(c, "minutos");
+            Jogo.casa.config.afkAutoMinutos = m;
+            Jogo.salvar();
+            return ok(c, m == 0 ? "AFK automático desligado (só pelo /afk)." : "Fica AFK sozinho depois de " + m + " min parado.");
+        })));
         adm.then(literal("lista").executes(Comandos::lista));
         adm.then(literal("cofre").executes(c -> {
             Casa casa = Jogo.casa;

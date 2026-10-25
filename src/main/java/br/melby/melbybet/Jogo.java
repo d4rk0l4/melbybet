@@ -47,6 +47,7 @@ public final class Jogo {
             Melbybet.LOGGER.error("Não consegui ler {}; começando uma casa nova (o arquivo antigo não foi apagado).", arquivo, e);
             casa = new Casa();
         }
+        Extras.limparAfk();
         salvar();
     }
 

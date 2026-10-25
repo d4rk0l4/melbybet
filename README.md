@@ -50,6 +50,8 @@ Regras: não pode apostar em si mesmo, limite por bolão (64), all-in pede confi
 | `/freeze <jogador>` | OP | liga/desliga: o jogador não anda nem pula |
 | `/melbybet mod add <nick>` | OP | cria um moderador: usa `/inv`, `/ec` e `/freeze` sem ser OP (`remove` e `lista` também existem) |
 | `/melbybet webhook <url>` | OP | liga os avisos no Discord (`off` desliga, `teste` manda uma mensagem de teste) |
+| `/afk` | todos | liga/desliga o AFK: aparece **[AFK]** no tab, acima da cabeça e no chat. Sai sozinho quando a pessoa se mexe, e entra sozinho depois de 5 min parado |
+| `/melbybet afk <minutos>` | OP | tempo parado até ficar AFK sozinho (`0` desliga o automático) |
 | `/topbet` | todos | ranking de quem mais ganhou nas apostas |
 | `/bet ajuda` | todos | abre o livro de boas-vindas (na primeira vez que a pessoa usa `/bet`, ela recebe o livro e um aviso na tela) |
 

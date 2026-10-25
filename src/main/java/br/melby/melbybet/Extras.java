@@ -9,8 +9,11 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.scores.PlayerTeam;
+import net.minecraft.world.scores.Scoreboard;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -49,8 +52,125 @@ public final class Extras {
         p.sendSystemMessage(Component.literal("Você está congelado por um admin.").withStyle(ChatFormatting.AQUA), true);
     }
 
+    // ---------- afk ----------
+
+    private static final String TIME_AFK = "melbyafk";
+
+    private static final class EstadoAfk {
+        double x, y, z;
+        float giroY, giroX;
+        long parouDesde;
+        boolean afk;
+        String timeAnterior;
+    }
+
+    private static final Map<UUID, EstadoAfk> AFK = new HashMap<>();
+
+    private static void guardarPosicao(ServerPlayer p, EstadoAfk e) {
+        e.x = p.getX();
+        e.y = p.getY();
+        e.z = p.getZ();
+        e.giroY = p.getYRot();
+        e.giroX = p.getXRot();
+    }
+
+    private static boolean mexeu(ServerPlayer p, EstadoAfk e) {
+        double dx = p.getX() - e.x, dy = p.getY() - e.y, dz = p.getZ() - e.z;
+        return dx * dx + dy * dy + dz * dz > 0.01
+            || Math.abs(p.getYRot() - e.giroY) > 0.5f
+            || Math.abs(p.getXRot() - e.giroX) > 0.5f;
+    }
+
+    /** /afk: liga ou desliga. Sai sozinho quando a pessoa se mexe. */
+    public static boolean alternarAfk(ServerPlayer p) {
+        EstadoAfk e = AFK.computeIfAbsent(p.getUUID(), k -> new EstadoAfk());
+        if (e.afk) {
+            desmarcarAfk(p, e);
+            return false;
+        }
+        guardarPosicao(p, e);
+        marcarAfk(p, e);
+        return true;
+    }
+
+    private static void marcarAfk(ServerPlayer p, EstadoAfk e) {
+        Scoreboard sb = Jogo.server.getScoreboard();
+        PlayerTeam time = sb.getPlayerTeam(TIME_AFK);
+        if (time == null) time = sb.addPlayerTeam(TIME_AFK);
+        time.setPlayerPrefix(Component.literal("[AFK] ").withStyle(ChatFormatting.GRAY));
+        time.setColor(ChatFormatting.GRAY);
+        String nome = p.getScoreboardName();
+        PlayerTeam atual = sb.getPlayersTeam(nome);
+        e.timeAnterior = (atual != null && atual != time) ? atual.getName() : null;
+        sb.addPlayerToTeam(nome, time);
+        e.afk = true;
+        Jogo.avisar(p.getGameProfile().name() + " ficou AFK.");
+    }
+
+    private static void desmarcarAfk(ServerPlayer p, EstadoAfk e) {
+        Scoreboard sb = Jogo.server.getScoreboard();
+        PlayerTeam time = sb.getPlayerTeam(TIME_AFK);
+        String nome = p.getScoreboardName();
+        if (time != null) sb.removePlayerFromTeam(nome, time);
+        if (e.timeAnterior != null) {
+            PlayerTeam antes = sb.getPlayerTeam(e.timeAnterior);
+            if (antes != null) sb.addPlayerToTeam(nome, antes);
+        }
+        e.afk = false;
+        e.timeAnterior = null;
+        e.parouDesde = System.currentTimeMillis();
+        guardarPosicao(p, e);
+        Jogo.avisar(p.getGameProfile().name() + " voltou.");
+    }
+
+    /** Ao ligar o servidor: tira o time AFK que sobrou salvo no mundo. */
+    public static void limparAfk() {
+        Scoreboard sb = Jogo.server.getScoreboard();
+        PlayerTeam time = sb.getPlayerTeam(TIME_AFK);
+        if (time != null) sb.removePlayerTeam(time);
+    }
+
+    private static void conferirAfk() {
+        long agora = System.currentTimeMillis();
+        long limite = Jogo.casa.config.afkAutoMinutos * 60_000L;
+        Set<UUID> online = new HashSet<>();
+        for (ServerPlayer p : Jogo.server.getPlayerList().getPlayers()) {
+            online.add(p.getUUID());
+            EstadoAfk e = AFK.get(p.getUUID());
+            if (e == null) {
+                e = new EstadoAfk();
+                e.parouDesde = agora;
+                guardarPosicao(p, e);
+                AFK.put(p.getUUID(), e);
+                continue;
+            }
+            if (mexeu(p, e)) {
+                if (e.afk) desmarcarAfk(p, e);
+                e.parouDesde = agora;
+                guardarPosicao(p, e);
+            } else if (!e.afk && limite > 0 && agora - e.parouDesde >= limite) {
+                marcarAfk(p, e);
+            }
+        }
+        // quem saiu do jogo: tira do time para o prefixo não ficar preso
+        Scoreboard sb = Jogo.server.getScoreboard();
+        PlayerTeam time = sb.getPlayerTeam(TIME_AFK);
+        AFK.entrySet().removeIf(en -> {
+            if (online.contains(en.getKey())) return false;
+            return true;
+        });
+        if (time != null) {
+            for (String nome : new ArrayList<>(time.getPlayers())) {
+                boolean on = false;
+                for (ServerPlayer p : Jogo.server.getPlayerList().getPlayers()) if (p.getScoreboardName().equals(nome)) on = true;
+                if (!on) sb.removePlayerFromTeam(nome, time);
+            }
+        }
+    }
+
     /** Chamado a cada segundo. */
     public static void aCadaSegundo() {
+        conferirAfk();
         if (CONGELADOS.isEmpty()) return;
         for (ServerPlayer p : Jogo.server.getPlayerList().getPlayers()) {
             if (CONGELADOS.contains(p.getUUID())) manterCongelado(p);
