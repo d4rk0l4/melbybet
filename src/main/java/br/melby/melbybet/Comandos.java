@@ -78,6 +78,13 @@ public final class Comandos {
             return 1;
         }));
 
+        d.register(literal("melby").executes(c -> {
+            ServerPlayer p = c.getSource().getPlayer();
+            if (p == null) return erro(c, "Só jogadores podem abrir o menu.");
+            Chat.cancelarPergunta(p);
+            MenuMelby.principal(p);
+            return 1;
+        }));
         extras(d);
         chatEMais(d);
 
@@ -147,22 +154,8 @@ public final class Comandos {
             }))
             .then(argument("texto", greedyString()).executes(c -> {
                 String nick = StringArgumentType.getString(c, "nick");
-                String[] t = StringArgumentType.getString(c, "texto").trim().split("\\s+", 3);
-                Casa.Titulo ti = new Casa.Titulo();
-                int c1 = t.length >= 3 ? br.melby.melbybet.core.Gradiente.hex(t[0]) : -1;
-                int c2 = t.length >= 3 ? br.melby.melbybet.core.Gradiente.hex(t[1]) : -1;
-                if (c1 >= 0 && c2 >= 0) {
-                    ti.cor1 = c1;
-                    ti.cor2 = c2;
-                    ti.texto = t[2];
-                } else {
-                    ti.texto = StringArgumentType.getString(c, "texto").trim();
-                }
-                if (ti.texto.length() > 20) return erro(c, "O título pode ter até 20 letras.");
-                Jogo.casa.config.titulos.put(nick.toLowerCase(), ti);
-                Jogo.salvar();
-                Prefixos.esquecer();
-                return ok(c, "Título de " + nick + ": " + ti.texto);
+                String erro = aplicarTitulo(nick, StringArgumentType.getString(c, "texto"));
+                return erro == null ? ok(c, "Título de " + nick + " atualizado.") : erro(c, erro);
             }))));
         listaMsgs(adm, "entrar", true);
         listaMsgs(adm, "sair", false);
@@ -247,24 +240,60 @@ public final class Comandos {
     /** /inv e /ec: jogador online (foto na hora) ou offline (lê o arquivo dele). */
     private static int ver(CommandContext<CommandSourceStack> c, boolean ender) throws CommandSyntaxException {
         ServerPlayer quem = c.getSource().getPlayerOrException();
-        String nick = StringArgumentType.getString(c, "alvo");
+        String erro = verPorNome(quem, StringArgumentType.getString(c, "alvo"), ender);
+        return erro == null ? 1 : erro(c, erro);
+    }
+
+    /** Abre inventário ou ender chest de um jogador. Devolve o motivo do erro, ou null. */
+    public static String verPorNome(ServerPlayer quem, String nick, boolean ender) {
         ServerPlayer on = Jogo.server.getPlayerList().getPlayerByName(nick);
         if (on != null) {
             if (ender) Vista.enderAoVivo(quem, on);
             else Vista.inventarioAoVivo(quem, on);
-            return 1;
+            return null;
         }
         String uuid = uuidDe(nick);
-        if (uuid == null) return erro(c, "Não conheço " + nick + " (ele precisa já ter entrado no servidor com o mod).");
+        if (uuid == null) return "Não conheço " + nick + " (ele precisa já ter entrado no servidor com o mod).";
         List<ItemStack> itens = ender ? Offline.ender(uuid) : Offline.inventario(uuid);
-        if (itens == null) return erro(c, "Não achei o arquivo de " + nick + ".");
+        if (itens == null) return "Não achei o arquivo de " + nick + ".";
         Vista.foto(quem, Jogo.casa.conhecidos.get(uuid), ender, itens);
-        ok(c, nick + " está offline: isto é o que estava com ele ao sair.");
-        return 1;
+        quem.sendSystemMessage(Jogo.prefixo(nick + " está offline: isto é o que estava com ele ao sair."));
+        return null;
+    }
+
+    public static boolean admin(ServerPlayer p) {
+        Predicate<CommandSourceStack> pr = PermissionPredicates.require(ADMIN, PermissionLevel.ADMINS);
+        return pr.test(p.createCommandSourceStack());
+    }
+
+    /** Admin (OP) ou moderador. */
+    public static boolean staff(ServerPlayer p) {
+        return admin(p) || ehMod(p.createCommandSourceStack());
+    }
+
+    /** Dá um título: "[#cor1 #cor2] texto". Devolve o motivo do erro, ou null. */
+    public static String aplicarTitulo(String nick, String bruto) {
+        String[] t = bruto.trim().split("\\s+", 3);
+        Casa.Titulo ti = new Casa.Titulo();
+        int c1 = t.length >= 3 ? Gradiente.hex(t[0]) : -1;
+        int c2 = t.length >= 3 ? Gradiente.hex(t[1]) : -1;
+        if (c1 >= 0 && c2 >= 0) {
+            ti.cor1 = c1;
+            ti.cor2 = c2;
+            ti.texto = t[2];
+        } else {
+            ti.texto = bruto.trim();
+        }
+        if (ti.texto.isBlank()) return "Título vazio.";
+        if (ti.texto.length() > 20) return "O título pode ter até 20 letras.";
+        Jogo.casa.config.titulos.put(nick.toLowerCase(), ti);
+        Jogo.salvar();
+        Prefixos.esquecer();
+        return null;
     }
 
     /** Aplica uma cor de nick. Devolve o motivo do erro, ou null se deu certo. */
-    private static String aplicarCor(String nick, String a, String b) {
+    public static String aplicarCor(String nick, String a, String b) {
         int[] preset = Gradiente.preset(a);
         int c1, c2;
         if (preset != null) {

@@ -6,8 +6,12 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 
 import java.util.HashMap;
+import java.util.function.Consumer;
+import java.util.regex.Pattern;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -41,7 +45,28 @@ public final class Chat {
         return MODOS.computeIfAbsent(p.getUUID(), k -> new Modo());
     }
 
+    // ---------- perguntas do menu: a próxima mensagem do jogador é a resposta, e não vai para o chat ----------
+
+    private static final Map<UUID, Consumer<String>> PERGUNTAS = new HashMap<>();
+
+    public static void perguntar(ServerPlayer p, String pergunta, Consumer<String> aoResponder) {
+        p.closeContainer();
+        PERGUNTAS.put(p.getUUID(), aoResponder);
+        p.sendSystemMessage(Jogo.prefixo(pergunta + " Escreva no chat (só você vê) ou digite cancelar."));
+    }
+
+    public static void cancelarPergunta(ServerPlayer p) {
+        PERGUNTAS.remove(p.getUUID());
+    }
+
     private static void tratar(ServerPlayer p, Component conteudo) {
+        Consumer<String> resposta = PERGUNTAS.remove(p.getUUID());
+        if (resposta != null) {
+            String texto = conteudo.getString().trim();
+            if (texto.equalsIgnoreCase("cancelar")) p.sendSystemMessage(Jogo.prefixo("Cancelado."));
+            else resposta.accept(texto);
+            return;
+        }
         Modo m = modo(p);
         switch (m.tipo) {
             case GLOBAL -> falar(p, conteudo, true);
@@ -78,6 +103,10 @@ public final class Chat {
             if (global || raio <= 0 || (o.level() == p.level() && o.distanceToSqr(p) <= (double) raio * raio)) {
                 o.sendSystemMessage(linha);
                 ouviram++;
+                if (Pattern.compile("(?i)@" + Pattern.quote(o.getGameProfile().name()) + "\\b").matcher(conteudo.getString()).find()) {
+                    o.sendSystemMessage(Component.literal(p.getGameProfile().name() + " mencionou você").withStyle(ChatFormatting.YELLOW), true);
+                    o.playNotifySound(SoundEvents.NOTE_BLOCK_PLING.value(), SoundSource.PLAYERS, 1.0f, 1.5f);
+                }
             }
         }
         p.sendSystemMessage(linha);
@@ -104,6 +133,14 @@ public final class Chat {
         }
         m.tipo = Tipo.GLOBAL;
         return true;
+    }
+
+    public static boolean estaNoGlobal(ServerPlayer p) {
+        return modo(p).tipo == Tipo.GLOBAL;
+    }
+
+    public static boolean espiando(ServerPlayer p) {
+        return ESPIOES.contains(p.getUUID());
     }
 
     public static void travarLocal(ServerPlayer p) {

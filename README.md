@@ -62,6 +62,18 @@ No chat, qualquer jogador pode escrever:
 - `@ec`: o mesmo para o ender chest.
 - `@item`: mostra o item que está na mão, com balão de encantamentos e descrição.
 
+## Menu /melby
+
+`/melby` abre o menu central, separado por categorias. Tudo que pede texto (título, cor, motivo de ban, número) é digitado no chat, mas **não vai para o chat geral**: só vale como resposta do menu. Escrever `cancelar` desiste.
+
+- **Para todos:** Apostas, Ranking de stats, Meu perfil (cor do nick, chat local ou global, AFK) e Ajuda.
+- **Moderação** (admin e moderador): lista de jogadores online ou por nick (inclusive offline) com ver inventário, ver ender chest, congelar, mensagens privadas e visto por último; spy.
+- **Administração** (só OP): Bolões (criar com escolha do tipo, abrir, fechar, prazo, declarar vencedor, cancelar), mensagens de entrar e sair, configurações (alcance do chat, AFK, parte da casa, limites, webhook do Discord) e, dentro de cada jogador, título, cor, moderador, kick, ban (com motivo e confirmação) e desbanir.
+
+Os comandos com `/melbybet ...` continuam funcionando.
+
+Mencionar `@nick` no chat toca um som e mostra um aviso na tela de quem foi citado.
+
 ## Chat
 
 - Por padrão o chat é **local**: só quem está perto (100 blocos, na mesma dimensão) lê. OP muda com `/melbybet raio <blocos>` (`0` = sem limite).
