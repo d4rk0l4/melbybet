@@ -74,6 +74,10 @@ Os comandos com `/melbybet ...` continuam funcionando.
 
 Mencionar `@nick` no chat toca um som e mostra um aviso na tela de quem foi citado.
 
+## Aposta combinada
+
+No `/bet`, botão **Combinada**: escolha de 2 a 4 bolões abertos, uma opção em cada, e o valor por bolão (1, 5, 10, 32 ou 64). Cada perna é uma aposta normal. Se **todas** acertarem, a casa paga um bônus do cofre: 25% do total apostado por perna além da primeira, com teto de 64 diamantes e limitado ao que tem no cofre (`combinadaBonusPct` e `combinadaBonusMax` em `casa.json`). Se algum bolão for cancelado ou o jogador desistir de uma perna, a combinada é cancelada, sem bônus.
+
 ## Coordenadas
 
 - `/coords`: mostra onde você está, com botões clicáveis **[Copiar]** (copia `x y z`) e **[Enviar]** (manda no chat para todos, já com [Copiar]).

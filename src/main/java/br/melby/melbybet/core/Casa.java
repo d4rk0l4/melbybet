@@ -40,6 +40,10 @@ public class Casa {
         public List<String> moderadores = new ArrayList<>();
         /** Opcional: URL de webhook do Discord para resultados. Vazio = desligado. */
         public String discordWebhook = "";
+        /** Bônus da combinada, em % do total apostado, por perna além da primeira. Sai do cofre. */
+        public int combinadaBonusPct = 25;
+        /** Teto do bônus de uma combinada, em diamantes. */
+        public int combinadaBonusMax = 64;
         /** Pasta do mundo. Vazio = lê o level-name do server.properties. */
         public String pastaMundo = "";
     }
@@ -137,6 +141,128 @@ public class Casa {
 
     /** Locais salvos por jogador (uuid -> nome -> local). Só anotações: não teleporta. */
     public Map<String, Map<String, Local>> locais = new LinkedHashMap<>();
+
+    // ---------- combinadas ----------
+
+    public static class Perna {
+        public int bolao;
+        public String opcao = "";
+
+        public Perna() {}
+
+        public Perna(int bolao, String opcao) {
+            this.bolao = bolao;
+            this.opcao = opcao;
+        }
+    }
+
+    /** Várias apostas feitas de uma vez; se todas acertarem, a casa paga um bônus. */
+    public static class Combinada {
+        public int id;
+        public String uuid = "";
+        public String nome = "";
+        public int valorPorPerna;
+        public List<Perna> pernas = new ArrayList<>();
+        /** PENDENTE, GANHA, PERDIDA ou CANCELADA. */
+        public String estado = "PENDENTE";
+        public int bonus;
+    }
+
+    public int proximaCombinada = 1;
+    public List<Combinada> combinadas = new ArrayList<>();
+    /** Bônus pagos pela última resolução (só para avisar; não é salvo). */
+    public transient List<Pagamento> bonusRecentes = new ArrayList<>();
+
+    /** Bônus se todas as pernas acertarem (antes do limite do cofre). */
+    public int bonusDe(int pernas, int totalApostado) {
+        long b = (long) totalApostado * config.combinadaBonusPct * Math.max(0, pernas - 1) / 100;
+        return (int) Math.min(b, config.combinadaBonusMax);
+    }
+
+    /** null = pode; senão o motivo. */
+    public String validarCombinada(String uuid, String nome, List<Perna> pernas, int valor) {
+        if (pernas.size() < 2) return "Escolha pelo menos 2 bolões.";
+        if (pernas.size() > 4) return "No máximo 4 bolões por combinada.";
+        List<Integer> vistos = new ArrayList<>();
+        for (Perna pn : pernas) {
+            if (vistos.contains(pn.bolao)) return "Não repita o mesmo bolão.";
+            vistos.add(pn.bolao);
+            Bolao b = achar(pn.bolao);
+            if (b == null) return "Bolão #" + pn.bolao + " não existe.";
+            String e = validarAposta(b, uuid, nome, pn.opcao, valor);
+            if (e != null) return "#" + b.id + ": " + e;
+        }
+        return null;
+    }
+
+    /** Registra as apostas de cada perna e a combinada. Chame só depois de tirar valor * pernas diamantes. */
+    public Combinada criarCombinada(String uuid, String nome, List<Perna> pernas, int valor) {
+        Combinada c = new Combinada();
+        c.id = proximaCombinada++;
+        c.uuid = uuid;
+        c.nome = nome;
+        c.valorPorPerna = valor;
+        for (Perna pn : pernas) {
+            Bolao b = achar(pn.bolao);
+            String exata = b.opcaoExata(pn.opcao);
+            apostar(b, uuid, nome, exata, valor);
+            c.pernas.add(new Perna(pn.bolao, exata));
+        }
+        combinadas.add(c);
+        return c;
+    }
+
+    public List<Combinada> combinadasDe(String uuid) {
+        List<Combinada> r = new ArrayList<>();
+        for (Combinada c : combinadas) if (c.uuid.equals(uuid)) r.add(c);
+        return r;
+    }
+
+    private static boolean temAposta(Bolao b, String uuid, String opcao) {
+        for (Bolao.Aposta a : b.apostas) if (a.uuid.equals(uuid) && a.opcao.equalsIgnoreCase(opcao)) return true;
+        return false;
+    }
+
+    /** Confere as combinadas pendentes depois que um bolão mudou. Devolve os bônus pagos (já lançados nos créditos). */
+    public List<Pagamento> avaliarCombinadas(long agora) {
+        List<Pagamento> pagos = new ArrayList<>();
+        for (Combinada c : combinadas) {
+            if (!c.estado.equals("PENDENTE")) continue;
+            boolean todasGanhas = true;
+            String novo = null;
+            for (Perna pn : c.pernas) {
+                Bolao b = achar(pn.bolao);
+                if (b == null || b.status == Bolao.Status.CANCELADO || !temAposta(b, c.uuid, pn.opcao)) {
+                    novo = "CANCELADA";
+                    break;
+                }
+                if (b.status == Bolao.Status.RESOLVIDO) {
+                    if (!pn.opcao.equalsIgnoreCase(b.vencedor)) {
+                        novo = "PERDIDA";
+                        break;
+                    }
+                } else {
+                    todasGanhas = false;
+                }
+            }
+            if (novo == null && todasGanhas) novo = "GANHA";
+            if (novo == null) continue;
+            c.estado = novo;
+            if (novo.equals("GANHA")) {
+                int total = c.valorPorPerna * c.pernas.size();
+                int bonus = (int) Math.min(bonusDe(c.pernas.size(), total), Math.max(0, cofre));
+                c.bonus = bonus;
+                if (bonus > 0) {
+                    cofre -= bonus;
+                    credito(c.uuid, bonus);
+                    jogador(c.uuid, c.nome).ganho += bonus;
+                    pagos.add(new Pagamento(c.uuid, c.nome, bonus));
+                }
+                historico.add(new Registro(agora, "Combinada de " + c.nome + " (" + c.pernas.size() + " bolões) acertou tudo, bônus " + bonus));
+            }
+        }
+        return pagos;
+    }
 
     // ---------- mensagens privadas ----------
 
@@ -274,6 +400,7 @@ public class Casa {
         if (vencedoresTotal <= 0) {
             jackpot = distribuir;
             historico.add(new Registro(agora, "#" + b.id + " " + b.titulo + ": " + venc + " ganhou, ninguém acertou (jackpot " + jackpot + ")"));
+            bonusRecentes = avaliarCombinadas(agora);
             return pag;
         }
         jackpot = 0;
@@ -291,6 +418,7 @@ public class Casa {
         cofre += distribuir - pago;
         b.pagoTotal = (int) pago;
         historico.add(new Registro(agora, "#" + b.id + " " + b.titulo + ": " + venc + " ganhou, pagou " + pago + " diamantes"));
+        bonusRecentes = avaliarCombinadas(agora);
         return pag;
     }
 
@@ -310,6 +438,7 @@ public class Casa {
         }
         b.status = Bolao.Status.CANCELADO;
         historico.add(new Registro(agora, "#" + b.id + " " + b.titulo + ": cancelado, apostas devolvidas"));
+        avaliarCombinadas(agora);
     }
 
     // ---------- créditos, jogadores, ranking ----------

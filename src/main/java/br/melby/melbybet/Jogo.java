@@ -151,6 +151,22 @@ public final class Jogo {
         return null;
     }
 
+    /** Devolve null se a combinada foi feita, ou o motivo da recusa. */
+    public static String apostarCombinada(ServerPlayer p, List<Casa.Perna> pernas, int valor) {
+        String id = p.getUUID().toString();
+        String nome = p.getGameProfile().name();
+        String erro = casa.validarCombinada(id, nome, pernas, valor);
+        if (erro != null) return erro;
+        int total = valor * pernas.size();
+        if (!tirar(p, total)) return "Você precisa de " + total + " diamantes (tem " + contar(p) + ").";
+        casa.criarCombinada(id, nome, pernas, valor);
+        salvar();
+        p.sendSystemMessage(prefixo("Combinada feita: " + pernas.size() + " bolões, " + valor + " diamante(s) em cada. Acertou tudo, a casa paga até "
+            + casa.bonusDe(pernas.size(), total) + " de bônus."));
+        avisar(nome + " montou uma combinada de " + pernas.size() + " bolões!");
+        return null;
+    }
+
     public static void resolver(Bolao b, String vencedor) {
         List<Casa.Pagamento> pag = casa.resolver(b, vencedor, System.currentTimeMillis());
         if (pag.isEmpty()) {
@@ -160,6 +176,7 @@ public final class Jogo {
             for (Casa.Pagamento x : pag) sb.append(x.nome).append(" +").append(x.valor).append("  ");
             avisar("Bolão \"" + b.titulo + "\": " + vencedor + " ganhou! " + sb.toString().trim());
         }
+        for (Casa.Pagamento x : casa.bonusRecentes) avisar("Combinada de " + x.nome + " acertou tudo! Bônus de " + x.valor + " diamante(s).");
         entregarTodos();
         salvar();
         StringBuilder w = new StringBuilder("🏆 **Bolão #" + b.id + " — " + b.titulo + "**\nResultado: **" + vencedor + "**\n");

@@ -59,6 +59,10 @@ public final class MenuBet {
             .setCallback((i, ty, a, g) -> Tutorial.ajuda(p)).build());
         gui.setSlot(46, botao(Items.BOOK, "Meu histórico", ChatFormatting.GREEN)
             .setCallback((i, ty, a, g) -> historico(p)).build());
+        gui.setSlot(47, botao(Items.NETHER_STAR, "Combinada", ChatFormatting.LIGHT_PURPLE)
+            .addLoreLine(t("Aposte em vários bolões de uma vez.", ChatFormatting.GRAY))
+            .addLoreLine(t("Acertou tudo: bônus da casa!", ChatFormatting.YELLOW))
+            .setCallback((i, ty, a, g) -> MenuCombinada.abrir(p)).build());
         gui.setSlot(48, botao(Items.GOLD_INGOT, "Ranking de apostadores", ChatFormatting.GOLD)
             .setCallback((i, ty, a, g) -> rankingApostadores(p)).build());
         gui.setSlot(50, botao(Items.COMPASS, "Ranking de stats (/top)", ChatFormatting.AQUA)
@@ -204,6 +208,10 @@ public final class MenuBet {
             if (v <= 0) continue;
             String res = b.status == Bolao.Status.RESOLVIDO ? "ganhou " + b.vencedor : b.status.name().toLowerCase();
             p.sendSystemMessage(t("#" + b.id + " " + b.titulo + ": você pôs " + v + " (" + res + ")", ChatFormatting.GRAY));
+        }
+        for (Casa.Combinada c : casa.combinadasDe(uuid)) {
+            p.sendSystemMessage(t("Combinada #" + c.id + " (" + c.pernas.size() + " bolões, " + c.valorPorPerna + " em cada): "
+                + c.estado.toLowerCase() + (c.bonus > 0 ? ", bônus " + c.bonus : ""), ChatFormatting.LIGHT_PURPLE));
         }
         int n = casa.historico.size();
         if (n > 0) {

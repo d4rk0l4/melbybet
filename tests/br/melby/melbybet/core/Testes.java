@@ -42,6 +42,7 @@ public class Testes {
         cashoutECancelar();
         stats();
         conquistas();
+        combinadas();
         persistencia();
         System.out.println(falhas == 0 ? "tudo certo (" + total + " checagens)" : falhas + " falhas de " + total);
         if (falhas > 0) System.exit(1);
@@ -237,6 +238,61 @@ public class Testes {
         var d3 = Resultados.porConquista(id, nomes, arq::get, 0);
         igual(2, d3.vencedores.size(), "empate no mesmo segundo");
         igual(false, d3.claro(), "ambíguo");
+    }
+
+    static void combinadas() {
+        Casa c = casa();
+        c.cofre = 100;
+        Bolao b1 = aberto(c, "Davi", "Kaue");
+        Bolao b2 = aberto(c, "Edu", "Gota");
+        List<Casa.Perna> ps = List.of(new Casa.Perna(b1.id, "Davi"), new Casa.Perna(b2.id, "Edu"));
+        igual(null, c.validarCombinada("u1", "Samuel", ps, 10), "combinada ok");
+        igual("Escolha pelo menos 2 bolões.", c.validarCombinada("u1", "Samuel", List.of(ps.get(0)), 10), "uma perna");
+        igual("Não repita o mesmo bolão.", c.validarCombinada("u1", "Samuel", List.of(ps.get(0), ps.get(0)), 10), "repetida");
+        igual(true, c.validarCombinada("u1", "Davi", ps, 10).contains("você mesmo"), "em si mesmo");
+        igual(5, c.bonusDe(2, 20), "bonus 2 pernas");
+        igual(15, c.bonusDe(4, 20), "bonus 4 pernas");
+        igual(64, c.bonusDe(4, 1000), "bonus com teto");
+        c.criarCombinada("u1", "Samuel", ps, 10);
+        igual(10, b1.pote(), "perna 1 apostada");
+        c.apostar(b1, "u2", "Edu", "Kaue", 10);
+        c.apostar(b2, "u2", "Edu", "Gota", 10);
+        c.resolver(b1, "Davi", 1);
+        igual("PENDENTE", c.combinadas.get(0).estado, "ainda pendente");
+        c.resolver(b2, "Edu", 2);
+        igual("GANHA", c.combinadas.get(0).estado, "ganhou tudo");
+        igual(5, c.combinadas.get(0).bonus, "bonus pago");
+        igual(1, c.bonusRecentes.size(), "bonus avisado");
+        igual(95L, c.cofre >= 95 ? 95L : c.cofre, "cofre pagou o bonus");
+
+        Casa d = casa();
+        d.cofre = 2;
+        Bolao x1 = aberto(d, "Davi", "Kaue");
+        Bolao x2 = aberto(d, "Edu", "Gota");
+        d.criarCombinada("u1", "Samuel", List.of(new Casa.Perna(x1.id, "Davi"), new Casa.Perna(x2.id, "Edu")), 10);
+        d.resolver(x1, "Kaue", 1);
+        igual("PERDIDA", d.combinadas.get(0).estado, "perdeu uma perna");
+        d.resolver(x2, "Edu", 2);
+        igual(0, d.combinadas.get(0).bonus, "perdida sem bonus");
+
+        Casa e = casa();
+        e.cofre = 2;
+        Bolao y1 = aberto(e, "Davi", "Kaue");
+        Bolao y2 = aberto(e, "Edu", "Gota");
+        e.criarCombinada("u1", "Samuel", List.of(new Casa.Perna(y1.id, "Davi"), new Casa.Perna(y2.id, "Edu")), 10);
+        e.resolver(y1, "Davi", 1);
+        e.resolver(y2, "Edu", 2);
+        igual(2, e.combinadas.get(0).bonus, "bonus limitado pelo cofre");
+        igual(0L, e.cofre, "cofre zerou");
+
+        Casa f = casa();
+        Bolao z1 = aberto(f, "Davi", "Kaue");
+        Bolao z2 = aberto(f, "Edu", "Gota");
+        f.criarCombinada("u1", "Samuel", List.of(new Casa.Perna(z1.id, "Davi"), new Casa.Perna(z2.id, "Edu")), 10);
+        f.cashout(z1, "u1");
+        f.resolver(z2, "Edu", 2);
+        igual("CANCELADA", f.combinadas.get(0).estado, "desistiu de uma perna");
+        igual(0, f.combinadas.get(0).bonus, "cancelada sem bonus");
     }
 
     static void persistencia() throws Exception {
