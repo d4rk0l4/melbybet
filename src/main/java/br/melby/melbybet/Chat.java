@@ -6,8 +6,6 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 
 import java.util.HashMap;
 import java.util.function.Consumer;
@@ -105,7 +103,7 @@ public final class Chat {
                 ouviram++;
                 if (Pattern.compile("(?i)@" + Pattern.quote(o.getGameProfile().name()) + "\\b").matcher(conteudo.getString()).find()) {
                     o.sendSystemMessage(Component.literal(p.getGameProfile().name() + " mencionou você").withStyle(ChatFormatting.YELLOW), true);
-                    o.playNotifySound(SoundEvents.NOTE_BLOCK_PLING.value(), SoundSource.PLAYERS, 1.0f, 1.5f);
+                    Jogo.server.getCommands().performPrefixedCommand(Jogo.server.createCommandSourceStack().withSuppressedOutput(), "playsound minecraft:block.note_block.pling player " + o.getGameProfile().name() + " ~ ~ ~ 1 1.5");
                 }
             }
         }
