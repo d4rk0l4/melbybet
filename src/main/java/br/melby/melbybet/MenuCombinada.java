@@ -78,7 +78,7 @@ public final class MenuCombinada {
                 r.valor = VALORES[(idx + 1) % VALORES.length];
                 abrir(p);
             }).build());
-        GuiElementBuilder ok = btn(k >= 2 ? Items.EMERALD : Items.GRAY_DYE, k >= 2 ? "Confirmar combinada" : "Escolha pelo menos 2 bolões",
+        GuiElementBuilder ok = btn(k >= 2 ? Items.EMERALD : Items.BARRIER, k >= 2 ? "Confirmar combinada" : "Escolha pelo menos 2 bolões",
             k >= 2 ? ChatFormatting.GREEN : ChatFormatting.GRAY);
         if (k >= 2) {
             ok.addLoreLine(t(k + " bolões x " + r.valor + " = " + total + " diamantes", ChatFormatting.WHITE));
