@@ -86,6 +86,7 @@ public final class Comandos {
             return 1;
         }));
         extras(d);
+        Coords.registrar(d);
         chatEMais(d);
 
         LiteralArgumentBuilder<CommandSourceStack> adm = literal("melbybet")

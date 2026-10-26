@@ -118,6 +118,10 @@ public final class Chat {
         falar(p, Extras.decorar(p, Component.literal(texto)), true);
     }
 
+    public static void globalComponente(ServerPlayer p, Component conteudo) {
+        falar(p, conteudo, true);
+    }
+
     public static void local(ServerPlayer p, String texto) {
         falar(p, Extras.decorar(p, Component.literal(texto)), false);
     }

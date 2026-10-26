@@ -130,6 +130,14 @@ public class Casa {
     /** nick (minúsculo) -> última vez visto. */
     public Map<String, Visto> vistos = new LinkedHashMap<>();
 
+    public static class Local {
+        public String dim = "overworld";
+        public int x, y, z;
+    }
+
+    /** Locais salvos por jogador (uuid -> nome -> local). Só anotações: não teleporta. */
+    public Map<String, Map<String, Local>> locais = new LinkedHashMap<>();
+
     // ---------- mensagens privadas ----------
 
     public void registrarTell(String de, String para, String texto, long agora) {

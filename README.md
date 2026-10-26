@@ -74,6 +74,11 @@ Os comandos com `/melbybet ...` continuam funcionando.
 
 Mencionar `@nick` no chat toca um som e mostra um aviso na tela de quem foi citado.
 
+## Coordenadas
+
+- `/coords`: mostra onde você está, com botões clicáveis **[Copiar]** (copia `x y z`) e **[Enviar]** (manda no chat para todos, já com [Copiar]).
+- `/coords salvar <nome>`, `/coords lista` (cada local com Copiar, Enviar e Apagar) e `/coords apagar <nome>`. Até 30 locais por jogador. É só anotação, não teleporta.
+
 ## Chat
 
 - Por padrão o chat é **local**: só quem está perto (100 blocos, na mesma dimensão) lê. OP muda com `/melbybet raio <blocos>` (`0` = sem limite).
