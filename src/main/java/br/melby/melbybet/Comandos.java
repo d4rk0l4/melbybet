@@ -375,10 +375,6 @@ public final class Comandos {
                 Chat.privado(p, alvo, StringArgumentType.getString(c, "msg"));
                 return 1;
             })));
-        d.register(literal("spy").requires(adminOuMod("spy")).executes(c -> {
-            boolean on = Chat.alternarEspiao(c.getSource().getPlayerOrException());
-            return ok(c, on ? "Spy ligado: você vê as mensagens privadas dos outros." : "Spy desligado.");
-        }));
         d.register(literal("tells").requires(adminOuMod("tells"))
             .then(argument("nick", word()).suggests(Comandos::nomes).executes(c -> {
                 String nick = StringArgumentType.getString(c, "nick");

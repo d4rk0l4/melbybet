@@ -84,7 +84,7 @@ public final class MenuMelby {
         g.setSlot(13, btn(Items.BOOK, "Ajuda", ChatFormatting.YELLOW, "Livro de boas-vindas")
             .setCallback((i, ty, a, gg) -> Tutorial.ajuda(p)).build());
         if (Comandos.staff(p)) {
-            g.setSlot(15, btn(Items.SHIELD, "Moderação", ChatFormatting.RED, "Jogadores, inventários e spy")
+            g.setSlot(15, btn(Items.SHIELD, "Moderação", ChatFormatting.RED, "Jogadores, inventários e congelar")
                 .setCallback((i, ty, a, gg) -> jogadores(p)).build());
         }
         if (Comandos.admin(p)) {
@@ -168,11 +168,6 @@ public final class MenuMelby {
         }
         g.setSlot(49, btn(Items.NAME_TAG, "Outro jogador (offline)", ChatFormatting.YELLOW, "Digite o nick no chat")
             .setCallback((i, ty, a, gg) -> Chat.perguntar(p, "Digite o nick do jogador.", txt -> jogador(p, txt.trim()))).build());
-        g.setSlot(51, btn(Items.ENDER_EYE, Chat.espiando(p) ? "Spy: ligado" : "Spy: desligado", ChatFormatting.DARK_GRAY, "Ver mensagens privadas dos outros")
-            .setCallback((i, ty, a, gg) -> {
-                Chat.alternarEspiao(p);
-                jogadores(p);
-            }).build());
         voltar(g, 6, () -> principal(p));
         g.open();
     }

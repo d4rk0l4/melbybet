@@ -29,7 +29,6 @@ public final class Chat {
 
     private static final Map<UUID, Modo> MODOS = new HashMap<>();
     private static final Map<UUID, String> ULTIMO = new HashMap<>();
-    private static final Set<UUID> ESPIOES = new HashSet<>();
 
     public static void registrar() {
         ServerMessageEvents.ALLOW_CHAT_MESSAGE.register((mensagem, remetente, params) -> {
@@ -141,10 +140,6 @@ public final class Chat {
         return modo(p).tipo == Tipo.GLOBAL;
     }
 
-    public static boolean espiando(ServerPlayer p) {
-        return ESPIOES.contains(p.getUUID());
-    }
-
     public static void travarLocal(ServerPlayer p) {
         modo(p).tipo = Tipo.LOCAL;
     }
@@ -169,22 +164,10 @@ public final class Chat {
 
         Jogo.casa.registrarTell(nd, np, texto, System.currentTimeMillis());
         Melbybet.LOGGER.info("[Tell] {} -> {}: {}", nd, np, texto);
-        Component espiao = Component.literal("[Spy] " + nd + " -> " + np + ": " + texto).withStyle(ChatFormatting.DARK_GRAY);
-        for (ServerPlayer o : Jogo.server.getPlayerList().getPlayers()) {
-            if (o != de && o != para && ESPIOES.contains(o.getUUID())) o.sendSystemMessage(espiao);
-        }
     }
 
     public static String ultimoDe(ServerPlayer p) {
         return ULTIMO.get(p.getUUID());
-    }
-
-    // ---------- espiar ----------
-
-    public static boolean alternarEspiao(ServerPlayer p) {
-        if (ESPIOES.remove(p.getUUID())) return false;
-        ESPIOES.add(p.getUUID());
-        return true;
     }
 
     public static List<Casa.Tell> historico(String nick) {

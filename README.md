@@ -67,7 +67,7 @@ No chat, qualquer jogador pode escrever:
 `/melby` abre o menu central, separado por categorias. Tudo que pede texto (título, cor, motivo de ban, número) é digitado no chat, mas **não vai para o chat geral**: só vale como resposta do menu. Escrever `cancelar` desiste.
 
 - **Para todos:** Apostas, Ranking de stats, Meu perfil (cor do nick, chat local ou global, AFK) e Ajuda.
-- **Moderação** (admin e moderador): lista de jogadores online ou por nick (inclusive offline) com ver inventário, ver ender chest, congelar, mensagens privadas e visto por último; spy.
+- **Moderação** (admin e moderador): lista de jogadores online ou por nick (inclusive offline) com ver inventário, ver ender chest, congelar, mensagens privadas e visto por último.
 - **Administração** (só OP): Bolões (criar com escolha do tipo, abrir, fechar, prazo, declarar vencedor, cancelar), mensagens de entrar e sair, configurações (alcance do chat, AFK, parte da casa, limites, webhook do Discord) e, dentro de cada jogador, título, cor, moderador, kick, ban (com motivo e confirmação) e desbanir.
 
 Os comandos com `/melbybet ...` continuam funcionando.
@@ -98,7 +98,7 @@ Ao morrer, só quem morreu recebe a mensagem "Você morreu em x y z (dimensão)"
 - `/g <mensagem>` manda uma vez no **global**. `/g` sozinho trava o chat no global; `/g` de novo ou `/l` volta ao local. `/l <mensagem>` manda uma vez no local.
 - `/tell <nick>` (ou `/msg`, `/w`) sozinho trava o chat naquela conversa privada; `/tell <nick> <mensagem>` manda uma só. `/r` responde ao último. `/g` ou `/l` sai da conversa travada.
 - `/cor <#cor1> [#cor2]` ou `/cor fogo` (oceano, neon, floresta, rosa, ouro, gelo, por-do-sol) muda a cor do nick no chat, em degradê. `/cor off` tira. OP: `/melbybet cor <nick> ...`.
-- Admin e moderador: `/spy` mostra as mensagens privadas dos outros em tempo real e `/tells <nick>` mostra as últimas 15 (ficam guardadas as últimas 300).
+- Admin e moderador: `/tells <nick>` mostra as últimas 15 (ficam guardadas as últimas 300).
 - Frases de entrar e sair: `/melbybet msg entrar add {nick} chegou!`, `... remover <n>`, `... lista` (o mesmo com `sair`). Uma é sorteada a cada vez.
 
 O degradê do nick aparece só no chat; no tab e acima da cabeça o Minecraft não permite.
