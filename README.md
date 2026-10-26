@@ -62,6 +62,19 @@ No chat, qualquer jogador pode escrever:
 - `@ec`: o mesmo para o ender chest.
 - `@item`: mostra o item que está na mão, com balão de encantamentos e descrição.
 
+## Chat
+
+- Por padrão o chat é **local**: só quem está perto (100 blocos, na mesma dimensão) lê. OP muda com `/melbybet raio <blocos>` (`0` = sem limite).
+- `/g <mensagem>` manda uma vez no **global**. `/g` sozinho trava o chat no global; `/g` de novo ou `/l` volta ao local. `/l <mensagem>` manda uma vez no local.
+- `/tell <nick>` (ou `/msg`, `/w`) sozinho trava o chat naquela conversa privada; `/tell <nick> <mensagem>` manda uma só. `/r` responde ao último. `/g` ou `/l` sai da conversa travada.
+- `/cor <#cor1> [#cor2]` ou `/cor fogo` (oceano, neon, floresta, rosa, ouro, gelo, por-do-sol) muda a cor do nick no chat, em degradê. `/cor off` tira. OP: `/melbybet cor <nick> ...`.
+- Admin e moderador: `/spy` mostra as mensagens privadas dos outros em tempo real e `/tells <nick>` mostra as últimas 15 (ficam guardadas as últimas 300).
+- Frases de entrar e sair: `/melbybet msg entrar add {nick} chegou!`, `... remover <n>`, `... lista` (o mesmo com `sair`). Uma é sorteada a cada vez.
+
+O degradê do nick aparece só no chat; no tab e acima da cabeça o Minecraft não permite.
+
+`/inv` e `/ec` funcionam também com jogador offline (precisa já ter entrado com o mod instalado).
+
 ## Títulos e mensagens
 
 Quem lidera ou perde nas apostas ganha um título automático em degradê antes do nick (tab, cabeça e chat): Rei da Banca, Pé-Frio Oficial, Doador da Casa, Profeta. Um título dado por OP vale mais que o automático.

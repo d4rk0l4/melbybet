@@ -63,6 +63,30 @@ public final class Prefixos {
         return null;
     }
 
+    private static MutableComponent montar(boolean afk, Object[] titulo) {
+        MutableComponent prefixo = Component.empty();
+        if (afk) prefixo.append(Component.literal("[AFK] ").withStyle(ChatFormatting.GRAY));
+        if (titulo != null) {
+            prefixo.append(Component.literal("[").withStyle(ChatFormatting.DARK_GRAY));
+            prefixo.append(degrade((String) titulo[0], (Integer) titulo[1], (Integer) titulo[2]));
+            prefixo.append(Component.literal("] ").withStyle(ChatFormatting.DARK_GRAY));
+        }
+        return prefixo;
+    }
+
+    /** [AFK] e título do jogador, para usar no chat. Vazio se não tiver nenhum. */
+    public static Component prefixoDe(ServerPlayer p) {
+        return montar(Extras.estaAfk(p.getUUID()), tituloDe(p, Jogo.casa.rankingApostadores()));
+    }
+
+    /** O nick com a cor que o jogador escolheu (degradê), ou branco. */
+    public static Component nomeColorido(ServerPlayer p) {
+        String nome = p.getGameProfile().name();
+        Casa.CorNick c = Jogo.casa.config.cores.get(nome.toLowerCase());
+        if (c == null) return Component.literal(nome).withStyle(ChatFormatting.WHITE);
+        return degrade(nome, c.cor1, c.cor2);
+    }
+
     public static void atualizarTodos() {
         List<Casa.Jogador> ranking = Jogo.casa.rankingApostadores();
         Set<UUID> online = new java.util.HashSet<>();
@@ -103,13 +127,7 @@ public final class Prefixos {
             ASSINATURA.put(p.getUUID(), assinatura);
             return;
         }
-        MutableComponent prefixo = Component.empty();
-        if (afk) prefixo.append(Component.literal("[AFK] ").withStyle(ChatFormatting.GRAY));
-        if (titulo != null) {
-            prefixo.append(Component.literal("[").withStyle(ChatFormatting.DARK_GRAY));
-            prefixo.append(degrade((String) titulo[0], (Integer) titulo[1], (Integer) titulo[2]));
-            prefixo.append(Component.literal("] ").withStyle(ChatFormatting.DARK_GRAY));
-        }
+        MutableComponent prefixo = montar(afk, titulo);
         PlayerTeam t = sb.getPlayerTeam(nomeDoTime(p.getUUID()));
         if (t == null) t = sb.addPlayerTeam(nomeDoTime(p.getUUID()));
         t.setPlayerPrefix(prefixo);

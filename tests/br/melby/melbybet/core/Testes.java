@@ -35,6 +35,7 @@ public class Testes {
     public static void main(String[] args) throws Exception {
         formato();
         degrade();
+        tells();
         apostas();
         pagamento();
         semGanhador();
@@ -75,6 +76,20 @@ public class Testes {
         igual("5 min", Fmt.duracao(5 * 60_000), "minutos");
         igual("3h 12min", Fmt.duracao((3 * 60 + 12) * 60_000L), "horas");
         igual("2d 4h", Fmt.duracao((2 * 24 + 4) * 3_600_000L), "dias");
+    }
+
+    static void tells() {
+        Casa c = casa();
+        for (int i = 0; i < 305; i++) c.registrarTell(i % 2 == 0 ? "Davi" : "Kaue", i % 2 == 0 ? "Kaue" : "Edu", "m" + i, i);
+        igual(300, c.logTells.size(), "guarda só 300");
+        igual("m5", c.logTells.get(0).texto, "descarta as mais antigas");
+        var l = c.tellsDe("edu", 3);
+        igual(3, l.size(), "limite");
+        igual("m299", l.get(0).texto, "mais antiga das 3");
+        igual("m303", l.get(2).texto, "mais nova por último");
+        igual(0, c.tellsDe("ninguem", 5).size(), "sem mensagens");
+        igual(true, Gradiente.preset("FOGO") != null, "preset sem diferenciar maiúscula");
+        igual(null, Gradiente.preset("xyz"), "preset inexistente");
     }
 
     static void apostas() {

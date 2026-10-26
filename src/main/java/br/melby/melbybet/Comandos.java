@@ -2,6 +2,7 @@ package br.melby.melbybet;
 
 import br.melby.melbybet.core.Bolao;
 import br.melby.melbybet.core.Casa;
+import br.melby.melbybet.core.Gradiente;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
@@ -12,6 +13,9 @@ import net.fabricmc.fabric.api.permission.v1.PermissionPredicates;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.commands.arguments.MessageArgument;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.permissions.PermissionLevel;
@@ -75,6 +79,7 @@ public final class Comandos {
         }));
 
         extras(d);
+        chatEMais(d);
 
         LiteralArgumentBuilder<CommandSourceStack> adm = literal("melbybet")
             .requires(PermissionPredicates.require(ADMIN, PermissionLevel.ADMINS));
@@ -159,6 +164,17 @@ public final class Comandos {
                 Prefixos.esquecer();
                 return ok(c, "Título de " + nick + ": " + ti.texto);
             }))));
+        listaMsgs(adm, "entrar", true);
+        listaMsgs(adm, "sair", false);
+        adm.then(literal("cor").then(argument("nick", word()).then(argument("cor1", word())
+            .executes(c -> corDeOutro(c, null))
+            .then(argument("cor2", word()).executes(c -> corDeOutro(c, StringArgumentType.getString(c, "cor2")))))));
+        adm.then(literal("raio").then(argument("blocos", integer(0, 10000)).executes(c -> {
+            int r = IntegerArgumentType.getInteger(c, "blocos");
+            Jogo.casa.config.chatLocalRaio = r;
+            Jogo.salvar();
+            return ok(c, r == 0 ? "Chat local sem limite de distância." : "Chat local alcança " + r + " blocos.");
+        })));
         adm.then(literal("lista").executes(Comandos::lista));
         adm.then(literal("cofre").executes(c -> {
             Casa casa = Jogo.casa;
@@ -199,18 +215,10 @@ public final class Comandos {
     private static void extras(CommandDispatcher<CommandSourceStack> d) {
         d.register(literal("inv")
             .requires(adminOuMod("inv"))
-            .then(argument("alvo", EntityArgument.player()).executes(c -> {
-                ServerPlayer quem = c.getSource().getPlayerOrException();
-                Vista.inventarioAoVivo(quem, EntityArgument.getPlayer(c, "alvo"));
-                return 1;
-            })));
+            .then(argument("alvo", word()).suggests(Comandos::nomes).executes(c -> ver(c, false))));
         d.register(literal("ec")
             .requires(adminOuMod("ec"))
-            .then(argument("alvo", EntityArgument.player()).executes(c -> {
-                ServerPlayer quem = c.getSource().getPlayerOrException();
-                Vista.enderAoVivo(quem, EntityArgument.getPlayer(c, "alvo"));
-                return 1;
-            })));
+            .then(argument("alvo", word()).suggests(Comandos::nomes).executes(c -> ver(c, true))));
         d.register(literal("freeze")
             .requires(adminOuMod("freeze"))
             .then(argument("alvo", EntityArgument.player()).executes(c -> {
@@ -224,6 +232,195 @@ public final class Comandos {
             if (!Extras.verFoto(quem, IntegerArgumentType.getInteger(c, "id"))) return erro(c, "Essa foto de inventário expirou.");
             return 1;
         })));
+    }
+
+    private static java.util.concurrent.CompletableFuture<com.mojang.brigadier.suggestion.Suggestions> nomes(
+            CommandContext<CommandSourceStack> c, com.mojang.brigadier.suggestion.SuggestionsBuilder b) {
+        return SharedSuggestionProvider.suggest(Jogo.casa.conhecidos.values(), b);
+    }
+
+    private static String uuidDe(String nick) {
+        for (var e : Jogo.casa.conhecidos.entrySet()) if (e.getValue().equalsIgnoreCase(nick)) return e.getKey();
+        return null;
+    }
+
+    /** /inv e /ec: jogador online (foto na hora) ou offline (lê o arquivo dele). */
+    private static int ver(CommandContext<CommandSourceStack> c, boolean ender) throws CommandSyntaxException {
+        ServerPlayer quem = c.getSource().getPlayerOrException();
+        String nick = StringArgumentType.getString(c, "alvo");
+        ServerPlayer on = Jogo.server.getPlayerList().getPlayerByName(nick);
+        if (on != null) {
+            if (ender) Vista.enderAoVivo(quem, on);
+            else Vista.inventarioAoVivo(quem, on);
+            return 1;
+        }
+        String uuid = uuidDe(nick);
+        if (uuid == null) return erro(c, "Não conheço " + nick + " (ele precisa já ter entrado no servidor com o mod).");
+        List<ItemStack> itens = ender ? Offline.ender(uuid) : Offline.inventario(uuid);
+        if (itens == null) return erro(c, "Não achei o arquivo de " + nick + ".");
+        Vista.foto(quem, Jogo.casa.conhecidos.get(uuid), ender, itens);
+        ok(c, nick + " está offline: isto é o que estava com ele ao sair.");
+        return 1;
+    }
+
+    /** Aplica uma cor de nick. Devolve o motivo do erro, ou null se deu certo. */
+    private static String aplicarCor(String nick, String a, String b) {
+        int[] preset = Gradiente.preset(a);
+        int c1, c2;
+        if (preset != null) {
+            c1 = preset[0];
+            c2 = preset[1];
+        } else {
+            c1 = Gradiente.hex(a);
+            c2 = b == null ? c1 : Gradiente.hex(b);
+            if (c1 < 0 || c2 < 0) return "Use cores como #ff8a24, uma ou duas, ou um nome pronto: " + String.join(", ", Gradiente.NOMES_PRESETS);
+        }
+        Casa.CorNick cn = new Casa.CorNick();
+        cn.cor1 = c1;
+        cn.cor2 = c2;
+        Jogo.casa.config.cores.put(nick.toLowerCase(), cn);
+        Jogo.salvar();
+        return null;
+    }
+
+    private static void chatEMais(CommandDispatcher<CommandSourceStack> d) {
+        d.register(literal("g")
+            .executes(c -> {
+                ServerPlayer p = c.getSource().getPlayerOrException();
+                boolean on = Chat.alternarGlobal(p);
+                p.sendSystemMessage(Jogo.prefixo(on ? "Chat travado no global. Use /g de novo ou /l para voltar ao local." : "Você voltou ao chat local."));
+                return 1;
+            })
+            .then(argument("msg", greedyString()).executes(c -> {
+                Chat.global(c.getSource().getPlayerOrException(), StringArgumentType.getString(c, "msg"));
+                return 1;
+            })));
+        d.register(literal("l")
+            .executes(c -> {
+                ServerPlayer p = c.getSource().getPlayerOrException();
+                Chat.travarLocal(p);
+                p.sendSystemMessage(Jogo.prefixo("Você está no chat local."));
+                return 1;
+            })
+            .then(argument("msg", greedyString()).executes(c -> {
+                Chat.local(c.getSource().getPlayerOrException(), StringArgumentType.getString(c, "msg"));
+                return 1;
+            })));
+        // Mescla com o /msg do jogo (/tell e /w apontam para ele): sem texto trava a conversa, com texto envia.
+        d.register(literal("msg").then(argument("targets", EntityArgument.players())
+            .executes(c -> {
+                ServerPlayer p = c.getSource().getPlayerOrException();
+                var alvos = EntityArgument.getPlayers(c, "targets");
+                ServerPlayer alvo = alvos.stream().filter(x -> x != p).findFirst().orElse(null);
+                if (alvo == null) return erro(c, "Escolha outro jogador.");
+                Chat.travarPrivado(p, alvo);
+                p.sendSystemMessage(Jogo.prefixo("Chat travado em conversa com " + alvo.getGameProfile().name() + ". Use /g ou /l para sair."));
+                return 1;
+            })
+            .then(argument("message", MessageArgument.message()).executes(c -> {
+                ServerPlayer p = c.getSource().getPlayerOrException();
+                String texto = MessageArgument.getMessage(c, "message").getString();
+                int n = 0;
+                for (ServerPlayer alvo : EntityArgument.getPlayers(c, "targets")) {
+                    if (alvo == p) continue;
+                    Chat.privado(p, alvo, texto);
+                    n++;
+                }
+                return n > 0 ? 1 : erro(c, "Escolha outro jogador.");
+            }))));
+        d.register(literal("r")
+            .executes(c -> {
+                ServerPlayer p = c.getSource().getPlayerOrException();
+                ServerPlayer alvo = alvoDoR(p);
+                if (alvo == null) return erro(c, "Ninguém para responder (ou saiu do jogo).");
+                Chat.travarPrivado(p, alvo);
+                p.sendSystemMessage(Jogo.prefixo("Chat travado em conversa com " + alvo.getGameProfile().name() + ". Use /g ou /l para sair."));
+                return 1;
+            })
+            .then(argument("msg", greedyString()).executes(c -> {
+                ServerPlayer p = c.getSource().getPlayerOrException();
+                ServerPlayer alvo = alvoDoR(p);
+                if (alvo == null) return erro(c, "Ninguém para responder (ou saiu do jogo).");
+                Chat.privado(p, alvo, StringArgumentType.getString(c, "msg"));
+                return 1;
+            })));
+        d.register(literal("spy").requires(adminOuMod("spy")).executes(c -> {
+            boolean on = Chat.alternarEspiao(c.getSource().getPlayerOrException());
+            return ok(c, on ? "Spy ligado: você vê as mensagens privadas dos outros." : "Spy desligado.");
+        }));
+        d.register(literal("tells").requires(adminOuMod("tells"))
+            .then(argument("nick", word()).suggests(Comandos::nomes).executes(c -> {
+                String nick = StringArgumentType.getString(c, "nick");
+                List<Casa.Tell> l = Chat.historico(nick);
+                if (l.isEmpty()) return ok(c, "Nenhuma mensagem privada de " + nick + " guardada.");
+                var fmt = java.time.format.DateTimeFormatter.ofPattern("dd/MM HH:mm");
+                var zona = java.time.ZoneId.of("America/Sao_Paulo");
+                for (Casa.Tell t : l) {
+                    ok(c, java.time.ZonedDateTime.ofInstant(java.time.Instant.ofEpochMilli(t.ts), zona).format(fmt) + " " + t.de + " -> " + t.para + ": " + t.texto);
+                }
+                return l.size();
+            })));
+        d.register(literal("cor")
+            .executes(c -> ok(c, "Mude a cor do seu nick no chat: /cor <#cor1> [#cor2] ou um nome pronto (" + String.join(", ", Gradiente.NOMES_PRESETS) + "). /cor off tira."))
+            .then(literal("off").executes(c -> {
+                Jogo.casa.config.cores.remove(c.getSource().getPlayerOrException().getGameProfile().name().toLowerCase());
+                Jogo.salvar();
+                return ok(c, "Cor do nick removida.");
+            }))
+            .then(argument("cor1", word())
+                .suggests((c, b) -> SharedSuggestionProvider.suggest(Gradiente.NOMES_PRESETS, b))
+                .executes(c -> corDoJogador(c, null))
+                .then(argument("cor2", word()).executes(c -> corDoJogador(c, StringArgumentType.getString(c, "cor2"))))));
+    }
+
+    private static int corDeOutro(CommandContext<CommandSourceStack> c, String cor2) {
+        String nick = StringArgumentType.getString(c, "nick");
+        String a = StringArgumentType.getString(c, "cor1");
+        if (a.equalsIgnoreCase("off")) {
+            Jogo.casa.config.cores.remove(nick.toLowerCase());
+            Jogo.salvar();
+            return ok(c, "Cor de " + nick + " removida.");
+        }
+        String erro = aplicarCor(nick, a, cor2);
+        return erro == null ? ok(c, "Cor de " + nick + " atualizada.") : erro(c, erro);
+    }
+
+    private static ServerPlayer alvoDoR(ServerPlayer p) {
+        String nome = Chat.ultimoDe(p);
+        return nome == null ? null : Jogo.server.getPlayerList().getPlayerByName(nome);
+    }
+
+    private static int corDoJogador(CommandContext<CommandSourceStack> c, String cor2) throws CommandSyntaxException {
+        ServerPlayer p = c.getSource().getPlayerOrException();
+        String erro = aplicarCor(p.getGameProfile().name(), StringArgumentType.getString(c, "cor1"), cor2);
+        if (erro != null) return erro(c, erro);
+        p.sendSystemMessage(Component.literal("Seu nick agora fica assim no chat: ").append(Prefixos.nomeColorido(p)));
+        return 1;
+    }
+
+    private static void listaMsgs(LiteralArgumentBuilder<CommandSourceStack> pai, String nome, boolean entrar) {
+        java.util.function.Supplier<List<String>> lista = () -> entrar ? Jogo.casa.config.msgEntrar : Jogo.casa.config.msgSair;
+        pai.then(literal(nome)
+            .then(literal("add").then(argument("texto", greedyString()).executes(c -> {
+                String t = StringArgumentType.getString(c, "texto").trim();
+                if (!t.contains("{nick}")) return erro(c, "Use {nick} onde vai o nome. Ex.: {nick} chegou!");
+                lista.get().add(t);
+                Jogo.salvar();
+                return ok(c, "Adicionada (" + lista.get().size() + " no total).");
+            })))
+            .then(literal("remover").then(argument("n", integer(1)).executes(c -> {
+                int n = IntegerArgumentType.getInteger(c, "n");
+                if (n > lista.get().size()) return erro(c, "Só existem " + lista.get().size() + ".");
+                lista.get().remove(n - 1);
+                Jogo.salvar();
+                return ok(c, "Removida.");
+            })))
+            .then(literal("lista").executes(c -> {
+                List<String> l = lista.get();
+                if (l.isEmpty()) return ok(c, "Nenhuma frase: vale a mensagem padrão do jogo.");
+                for (int i = 0; i < l.size(); i++) ok(c, (i + 1) + ". " + l.get(i));
+                return l.size();
+            })));
     }
 
     // ---------- admin ----------

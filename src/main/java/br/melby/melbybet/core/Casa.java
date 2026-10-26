@@ -22,6 +22,10 @@ public class Casa {
         public int cashoutTaxaPct = 10;
         /** Os nicks da Gangue; viram as opções dos bolões de jogador. */
         public List<String> roster = new ArrayList<>(List.of("d4rk_4g10t4", "vitorcs201012", "saya_neku", "has_edu", "patricksmirnoff", "davigamer58GB"));
+        /** Cor do nick no chat: nick (minúsculo) -> degradê. */
+        public Map<String, CorNick> cores = new LinkedHashMap<>();
+        /** Distância do chat local, em blocos (0 = sem limite). */
+        public int chatLocalRaio = 100;
         /** Títulos dados por OP: nick (minúsculo) -> título. */
         public Map<String, Titulo> titulos = new LinkedHashMap<>();
         public List<String> msgEntrar = new ArrayList<>(List.of(
@@ -53,6 +57,20 @@ public class Casa {
         public String texto = "";
         public int cor1 = 0xFFAA00;
         public int cor2 = 0xFFE066;
+    }
+
+    /** Cor (degradê) do nick no chat, escolhida pelo jogador. */
+    public static class CorNick {
+        public int cor1 = 0xFFFFFF;
+        public int cor2 = 0xFFFFFF;
+    }
+
+    /** Uma mensagem privada, guardada para os admins conferirem. */
+    public static class Tell {
+        public long ts;
+        public String de = "";
+        public String para = "";
+        public String texto = "";
     }
 
     /** Quando cada jogador entrou e saiu pela última vez. */
@@ -107,8 +125,32 @@ public class Casa {
     public Map<String, String> conhecidos = new LinkedHashMap<>();
     /** uuids de quem já recebeu o livro de boas-vindas. */
     public List<String> tutorial = new ArrayList<>();
+    /** Últimas mensagens privadas (até 300). */
+    public List<Tell> logTells = new ArrayList<>();
     /** nick (minúsculo) -> última vez visto. */
     public Map<String, Visto> vistos = new LinkedHashMap<>();
+
+    // ---------- mensagens privadas ----------
+
+    public void registrarTell(String de, String para, String texto, long agora) {
+        Tell t = new Tell();
+        t.ts = agora;
+        t.de = de;
+        t.para = para;
+        t.texto = texto;
+        logTells.add(t);
+        while (logTells.size() > 300) logTells.remove(0);
+    }
+
+    /** As últimas mensagens em que o jogador falou ou recebeu, da mais antiga para a mais nova. */
+    public List<Tell> tellsDe(String nick, int max) {
+        List<Tell> r = new ArrayList<>();
+        for (int i = logTells.size() - 1; i >= 0 && r.size() < max; i--) {
+            Tell t = logTells.get(i);
+            if (t.de.equalsIgnoreCase(nick) || t.para.equalsIgnoreCase(nick)) r.add(0, t);
+        }
+        return r;
+    }
 
     // ---------- consultas ----------
 
