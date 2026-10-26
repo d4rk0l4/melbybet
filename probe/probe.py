@@ -1,14 +1,20 @@
 import subprocess, glob, os, re, sys
-jars = [j for j in glob.glob(os.path.expanduser('~/.gradle/**/*.jar'), recursive=True) if 'minecraft' in os.path.basename(j).lower() and 'sources' not in j and os.path.getsize(j) > 5_000_000]
-print(jars)
-jar = max(jars, key=os.path.getsize)
+allj = glob.glob(os.path.expanduser('~/.gradle/**/*.jar'), recursive=True)
+jar = None
+for j in sorted(allj, key=os.path.getsize, reverse=True):
+    if os.path.getsize(j) < 3_000_000: break
+    names = subprocess.run(['unzip','-Z1',j],capture_output=True,text=True).stdout
+    if 'net/minecraft/world/item/ItemStack.class' in names:
+        jar = j
+        break
+print('JAR', jar)
 def jp(cls, flags=('-p',), grep=None, limit=9000):
     r = subprocess.run(['javap', *flags, '-cp', jar, cls], capture_output=True, text=True)
     out = r.stdout + r.stderr
     if grep:
         out = '\n'.join(l for l in out.splitlines() if re.search(grep, l))
     return out[:limit]
-acc = []
+acc = ['JAR ' + str(jar)]
 def note(title, body):
     acc.append('##### ' + title + '\n' + body)
 note('MsgCommand', jp('net.minecraft.server.commands.MsgCommand', ('-v', '-p'), r'= String|Method .*(literal|argument)|register'))
