@@ -73,6 +73,11 @@ public final class Coords {
         return Jogo.casa.locais.computeIfAbsent(p.getUUID().toString(), k -> new LinkedHashMap<>());
     }
 
+    /** Ao morrer: mostra só para quem morreu onde foi, com [Copiar] e [Enviar]. */
+    public static void avisarMorte(ServerPlayer p) {
+        p.sendSystemMessage(linha("Você morreu em", aqui(p), null));
+    }
+
     public static void registrar(CommandDispatcher<CommandSourceStack> d) {
         d.register(literal("coords")
             .executes(c -> {

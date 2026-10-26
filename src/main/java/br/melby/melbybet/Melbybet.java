@@ -70,6 +70,7 @@ public class Melbybet implements ModInitializer {
             if (mudou) Jogo.salvar();
         }
         if (tick % 20 == 0) Extras.aCadaSegundo();
+        if (tick % 20 == 0) Capsulas.aCadaSegundo();
         if (tick % 600 == 0) Jogo.conferirConquistas();
         if (tick % 6000 == 0) Jogo.salvar();
     }
@@ -77,6 +78,7 @@ public class Melbybet implements ModInitializer {
     /** Morte no Void, Wither e Dragão resolvem bolões na hora. */
     private static void aoMorrer(LivingEntity entidade, DamageSource fonte) {
         if (Jogo.server == null) return;
+        if (entidade instanceof ServerPlayer morto) Coords.avisarMorte(morto);
         if (entidade instanceof ServerPlayer p && fonte.typeHolder().is(DamageTypes.FELL_OUT_OF_WORLD)) {
             resolverPorJogador(Bolao.Gatilho.VOID, p.getGameProfile().name());
             return;

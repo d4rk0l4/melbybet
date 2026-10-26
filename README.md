@@ -78,7 +78,16 @@ Mencionar `@nick` no chat toca um som e mostra um aviso na tela de quem foi cita
 
 No `/bet`, botão **Combinada**: escolha de 2 a 4 bolões abertos, uma opção em cada, e o valor por bolão (1, 5, 10, 32 ou 64). Cada perna é uma aposta normal. Se **todas** acertarem, a casa paga um bônus do cofre: 25% do total apostado por perna além da primeira, com teto de 64 diamantes e limitado ao que tem no cofre (`combinadaBonusPct` e `combinadaBonusMax` em `casa.json`). Se algum bolão for cancelado ou o jogador desistir de uma perna, a combinada é cancelada, sem bônus.
 
+## Lembretes e avisos (`/capsula`)
+
+- `/capsula "Arrumar baús" 2 horas`: lembrete só seu, que toca um som e aparece no chat e na tela na hora marcada. O tempo vai no fim e aceita `s`, `min`, `h` e `dias` (`30min`, `2h`, `1 dia`). De 10 segundos a 365 dias.
+- `/capsula lista`: seus lembretes com [Cancelar] clicável. `/capsula cancelar <id>` também apaga.
+- `/capsula todos "Reunião no spawn" 30 min`: só OP; manda um aviso com sino para todos os jogadores online na hora marcada.
+- Fica salvo se o servidor reiniciar. Lembrete pessoal de quem estava offline espera a pessoa entrar. Até 20 pendentes por jogador.
+
 ## Coordenadas
+
+Ao morrer, só quem morreu recebe a mensagem "Você morreu em x y z (dimensão)" com [Copiar] e [Enviar].
 
 - `/coords`: mostra onde você está, com botões clicáveis **[Copiar]** (copia `x y z`) e **[Enviar]** (manda no chat para todos, já com [Copiar]).
 - `/coords salvar <nome>`, `/coords lista` (cada local com Copiar, Enviar e Apagar) e `/coords apagar <nome>`. Até 30 locais por jogador. É só anotação, não teleporta.

@@ -142,6 +142,43 @@ public class Casa {
     /** Locais salvos por jogador (uuid -> nome -> local). Só anotações: não teleporta. */
     public Map<String, Map<String, Local>> locais = new LinkedHashMap<>();
 
+    // ---------- cápsulas do tempo e lembretes ----------
+
+    /** Lembrete pessoal (uuid do dono) ou aviso para todos (uuid "*"), entregue quando chegar a hora. */
+    public static class Capsula {
+        public int id;
+        public String uuid = "";
+        public String nome = "";
+        public String texto = "";
+        public long quando;
+        public long criadoEm;
+    }
+
+    public int proximaCapsula = 1;
+    public List<Capsula> capsulas = new ArrayList<>();
+
+    public Capsula novaCapsula(String uuid, String nome, String texto, long quando, long agora) {
+        Capsula c = new Capsula();
+        c.id = proximaCapsula++;
+        c.uuid = uuid;
+        c.nome = nome;
+        c.texto = texto;
+        c.quando = quando;
+        c.criadoEm = agora;
+        capsulas.add(c);
+        return c;
+    }
+
+    public int capsulasPendentesDe(String uuid) {
+        int n = 0;
+        for (Capsula c : capsulas) if (c.uuid.equals(uuid)) n++;
+        return n;
+    }
+
+    public boolean removerCapsula(int id) {
+        return capsulas.removeIf(c -> c.id == id);
+    }
+
     // ---------- combinadas ----------
 
     public static class Perna {

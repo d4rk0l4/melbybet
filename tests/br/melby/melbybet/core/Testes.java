@@ -43,6 +43,7 @@ public class Testes {
         stats();
         conquistas();
         combinadas();
+        lembretes();
         persistencia();
         System.out.println(falhas == 0 ? "tudo certo (" + total + " checagens)" : falhas + " falhas de " + total);
         if (falhas > 0) System.exit(1);
@@ -293,6 +294,27 @@ public class Testes {
         f.resolver(z2, "Edu", 2);
         igual("CANCELADA", f.combinadas.get(0).estado, "desistiu de uma perna");
         igual(0, f.combinadas.get(0).bonus, "cancelada sem bonus");
+    }
+
+    static void lembretes() {
+        Lembrete.Resultado r = Lembrete.ler("\"Arrumar baús\" 2 horas");
+        igual("Arrumar baús", r.texto, "texto entre aspas");
+        igual(7_200_000L, r.ms, "2 horas");
+        r = Lembrete.ler("Arrumar baús 30min");
+        igual("Arrumar baús", r.texto, "texto sem aspas");
+        igual(1_800_000L, r.ms, "30min junto");
+        igual(3_600_000L, Lembrete.ler("tomar agua 1 hora").ms, "1 hora");
+        igual(172_800_000L, Lembrete.ler("buscar 2d").ms, "2d");
+        igual(90_000L, Lembrete.ler("x 90 segundos").ms, "90 segundos");
+        igual(null, Lembrete.ler("Arrumar baús"), "sem tempo");
+        igual(null, Lembrete.ler("2 horas"), "sem texto");
+        igual(null, Lembrete.ler("oi 0 horas"), "zero");
+        igual(null, Lembrete.ler("oi 5 bananas"), "unidade invalida");
+        Casa c = casa();
+        Casa.Capsula x = c.novaCapsula("u1", "Samuel", "Arrumar baús", 1000, 0);
+        igual(1, c.capsulasPendentesDe("u1"), "pendentes");
+        igual(true, c.removerCapsula(x.id), "remover");
+        igual(0, c.capsulasPendentesDe("u1"), "removida");
     }
 
     static void persistencia() throws Exception {
