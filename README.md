@@ -41,14 +41,13 @@ Regras: não pode apostar em si mesmo, limite por bolão (64), all-in pede confi
 
 **Importante:** confira os nicks com `/melbybet roster` antes de criar bolões. O `/top` mostra quem já entrou no servidor depois de instalar o mod; os números vêm das stats do próprio Minecraft (acumuladas desde que o mundo existe).
 
-## Inventário, ender chest, freeze e chat
+## Inventário, ender chest e chat
 
 | Comando | Quem | O que faz |
 |---|---|---|
 | `/inv <jogador>` | OP | mostra o inventário (mochila, hotbar, armadura, mão secundária) de um jogador online, só para olhar |
 | `/ec <jogador>` | OP | mostra o ender chest de um jogador online, só para olhar (não abre o seu, para não virar ender chest portátil) |
-| `/freeze <jogador>` | OP | liga/desliga: o jogador não anda nem pula |
-| `/melbybet mod add <nick>` | OP | cria um moderador: usa `/inv`, `/ec` e `/freeze` sem ser OP (`remove` e `lista` também existem) |
+| `/melbybet mod add <nick>` | OP | cria um moderador: usa `/inv`, `/ec`, `/tells` e `/seen` sem ser OP (`remove` e `lista` também existem) |
 | `/melbybet webhook <url>` | OP | liga os avisos no Discord (`off` desliga, `teste` manda uma mensagem de teste) |
 | `/afk` | todos | liga/desliga o AFK: aparece **[AFK]** no tab, acima da cabeça e no chat. Sai sozinho quando a pessoa se mexe, e entra sozinho depois de 5 min parado |
 | `/melbybet afk <minutos>` | OP | tempo parado até ficar AFK sozinho (`0` desliga o automático) |
@@ -67,7 +66,7 @@ No chat, qualquer jogador pode escrever:
 `/melby` abre o menu central, separado por categorias. Tudo que pede texto (título, cor, motivo de ban, número) é digitado no chat, mas **não vai para o chat geral**: só vale como resposta do menu. Escrever `cancelar` desiste.
 
 - **Para todos:** Apostas, Ranking de stats, Meu perfil (cor do nick, chat local ou global, AFK) e Ajuda.
-- **Moderação** (admin e moderador): lista de jogadores online ou por nick (inclusive offline) com ver inventário, ver ender chest, congelar, mensagens privadas e visto por último.
+- **Moderação** (admin e moderador): lista de jogadores online ou por nick (inclusive offline) com ver inventário, ver ender chest, mensagens privadas e visto por último.
 - **Administração** (só OP): Bolões (criar com escolha do tipo, abrir, fechar, prazo, declarar vencedor, cancelar), mensagens de entrar e sair, configurações (alcance do chat, AFK, parte da casa, limites, webhook do Discord) e, dentro de cada jogador, título, cor, moderador, kick, ban (com motivo e confirmação) e desbanir.
 
 Os comandos com `/melbybet ...` continuam funcionando.

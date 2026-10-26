@@ -36,7 +36,7 @@ public class Casa {
             "Tchau, {nick}! A casa sempre ganha", "{nick} sumiu no Void do mundo real"));
         /** Minutos parado até ficar AFK sozinho (0 = só pelo /afk). */
         public int afkAutoMinutos = 5;
-        /** Nicks dos moderadores: usam /inv, /ec e /freeze sem precisar ser OP. */
+        /** Nicks dos moderadores: usam /inv, /ec, /tells e /seen sem precisar ser OP. */
         public List<String> moderadores = new ArrayList<>();
         /** Opcional: URL de webhook do Discord para resultados. Vazio = desligado. */
         public String discordWebhook = "";

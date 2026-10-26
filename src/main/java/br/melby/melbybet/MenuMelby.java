@@ -84,7 +84,7 @@ public final class MenuMelby {
         g.setSlot(13, btn(Items.BOOK, "Ajuda", ChatFormatting.YELLOW, "Livro de boas-vindas")
             .setCallback((i, ty, a, gg) -> Tutorial.ajuda(p)).build());
         if (Comandos.staff(p)) {
-            g.setSlot(15, btn(Items.SHIELD, "Moderação", ChatFormatting.RED, "Jogadores, inventários e congelar")
+            g.setSlot(15, btn(Items.SHIELD, "Moderação", ChatFormatting.RED, "Jogadores e inventários")
                 .setCallback((i, ty, a, gg) -> jogadores(p)).build());
         }
         if (Comandos.admin(p)) {
@@ -186,13 +186,6 @@ public final class MenuMelby {
                 String e = Comandos.verPorNome(p, nick, true);
                 if (e != null) info(p, e);
             }).build());
-        if (on != null) {
-            g.setSlot(12, btn(Items.ICE, "Congelar / descongelar", ChatFormatting.AQUA, "Trava o jogador no lugar")
-                .setCallback((i, ty, a, gg) -> {
-                    boolean c = Extras.alternarFreeze(on);
-                    info(p, nick + (c ? " congelado." : " descongelado."));
-                }).build());
-        }
         g.setSlot(13, btn(Items.PAPER, "Mensagens privadas", ChatFormatting.LIGHT_PURPLE, "As últimas 15, no chat")
             .setCallback((i, ty, a, gg) -> {
                 var l = Chat.historico(nick);

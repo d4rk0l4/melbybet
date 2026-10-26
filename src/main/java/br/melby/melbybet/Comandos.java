@@ -131,7 +131,7 @@ public final class Comandos {
                 if (l.stream().anyMatch(n -> n.equalsIgnoreCase(nick))) return erro(c, nick + " já é moderador.");
                 l.add(nick);
                 Jogo.salvar();
-                return ok(c, nick + " agora é moderador (/inv, /ec e /freeze).");
+                return ok(c, nick + " agora é moderador (/inv, /ec, /tells e /seen).");
             })))
             .then(literal("remove").then(argument("nick", word()).executes(c -> {
                 String nick = StringArgumentType.getString(c, "nick");
@@ -214,13 +214,6 @@ public final class Comandos {
         d.register(literal("ec")
             .requires(adminOuMod("ec"))
             .then(argument("alvo", word()).suggests(Comandos::nomes).executes(c -> ver(c, true))));
-        d.register(literal("freeze")
-            .requires(adminOuMod("freeze"))
-            .then(argument("alvo", EntityArgument.player()).executes(c -> {
-                ServerPlayer alvo = EntityArgument.getPlayer(c, "alvo");
-                boolean congelou = Extras.alternarFreeze(alvo);
-                return ok(c, alvo.getGameProfile().name() + (congelou ? " congelado." : " descongelado."));
-            })));
         // aberto a todos: é o clique em [Inventário de fulano] no chat
         d.register(literal("mbver").then(argument("id", integer(1)).executes(c -> {
             ServerPlayer quem = c.getSource().getPlayerOrException();
