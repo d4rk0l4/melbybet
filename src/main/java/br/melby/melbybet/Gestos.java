@@ -4,7 +4,6 @@ import com.mojang.brigadier.CommandDispatcher;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -50,8 +49,7 @@ public final class Gestos {
                 return 0;
             }
             GIRANDO.remove(p.getUUID());
-            ArmorStand banco = new ArmorStand(EntityType.ARMOR_STAND, p.level());
-            banco.setPos(p.getX(), p.getY() - ALTURA_BANCO, p.getZ());
+            ArmorStand banco = new ArmorStand(p.level(), p.getX(), p.getY() - ALTURA_BANCO, p.getZ());
             banco.setYRot(p.getYRot());
             banco.setInvisible(true);
             banco.setNoGravity(true);
