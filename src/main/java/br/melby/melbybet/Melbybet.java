@@ -48,6 +48,7 @@ public class Melbybet implements ModInitializer {
     private void aCadaTick() {
         if (Jogo.server == null) return;
         tick++;
+        Gestos.aCadaTick();
         if (tick % 20 == 0) {
             long agora = System.currentTimeMillis();
             boolean mudou = false;

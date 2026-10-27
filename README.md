@@ -84,6 +84,12 @@ No `/bet`, botão **Combinada**: escolha de 2 a 4 bolões abertos, uma opção e
 - `/capsula todos "Reunião no spawn" 30 min`: só OP; manda um aviso com sino para todos os jogadores online na hora marcada.
 - Fica salvo se o servidor reiniciar. Lembrete pessoal de quem estava offline espera a pessoa entrar. Até 20 pendentes por jogador.
 
+## Gestos
+
+- `/spin`: o boneco gira como na correnteza do tridente (a câmera não gira) até você andar. `/spin` de novo também para.
+- `/sit`: senta no chão (num banco invisível); shift levanta.
+- `/wave`: acena.
+
 ## Coordenadas
 
 Ao morrer, só quem morreu recebe a mensagem "Você morreu em x y z (dimensão)" com [Copiar] e [Enviar].
