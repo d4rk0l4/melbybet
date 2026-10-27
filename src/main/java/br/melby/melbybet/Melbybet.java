@@ -6,6 +6,7 @@ import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.message.v1.ServerMessageDecoratorEvent;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
@@ -40,6 +41,11 @@ public class Melbybet implements ModInitializer {
         Chat.registrar();
         ServerTickEvents.END_SERVER_TICK.register(server -> aCadaTick());
         ServerLivingEntityEvents.AFTER_DEATH.register(Melbybet::aoMorrer);
+        ServerLivingEntityEvents.ALLOW_DEATH.register((entidade, fonte, dano) -> {
+            if (entidade instanceof ServerPlayer p) Duelos.antesDeMorrer(p, fonte);
+            return true;
+        });
+        ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> Duelos.aoSair(handler.getPlayer()));
         ServerLivingEntityEvents.AFTER_DAMAGE.register((entidade, fonte, base, tomado, bloqueado) -> Duelos.aoDano(entidade, fonte));
         ServerMessageDecoratorEvent.EVENT.register(ServerMessageDecoratorEvent.CONTENT_PHASE, Extras::decorar);
 

@@ -27,7 +27,7 @@ public final class Vista {
         return -1;
     }
 
-    private static GuiElementBuilder enfeite() {
+    static GuiElementBuilder enfeite() {
         return new GuiElementBuilder(Items.STAINED_GLASS_PANE.gray()).setName(Component.empty()).hideTooltip();
     }
 

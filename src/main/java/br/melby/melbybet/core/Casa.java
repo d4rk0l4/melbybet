@@ -149,8 +149,10 @@ public class Casa {
         public int id;
         public String uuidA = "", nomeA = "", uuidB = "", nomeB = "";
         public int valor;
-        /** PROPOSTO, ATIVO, RESOLVIDO ou CANCELADO. */
+        /** PROPOSTO, ESCOLHENDO (só duelo de itens), ATIVO, RESOLVIDO ou CANCELADO. */
         public String estado = "PROPOSTO";
+        /** true = a aposta são itens escolhidos do inventário do outro, e não diamantes. */
+        public boolean itens;
         public long criadoEm;
         public long inicio;
         public String vencedor = "";
@@ -162,6 +164,15 @@ public class Casa {
     public Duelo achaDuelo(int id) {
         for (Duelo d : duelos) if (d.id == id) return d;
         return null;
+    }
+
+    /** Já está em um duelo ativo ou escolhendo itens para um. */
+    public boolean ocupado(String uuid) {
+        for (Duelo d : duelos) {
+            boolean vivo = d.estado.equals("ATIVO") || d.estado.equals("ESCOLHENDO");
+            if (vivo && (d.uuidA.equals(uuid) || d.uuidB.equals(uuid))) return true;
+        }
+        return false;
     }
 
     /** O duelo ativo em que o jogador está, ou null. */
@@ -182,8 +193,8 @@ public class Casa {
         if (uuidA.equals(uuidB)) return "Você não pode duelar contra você mesmo.";
         if (valor < config.apostaMin) return "Valor mínimo: " + config.apostaMin + " diamante(s).";
         if (valor > config.apostaMax) return "Valor máximo: " + config.apostaMax + " diamantes.";
-        if (duelAtivoDe(uuidA) != null) return "Você já está em um duelo.";
-        if (duelAtivoDe(uuidB) != null) return "O outro jogador já está em um duelo.";
+        if (ocupado(uuidA)) return "Você já está em um duelo.";
+        if (ocupado(uuidB)) return "O outro jogador já está em um duelo.";
         if (temDueloPendente(uuidA)) return "Você já tem um convite pendente.";
         return null;
     }
@@ -229,9 +240,22 @@ public class Casa {
         return premio;
     }
 
+    /** Duelo de itens: quem perde entrega os itens apostados (feito pela camada do jogo). Sem taxa da casa. */
+    public void resolverDueloItens(Duelo d, String uuidVencedor, long agora) {
+        d.estado = "RESOLVIDO";
+        d.vencedor = uuidVencedor;
+        boolean aGanhou = uuidVencedor.equals(d.uuidA);
+        Jogador ja = jogador(d.uuidA, d.nomeA);
+        Jogador jb = jogador(d.uuidB, d.nomeB);
+        ja.apostas++;
+        jb.apostas++;
+        (aGanhou ? ja : jb).acertos++;
+        historico.add(new Registro(agora, "Duelo de itens: " + (aGanhou ? d.nomeA : d.nomeB) + " venceu " + (aGanhou ? d.nomeB : d.nomeA)));
+    }
+
     /** Cancela e devolve o valor aos dois (só se já estava ativo, pois só aí os diamantes foram tirados). */
     public void cancelarDuelo(Duelo d, long agora) {
-        if (d.estado.equals("ATIVO")) {
+        if (d.estado.equals("ATIVO") && !d.itens) {
             credito(d.uuidA, d.valor);
             credito(d.uuidB, d.valor);
             historico.add(new Registro(agora, "Duelo " + d.nomeA + " x " + d.nomeB + " cancelado, valores devolvidos"));

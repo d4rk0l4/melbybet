@@ -340,6 +340,20 @@ public class Testes {
         igual(27, c.creditoDe("u2"), "devolvido ao b");
         igual(8, c.creditoDe("u1"), "devolvido ao a");
         igual(null, c.duelAtivoDe("u1"), "sem duelo ativo");
+        Casa f = casa();
+        Casa.Duelo di = f.proporDuelo("u1", "Davi", "u2", "Kaue", 0, 0);
+        di.itens = true;
+        di.estado = "ESCOLHENDO";
+        igual("Você já está em um duelo.", f.validarDuelo("u1", "u3", 5), "escolhendo conta como ocupado");
+        f.ativarDuelo(di, 1);
+        f.resolverDueloItens(di, "u1", 2);
+        igual(0L, f.cofre, "duelo de itens sem taxa");
+        igual(1, f.jogadores.get("u1").acertos, "acerto do duelo de itens");
+        Casa.Duelo dj = f.proporDuelo("u1", "Davi", "u2", "Kaue", 0, 0);
+        dj.itens = true;
+        f.ativarDuelo(dj, 1);
+        f.cancelarDuelo(dj, 2);
+        igual(0, f.creditoDe("u1"), "duelo de itens cancelado nao devolve diamantes");
     }
 
     static void persistencia() throws Exception {

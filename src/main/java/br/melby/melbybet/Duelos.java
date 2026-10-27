@@ -12,28 +12,58 @@ import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.item.ItemStack;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import static com.mojang.brigadier.arguments.IntegerArgumentType.integer;
 import static net.minecraft.commands.Commands.argument;
 import static net.minecraft.commands.Commands.literal;
 
-/** /duelo: dois jogadores apostam o mesmo valor; quem matar o outro primeiro leva o pote. */
+/**
+ * /duelo: dois jogadores apostam e quem matar o outro primeiro leva tudo.
+ * Em diamantes (/duelo nick 10) ou em itens (/duelo nick inv): cada um escolhe itens do inventário do outro,
+ * e só no fim, depois do duelo, os itens do perdedor passam para o vencedor.
+ */
 public final class Duelos {
     private Duelos() {}
 
     private static final long CONVITE_MS = 60_000L;
+    private static final long ESCOLHA_MS = 5 * 60_000L;
     private static final long DURACAO_MS = 15 * 60_000L;
     private static final long COMBATE_MS = 30_000L;
+    static final int MAX_ITENS = 5;
 
     /** uuid -> instante do último golpe entre os dois duelistas. Só na memória. */
-    private static final java.util.Map<UUID, Long> COMBATE = new java.util.HashMap<>();
+    private static final Map<UUID, Long> COMBATE = new HashMap<>();
+
+    /** Dados de um duelo de itens (só na memória: se o servidor reiniciar, o duelo é cancelado e nada se perde). */
+    static final class Itens {
+        final Casa.Duelo d;
+        List<ItemStack> daA = new ArrayList<>(); // o que A aposta (escolhido por B)
+        List<ItemStack> daB = new ArrayList<>(); // o que B aposta (escolhido por A)
+        boolean confA, confB, okA, okB;
+
+        Itens(Casa.Duelo d) {
+            this.d = d;
+        }
+    }
+
+    private static final Map<Integer, Itens> ITENS = new HashMap<>();
 
     private static long combateRestante(UUID id) {
         Long t = COMBATE.get(id);
         if (t == null) return 0;
         return Math.max(0, COMBATE_MS - (System.currentTimeMillis() - t));
+    }
+
+    private static boolean emCombate(String uuid) {
+        return combateRestante(UUID.fromString(uuid)) > 0;
     }
 
     /** Chamado quando alguém leva dano: se foi do outro duelista, os dois entram em combate por 30 s. */
@@ -52,15 +82,19 @@ public final class Duelos {
             .withHoverEvent(new HoverEvent.ShowText(Component.literal(dica))));
     }
 
+    private static ServerPlayer on(String uuid) {
+        return Jogo.server.getPlayerList().getPlayer(UUID.fromString(uuid));
+    }
+
     public static void registrar(CommandDispatcher<CommandSourceStack> d) {
         d.register(literal("duelo")
             .executes(c -> {
                 ServerPlayer p = c.getSource().getPlayerOrException();
                 Casa.Duelo x = Jogo.casa.duelAtivoDe(p.getUUID().toString());
                 if (x == null) {
-                    p.sendSystemMessage(Jogo.prefixo("Use /duelo <nick> <valor>. Quem matar o outro primeiro leva o pote; /duelo desistir entrega a vitória."));
+                    p.sendSystemMessage(Jogo.prefixo("Use /duelo <nick> <valor> (diamantes) ou /duelo <nick> inv (itens do inventário do outro). Quem matar o outro primeiro leva tudo; /duelo desistir entrega a vitória."));
                 } else {
-                    p.sendSystemMessage(Jogo.prefixo("Duelo: " + x.nomeA + " x " + x.nomeB + ", " + x.valor + " diamante(s) cada. Vence quem matar o outro."));
+                    p.sendSystemMessage(Jogo.prefixo("Duelo: " + x.nomeA + " x " + x.nomeB + (x.itens ? " (itens)" : ", " + x.valor + " diamante(s) cada") + ". Vence quem matar o outro."));
                 }
                 return 1;
             })
@@ -69,15 +103,11 @@ public final class Duelos {
                 return 1;
             })))
             .then(literal("recusar").then(argument("id", integer(1)).executes(c -> {
-                ServerPlayer p = c.getSource().getPlayerOrException();
-                Casa.Duelo x = Jogo.casa.achaDuelo(IntegerArgumentType.getInteger(c, "id"));
-                if (x != null && x.estado.equals("PROPOSTO") && x.uuidB.equals(p.getUUID().toString())) {
-                    x.estado = "CANCELADO";
-                    Jogo.salvar();
-                    p.sendSystemMessage(Jogo.prefixo("Você recusou o duelo."));
-                    ServerPlayer a = Jogo.server.getPlayerList().getPlayer(UUID.fromString(x.uuidA));
-                    if (a != null) a.sendSystemMessage(Jogo.prefixo(p.getGameProfile().name() + " recusou o duelo."));
-                }
+                recusar(c.getSource().getPlayerOrException(), IntegerArgumentType.getInteger(c, "id"));
+                return 1;
+            })))
+            .then(literal("termos").then(argument("id", integer(1)).executes(c -> {
+                aceitarTermos(c.getSource().getPlayerOrException(), IntegerArgumentType.getInteger(c, "id"));
                 return 1;
             })))
             .then(literal("desistir").executes(c -> {
@@ -96,12 +126,18 @@ public final class Duelos {
                 vencer(x, outro, p.getGameProfile().name() + " desistiu.");
                 return 1;
             }))
-            .then(argument("alvo", EntityArgument.player()).then(argument("valor", integer(1)).executes(c -> {
-                ServerPlayer a = c.getSource().getPlayerOrException();
-                propor(a, EntityArgument.getPlayer(c, "alvo"), IntegerArgumentType.getInteger(c, "valor"));
-                return 1;
-            }))));
+            .then(argument("alvo", EntityArgument.player())
+                .then(literal("inv").executes(c -> {
+                    proporItens(c.getSource().getPlayerOrException(), EntityArgument.getPlayer(c, "alvo"));
+                    return 1;
+                }))
+                .then(argument("valor", integer(1)).executes(c -> {
+                    propor(c.getSource().getPlayerOrException(), EntityArgument.getPlayer(c, "alvo"), IntegerArgumentType.getInteger(c, "valor"));
+                    return 1;
+                }))));
     }
+
+    // ---------- duelo em diamantes ----------
 
     private static void propor(ServerPlayer a, ServerPlayer b, int valor) {
         String erro = Jogo.casa.validarDuelo(a.getUUID().toString(), b.getUUID().toString(), valor);
@@ -123,16 +159,186 @@ public final class Duelos {
             .append(botao("Recusar", ChatFormatting.RED, "/duelo recusar " + x.id, "Não duelar")));
     }
 
+    // ---------- duelo em itens ----------
+
+    private static void proporItens(ServerPlayer a, ServerPlayer b) {
+        String erro = Jogo.casa.validarDuelo(a.getUUID().toString(), b.getUUID().toString(), 1);
+        if (erro != null) {
+            a.sendSystemMessage(Jogo.prefixo(erro));
+            return;
+        }
+        Casa.Duelo x = Jogo.casa.proporDuelo(a.getUUID().toString(), a.getGameProfile().name(), b.getUUID().toString(), b.getGameProfile().name(),
+            0, System.currentTimeMillis());
+        x.itens = true;
+        Itens st = new Itens(x);
+        ITENS.put(x.id, st);
+        Jogo.salvar();
+        b.sendSystemMessage(Jogo.prefixo(a.getGameProfile().name() + " te chamou para um duelo de ITENS: cada um escolhe até " + MAX_ITENS
+            + " itens do inventário do outro, e só o perdedor entrega os seus, depois do duelo. ")
+            .copy().append(botao("Aceitar", ChatFormatting.GREEN, "/duelo aceitar " + x.id, "Abre o inventário do " + a.getGameProfile().name()))
+            .append(Component.literal(" "))
+            .append(botao("Recusar", ChatFormatting.RED, "/duelo recusar " + x.id, "Não duelar")));
+        a.sendSystemMessage(Jogo.prefixo("Escolha os itens de " + b.getGameProfile().name() + " que você quer ganhar. O convite vale 60 segundos."));
+        MenuDuelo.abrir(a, b, st, true);
+    }
+
+    /** O jogador terminou de escolher (confirmou) os itens do outro. */
+    static void confirmarEscolha(ServerPlayer quem, Itens st, boolean souA, List<ItemStack> escolhidos) {
+        if (souA) {
+            st.daB = escolhidos;
+            st.confA = true;
+        } else {
+            st.daA = escolhidos;
+            st.confB = true;
+        }
+        quem.sendSystemMessage(Jogo.prefixo("Escolha confirmada. Aguardando o outro jogador."));
+        if (st.confA && st.confB && st.d.estado.equals("ESCOLHENDO")) mostrarTermos(st);
+    }
+
+    static Itens itensDe(int id) {
+        return ITENS.get(id);
+    }
+
+    private static Component lista(List<ItemStack> l) {
+        MutableComponent m = Component.empty();
+        for (int i = 0; i < l.size(); i++) {
+            if (i > 0) m.append(Component.literal(", "));
+            m.append(Component.literal(l.get(i).getCount() + "x ")).append(l.get(i).getDisplayName());
+        }
+        return m;
+    }
+
+    private static void mostrarTermos(Itens st) {
+        Casa.Duelo x = st.d;
+        ServerPlayer a = on(x.uuidA);
+        ServerPlayer b = on(x.uuidB);
+        if (a == null || b == null) {
+            cancelar(x, "alguém saiu antes de fechar os termos.");
+            return;
+        }
+        enviarTermos(a, x, "Você aposta", st.daA, "Você leva, se vencer", st.daB);
+        enviarTermos(b, x, "Você aposta", st.daB, "Você leva, se vencer", st.daA);
+    }
+
+    private static void enviarTermos(ServerPlayer p, Casa.Duelo x, String t1, List<ItemStack> l1, String t2, List<ItemStack> l2) {
+        p.sendSystemMessage(Component.literal("== Termos do duelo ==").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD));
+        p.sendSystemMessage(Component.literal(t1 + ": ").withStyle(ChatFormatting.RED).append(lista(l1)));
+        p.sendSystemMessage(Component.literal(t2 + ": ").withStyle(ChatFormatting.GREEN).append(lista(l2)));
+        p.sendSystemMessage(Component.literal("Nada sai agora: só o perdedor entrega, depois do duelo. ").withStyle(ChatFormatting.GRAY)
+            .append(botao("Aceitar termos", ChatFormatting.GREEN, "/duelo termos " + x.id, "Começa o duelo quando os dois aceitarem"))
+            .append(Component.literal(" "))
+            .append(botao("Recusar", ChatFormatting.RED, "/duelo recusar " + x.id, "Cancela o duelo")));
+    }
+
+    private static void aceitarTermos(ServerPlayer p, int id) {
+        Itens st = ITENS.get(id);
+        if (st == null || !st.d.estado.equals("ESCOLHENDO") || !(st.confA && st.confB)) {
+            p.sendSystemMessage(Jogo.prefixo("Não há termos para aceitar."));
+            return;
+        }
+        String u = p.getUUID().toString();
+        if (u.equals(st.d.uuidA)) st.okA = true;
+        else if (u.equals(st.d.uuidB)) st.okB = true;
+        else return;
+        p.sendSystemMessage(Jogo.prefixo("Termos aceitos. Aguardando o outro."));
+        if (!(st.okA && st.okB)) return;
+        ServerPlayer a = on(st.d.uuidA);
+        ServerPlayer b = on(st.d.uuidB);
+        if (a == null || b == null) {
+            cancelar(st.d, "alguém saiu.");
+            return;
+        }
+        if (faltando(a, st.daA)) {
+            cancelar(st.d, st.d.nomeA + " não tem mais todos os itens da aposta.");
+            return;
+        }
+        if (faltando(b, st.daB)) {
+            cancelar(st.d, st.d.nomeB + " não tem mais todos os itens da aposta.");
+            return;
+        }
+        Jogo.casa.ativarDuelo(st.d, System.currentTimeMillis());
+        Jogo.salvar();
+        Jogo.avisar("Duelo de itens valendo! " + st.d.nomeA + " x " + st.d.nomeB + ". Quem matar o outro primeiro leva os itens. Não guarde nem jogue fora os itens da aposta!");
+    }
+
+    // ---------- itens: conferir e transferir ----------
+
+    private static int contarIgual(Inventory inv, ItemStack modelo) {
+        int n = 0;
+        for (int i = 0; i < inv.getContainerSize(); i++) {
+            ItemStack s = inv.getItem(i);
+            if (!s.isEmpty() && ItemStack.isSameItemSameComponents(s, modelo)) n += s.getCount();
+        }
+        return n;
+    }
+
+    /** true se falta algum item da aposta no inventário do dono. */
+    private static boolean faltando(ServerPlayer p, List<ItemStack> apostados) {
+        for (ItemStack m : apostados) {
+            int precisa = 0;
+            for (ItemStack o : apostados) if (ItemStack.isSameItemSameComponents(o, m)) precisa += o.getCount();
+            if (contarIgual(p.getInventory(), m) < precisa) return true;
+        }
+        return false;
+    }
+
+    /** Tira do perdedor os itens apostados e dá ao vencedor. Devolve o que foi de fato transferido. */
+    private static List<ItemStack> transferir(ServerPlayer perdedor, ServerPlayer vencedor, List<ItemStack> apostados) {
+        List<ItemStack> passou = new ArrayList<>();
+        Inventory inv = perdedor.getInventory();
+        for (ItemStack m : apostados) {
+            int falta = m.getCount();
+            for (int i = 0; i < inv.getContainerSize() && falta > 0; i++) {
+                ItemStack s = inv.getItem(i);
+                if (s.isEmpty() || !ItemStack.isSameItemSameComponents(s, m)) continue;
+                int x = Math.min(falta, s.getCount());
+                ItemStack parte = s.copy();
+                parte.setCount(x);
+                s.shrink(x);
+                falta -= x;
+                passou.add(parte);
+            }
+        }
+        inv.setChanged();
+        perdedor.containerMenu.broadcastChanges();
+        if (vencedor != null) {
+            for (ItemStack it : passou) {
+                ItemStack resto = it.copy();
+                vencedor.getInventory().add(resto);
+                if (!resto.isEmpty()) vencedor.drop(resto, false);
+            }
+            vencedor.containerMenu.broadcastChanges();
+        }
+        return passou;
+    }
+
+    // ---------- aceitar, recusar, resolver ----------
+
     private static void aceitar(ServerPlayer b, int id) {
         Casa.Duelo x = Jogo.casa.achaDuelo(id);
         if (x == null || !x.estado.equals("PROPOSTO") || !x.uuidB.equals(b.getUUID().toString())) {
             b.sendSystemMessage(Jogo.prefixo("Esse convite não existe mais."));
             return;
         }
-        ServerPlayer a = Jogo.server.getPlayerList().getPlayer(UUID.fromString(x.uuidA));
+        ServerPlayer a = on(x.uuidA);
         if (a == null) {
             x.estado = "CANCELADO";
+            ITENS.remove(x.id);
             b.sendSystemMessage(Jogo.prefixo(x.nomeA + " não está mais online."));
+            return;
+        }
+        if (x.itens) {
+            Itens st = ITENS.get(x.id);
+            String erro = (Jogo.casa.ocupado(x.uuidA) || Jogo.casa.ocupado(x.uuidB)) ? "Alguém já está em outro duelo." : null;
+            if (st == null || erro != null) {
+                b.sendSystemMessage(Jogo.prefixo(erro != null ? erro : "Esse convite não existe mais."));
+                return;
+            }
+            x.estado = "ESCOLHENDO";
+            x.criadoEm = System.currentTimeMillis();
+            a.sendSystemMessage(Jogo.prefixo(x.nomeB + " aceitou. Ele está escolhendo os seus itens."));
+            b.sendSystemMessage(Jogo.prefixo("Escolha os itens de " + x.nomeA + " que você quer ganhar (até " + MAX_ITENS + ")."));
+            MenuDuelo.abrir(b, a, st, false);
             return;
         }
         String erro = Jogo.casa.validarDuelo(x.uuidA, x.uuidB, x.valor);
@@ -156,23 +362,78 @@ public final class Duelos {
         Jogo.avisar("Duelo valendo! " + x.nomeA + " x " + x.nomeB + ", " + x.valor + " diamante(s) cada. Quem matar o outro primeiro leva o pote.");
     }
 
+    private static void recusar(ServerPlayer p, int id) {
+        Casa.Duelo x = Jogo.casa.achaDuelo(id);
+        if (x == null) return;
+        String u = p.getUUID().toString();
+        boolean participante = x.uuidA.equals(u) || x.uuidB.equals(u);
+        boolean aberto = x.estado.equals("PROPOSTO") || (x.itens && x.estado.equals("ESCOLHENDO"));
+        if (!participante || !aberto) return;
+        if (x.estado.equals("PROPOSTO") && !x.itens && !x.uuidB.equals(u)) return;
+        x.estado = "CANCELADO";
+        ITENS.remove(x.id);
+        Jogo.salvar();
+        p.sendSystemMessage(Jogo.prefixo("Duelo cancelado."));
+        ServerPlayer outro = on(x.uuidA.equals(u) ? x.uuidB : x.uuidA);
+        if (outro != null) outro.sendSystemMessage(Jogo.prefixo(p.getGameProfile().name() + " cancelou o duelo."));
+    }
+
+    /** O jogador fechou a janela de escolha ou desistiu antes de começar. */
+    static void cancelarEscolha(ServerPlayer p, Itens st) {
+        recusar(p, st.d.id);
+    }
+
+    private static String descricao(List<ItemStack> l) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < l.size(); i++) {
+            if (i > 0) sb.append(", ");
+            sb.append(l.get(i).getCount()).append("x ").append(l.get(i).getHoverName().getString());
+        }
+        return sb.toString();
+    }
+
     private static void vencer(Casa.Duelo x, String uuidVencedor, String motivo) {
-        int premio = Jogo.casa.resolverDuelo(x, uuidVencedor, System.currentTimeMillis());
         String nome = uuidVencedor.equals(x.uuidA) ? x.nomeA : x.nomeB;
+        String perdedorNome = uuidVencedor.equals(x.uuidA) ? x.nomeB : x.nomeA;
+        if (x.itens) {
+            Itens st = ITENS.remove(x.id);
+            ServerPlayer venc = on(uuidVencedor);
+            String perdUuid = uuidVencedor.equals(x.uuidA) ? x.uuidB : x.uuidA;
+            ServerPlayer perd = on(perdUuid);
+            List<ItemStack> apostados = st == null ? new ArrayList<>() : (perdUuid.equals(x.uuidA) ? st.daA : st.daB);
+            List<ItemStack> passou = perd == null ? new ArrayList<>() : transferir(perd, venc, apostados);
+            Jogo.casa.resolverDueloItens(x, uuidVencedor, System.currentTimeMillis());
+            Jogo.avisar("Fim do duelo! " + motivo + " " + nome + " leva: " + (passou.isEmpty() ? "nada (os itens não estavam mais lá)" : descricao(passou)) + ".");
+            Jogo.webhook("⚔️ **Duelo de itens** — " + nome + " venceu " + perdedorNome + (passou.isEmpty() ? "" : " e levou " + descricao(passou)));
+            Jogo.salvar();
+            return;
+        }
+        int premio = Jogo.casa.resolverDuelo(x, uuidVencedor, System.currentTimeMillis());
         Jogo.avisar("Fim do duelo! " + motivo + " " + nome + " leva " + premio + " diamante(s).");
-        Jogo.webhook("⚔️ **Duelo** — " + nome + " venceu " + (uuidVencedor.equals(x.uuidA) ? x.nomeB : x.nomeA) + " e levou **" + premio + "** 💎");
+        Jogo.webhook("⚔️ **Duelo** — " + nome + " venceu " + perdedorNome + " e levou **" + premio + "** 💎");
         Jogo.entregarTodos();
         Jogo.salvar();
     }
 
     private static void cancelar(Casa.Duelo x, String motivo) {
+        ITENS.remove(x.id);
         Jogo.casa.cancelarDuelo(x, System.currentTimeMillis());
-        Jogo.avisar("Duelo " + x.nomeA + " x " + x.nomeB + " cancelado: " + motivo + " Os diamantes foram devolvidos.");
+        Jogo.avisar("Duelo " + x.nomeA + " x " + x.nomeB + " cancelado: " + motivo + (x.itens ? "" : " Os diamantes foram devolvidos."));
         Jogo.entregarTodos();
         Jogo.salvar();
     }
 
-    /** Chamado quando um jogador morre. */
+    /** Antes de a morte acontecer (os itens ainda estão no inventário): se foi o outro duelista, já resolve. */
+    public static void antesDeMorrer(ServerPlayer morto, DamageSource fonte) {
+        Casa.Duelo x = Jogo.casa.duelAtivoDe(morto.getUUID().toString());
+        if (x == null) return;
+        String outro = x.uuidA.equals(morto.getUUID().toString()) ? x.uuidB : x.uuidA;
+        if (fonte.getEntity() instanceof ServerPlayer matador && matador.getUUID().toString().equals(outro)) {
+            vencer(x, outro, morto.getGameProfile().name() + " caiu.");
+        }
+    }
+
+    /** Depois da morte: se ainda sobrou duelo ativo, foi por outro motivo. */
     public static void aoMorrer(ServerPlayer morto, DamageSource fonte) {
         Casa.Duelo x = Jogo.casa.duelAtivoDe(morto.getUUID().toString());
         if (x == null) return;
@@ -184,30 +445,54 @@ public final class Duelos {
         }
     }
 
-    /** Chamado a cada segundo: expira convites, cancela duelos longos e dá a vitória a quem ficou se o outro saiu. */
+    /** Ao sair do jogo (o inventário ainda existe): perde o duelo, e em duelo de itens já entrega os itens. */
+    public static void aoSair(ServerPlayer p) {
+        if (Jogo.server == null) return;
+        Casa.Duelo x = Jogo.casa.duelAtivoDe(p.getUUID().toString());
+        if (x == null) return;
+        String u = p.getUUID().toString();
+        String outro = x.uuidA.equals(u) ? x.uuidB : x.uuidA;
+        vencer(x, outro, p.getGameProfile().name() + " saiu do jogo" + (emCombate(u) ? " em combate." : "."));
+    }
+
+    /** Chamado a cada segundo. */
     public static void aCadaSegundo() {
         if (Jogo.server == null || Jogo.casa.duelos.isEmpty()) return;
         long agora = System.currentTimeMillis();
         boolean limpar = false;
-        for (Casa.Duelo x : new java.util.ArrayList<>(Jogo.casa.duelos)) {
+        for (Casa.Duelo x : new ArrayList<>(Jogo.casa.duelos)) {
             if (x.estado.equals("PROPOSTO")) {
                 if (agora - x.criadoEm > CONVITE_MS) {
                     x.estado = "CANCELADO";
+                    ITENS.remove(x.id);
+                    limpar = true;
+                }
+            } else if (x.estado.equals("ESCOLHENDO")) {
+                if (agora - x.criadoEm > ESCOLHA_MS || on(x.uuidA) == null || on(x.uuidB) == null) {
+                    x.estado = "CANCELADO";
+                    ITENS.remove(x.id);
                     limpar = true;
                 }
             } else if (x.estado.equals("ATIVO")) {
-                boolean aOn = Jogo.server.getPlayerList().getPlayer(UUID.fromString(x.uuidA)) != null;
-                boolean bOn = Jogo.server.getPlayerList().getPlayer(UUID.fromString(x.uuidB)) != null;
-                if (!aOn && !bOn) cancelar(x, "os dois saíram.");
-                else if (!aOn) vencer(x, x.uuidB, x.nomeA + " saiu do jogo" + (emCombate(x.uuidA) ? " em combate." : "."));
-                else if (!bOn) vencer(x, x.uuidA, x.nomeB + " saiu do jogo" + (emCombate(x.uuidB) ? " em combate." : "."));
+                ServerPlayer pa = on(x.uuidA);
+                ServerPlayer pb = on(x.uuidB);
+                if (pa == null && pb == null) cancelar(x, "os dois saíram.");
+                else if (pa == null) vencer(x, x.uuidB, x.nomeA + " saiu do jogo" + (emCombate(x.uuidA) ? " em combate." : "."));
+                else if (pb == null) vencer(x, x.uuidA, x.nomeB + " saiu do jogo" + (emCombate(x.uuidB) ? " em combate." : "."));
                 else if (agora - x.inicio > DURACAO_MS) cancelar(x, "passou de 15 minutos sem vencedor.");
                 else {
-                    for (String u : new String[] {x.uuidA, x.uuidB}) {
-                        long resta = combateRestante(UUID.fromString(u));
-                        if (resta > 0) {
-                            ServerPlayer jp = Jogo.server.getPlayerList().getPlayer(UUID.fromString(u));
-                            if (jp != null) jp.sendSystemMessage(Component.literal("Em combate: " + (resta / 1000 + 1) + "s").withStyle(ChatFormatting.RED), true);
+                    Itens st = x.itens ? ITENS.get(x.id) : null;
+                    if (x.itens && st == null) {
+                        cancelar(x, "os dados do duelo se perderam.");
+                    } else if (st != null && faltando(pa, st.daA)) {
+                        vencer(x, x.uuidB, x.nomeA + " tirou um item da aposta do inventário.");
+                    } else if (st != null && faltando(pb, st.daB)) {
+                        vencer(x, x.uuidA, x.nomeB + " tirou um item da aposta do inventário.");
+                    } else {
+                        for (String u : new String[] {x.uuidA, x.uuidB}) {
+                            long resta = combateRestante(UUID.fromString(u));
+                            ServerPlayer jp = on(u);
+                            if (resta > 0 && jp != null) jp.sendSystemMessage(Component.literal("Em combate: " + (resta / 1000 + 1) + "s").withStyle(ChatFormatting.RED), true);
                         }
                     }
                 }
@@ -219,12 +504,8 @@ public final class Duelos {
         }
     }
 
-    private static boolean emCombate(String uuid) {
-        return combateRestante(UUID.fromString(uuid)) > 0;
-    }
-
-    /** Ao ligar o servidor, convites pendentes (sem diamantes tirados) somem. */
+    /** Ao ligar o servidor: convites e duelos de itens que estavam no ar somem (nada foi tirado de ninguém). */
     public static void aoLigar() {
-        Jogo.casa.duelos.removeIf(x -> x.estado.equals("PROPOSTO"));
+        Jogo.casa.duelos.removeIf(x -> x.estado.equals("PROPOSTO") || x.estado.equals("ESCOLHENDO") || (x.itens && x.estado.equals("ATIVO")));
     }
 }
