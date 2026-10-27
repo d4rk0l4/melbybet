@@ -15,12 +15,15 @@ import java.util.List;
 public final class Vista {
     private Vista() {}
 
-    /** Posição na janela de 54 slots -> índice no inventário do jogador (-1 = enfeite). */
+    /**
+     * Posição na janela de 54 slots -> índice no inventário do jogador (-1 = enfeite).
+     * Layout parecido com o do inventário: armadura em cima, mochila no meio e hotbar embaixo.
+     */
     static int indiceDoInventario(int slotJanela) {
-        if (slotJanela < 27) return slotJanela + 9;      // mochila
-        if (slotJanela < 36) return slotJanela - 27;     // hotbar
-        if (slotJanela < 40) return 39 - (slotJanela - 36); // capacete, peitoral, calça, bota
-        if (slotJanela == 40) return 40;                 // mão secundária
+        if (slotJanela >= 0 && slotJanela <= 3) return 39 - slotJanela;   // capacete, peitoral, calça, bota
+        if (slotJanela == 5) return 40;                                    // mão secundária
+        if (slotJanela >= 18 && slotJanela <= 44) return slotJanela - 18 + 9; // mochila (3 linhas)
+        if (slotJanela >= 45 && slotJanela <= 53) return slotJanela - 45;     // hotbar
         return -1;
     }
 
