@@ -6,6 +6,7 @@ import com.mojang.brigadier.arguments.IntegerArgumentType;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
@@ -263,11 +264,22 @@ public final class Duelos {
 
     // ---------- itens: conferir e transferir ----------
 
+    /**
+     * Mesmo item para efeito da aposta: mesmo tipo, mesmos encantamentos e mesmo nome.
+     * A durabilidade (e o custo de reparo) é ignorada: a espada gasta no duelo, e o Remendo a repara.
+     */
+    static boolean mesmoItem(ItemStack a, ItemStack b) {
+        return a.is(b.getItem())
+            && java.util.Objects.equals(a.get(DataComponents.ENCHANTMENTS), b.get(DataComponents.ENCHANTMENTS))
+            && java.util.Objects.equals(a.get(DataComponents.STORED_ENCHANTMENTS), b.get(DataComponents.STORED_ENCHANTMENTS))
+            && java.util.Objects.equals(a.get(DataComponents.CUSTOM_NAME), b.get(DataComponents.CUSTOM_NAME));
+    }
+
     private static int contarIgual(Inventory inv, ItemStack modelo) {
         int n = 0;
         for (int i = 0; i < inv.getContainerSize(); i++) {
             ItemStack s = inv.getItem(i);
-            if (!s.isEmpty() && ItemStack.isSameItemSameComponents(s, modelo)) n += s.getCount();
+            if (!s.isEmpty() && mesmoItem(s, modelo)) n += s.getCount();
         }
         return n;
     }
@@ -276,7 +288,7 @@ public final class Duelos {
     private static boolean faltando(ServerPlayer p, List<ItemStack> apostados) {
         for (ItemStack m : apostados) {
             int precisa = 0;
-            for (ItemStack o : apostados) if (ItemStack.isSameItemSameComponents(o, m)) precisa += o.getCount();
+            for (ItemStack o : apostados) if (mesmoItem(o, m)) precisa += o.getCount();
             if (contarIgual(p.getInventory(), m) < precisa) return true;
         }
         return false;
@@ -290,7 +302,7 @@ public final class Duelos {
             int falta = m.getCount();
             for (int i = 0; i < inv.getContainerSize() && falta > 0; i++) {
                 ItemStack s = inv.getItem(i);
-                if (s.isEmpty() || !ItemStack.isSameItemSameComponents(s, m)) continue;
+                if (s.isEmpty() || !mesmoItem(s, m)) continue;
                 int x = Math.min(falta, s.getCount());
                 ItemStack parte = s.copy();
                 parte.setCount(x);
