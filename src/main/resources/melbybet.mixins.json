@@ -2,7 +2,9 @@
   "required": true,
   "package": "br.melby.melbybet.mixin",
   "compatibilityLevel": "JAVA_25",
-  "mixins": [],
+  "mixins": [
+    "PlayerPoseMixin"
+  ],
   "injectors": {
     "defaultRequire": 1
   }

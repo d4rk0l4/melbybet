@@ -89,6 +89,7 @@ No `/bet`, botão **Combinada**: escolha de 2 a 4 bolões abertos, uma opção e
 - `/spin`: o boneco gira como na correnteza do tridente (a câmera não gira) até você andar. `/spin` de novo também para.
 - `/sit`: senta no chão (num banco invisível); shift levanta.
 - `/wave`: acena.
+- `/crawl`: rasteja onde der, mesmo em espaço aberto, e todos veem você rastejando. `/crawl` de novo levanta.
 
 ## Coordenadas
 
