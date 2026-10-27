@@ -89,6 +89,7 @@ public final class Comandos {
         Coords.registrar(d);
         Capsulas.registrar(d);
         Gestos.registrar(d);
+        Duelos.registrar(d);
         chatEMais(d);
 
         LiteralArgumentBuilder<CommandSourceStack> adm = literal("melbybet")

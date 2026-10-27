@@ -48,6 +48,7 @@ public final class Jogo {
             casa = new Casa();
         }
         Prefixos.limparTudo();
+        Duelos.aoLigar();
         Presenca.aoLigar();
         salvar();
     }

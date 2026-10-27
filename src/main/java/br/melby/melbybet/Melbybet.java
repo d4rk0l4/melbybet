@@ -40,6 +40,7 @@ public class Melbybet implements ModInitializer {
         Chat.registrar();
         ServerTickEvents.END_SERVER_TICK.register(server -> aCadaTick());
         ServerLivingEntityEvents.AFTER_DEATH.register(Melbybet::aoMorrer);
+        ServerLivingEntityEvents.AFTER_DAMAGE.register((entidade, fonte, base, tomado, bloqueado) -> Duelos.aoDano(entidade, fonte));
         ServerMessageDecoratorEvent.EVENT.register(ServerMessageDecoratorEvent.CONTENT_PHASE, Extras::decorar);
 
         LOGGER.info("MelbyBet carregado. /bet e /top estão prontos.");
@@ -72,6 +73,7 @@ public class Melbybet implements ModInitializer {
         }
         if (tick % 20 == 0) Extras.aCadaSegundo();
         if (tick % 20 == 0) Capsulas.aCadaSegundo();
+        if (tick % 20 == 0) Duelos.aCadaSegundo();
         if (tick % 600 == 0) Jogo.conferirConquistas();
         if (tick % 6000 == 0) Jogo.salvar();
     }
@@ -79,7 +81,10 @@ public class Melbybet implements ModInitializer {
     /** Morte no Void, Wither e Dragão resolvem bolões na hora. */
     private static void aoMorrer(LivingEntity entidade, DamageSource fonte) {
         if (Jogo.server == null) return;
-        if (entidade instanceof ServerPlayer morto) Coords.avisarMorte(morto);
+        if (entidade instanceof ServerPlayer morto) {
+            Coords.avisarMorte(morto);
+            Duelos.aoMorrer(morto, fonte);
+        }
         if (entidade instanceof ServerPlayer p && fonte.typeHolder().is(DamageTypes.FELL_OUT_OF_WORLD)) {
             resolverPorJogador(Bolao.Gatilho.VOID, p.getGameProfile().name());
             return;

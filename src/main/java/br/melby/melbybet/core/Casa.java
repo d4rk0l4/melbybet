@@ -142,6 +142,103 @@ public class Casa {
     /** Locais salvos por jogador (uuid -> nome -> local). Só anotações: não teleporta. */
     public Map<String, Map<String, Local>> locais = new LinkedHashMap<>();
 
+    // ---------- duelos ----------
+
+    /** Duelo entre dois jogadores: cada um põe o mesmo valor e o vencedor leva o pote (menos a parte da casa). */
+    public static class Duelo {
+        public int id;
+        public String uuidA = "", nomeA = "", uuidB = "", nomeB = "";
+        public int valor;
+        /** PROPOSTO, ATIVO, RESOLVIDO ou CANCELADO. */
+        public String estado = "PROPOSTO";
+        public long criadoEm;
+        public long inicio;
+        public String vencedor = "";
+    }
+
+    public int proximoDuelo = 1;
+    public List<Duelo> duelos = new ArrayList<>();
+
+    public Duelo achaDuelo(int id) {
+        for (Duelo d : duelos) if (d.id == id) return d;
+        return null;
+    }
+
+    /** O duelo ativo em que o jogador está, ou null. */
+    public Duelo duelAtivoDe(String uuid) {
+        for (Duelo d : duelos) if (d.estado.equals("ATIVO") && (d.uuidA.equals(uuid) || d.uuidB.equals(uuid))) return d;
+        return null;
+    }
+
+    public boolean temDueloPendente(String uuid) {
+        for (Duelo d : duelos) {
+            if (d.estado.equals("PROPOSTO") && d.uuidA.equals(uuid)) return true;
+        }
+        return false;
+    }
+
+    /** Valida o convite. null = pode; senão o motivo. */
+    public String validarDuelo(String uuidA, String uuidB, int valor) {
+        if (uuidA.equals(uuidB)) return "Você não pode duelar contra você mesmo.";
+        if (valor < config.apostaMin) return "Valor mínimo: " + config.apostaMin + " diamante(s).";
+        if (valor > config.apostaMax) return "Valor máximo: " + config.apostaMax + " diamantes.";
+        if (duelAtivoDe(uuidA) != null) return "Você já está em um duelo.";
+        if (duelAtivoDe(uuidB) != null) return "O outro jogador já está em um duelo.";
+        if (temDueloPendente(uuidA)) return "Você já tem um convite pendente.";
+        return null;
+    }
+
+    public Duelo proporDuelo(String uuidA, String nomeA, String uuidB, String nomeB, int valor, long agora) {
+        Duelo d = new Duelo();
+        d.id = proximoDuelo++;
+        d.uuidA = uuidA;
+        d.nomeA = nomeA;
+        d.uuidB = uuidB;
+        d.nomeB = nomeB;
+        d.valor = valor;
+        d.criadoEm = agora;
+        duelos.add(d);
+        return d;
+    }
+
+    /** Marca como ativo. Chame só depois de tirar os diamantes dos dois. */
+    public void ativarDuelo(Duelo d, long agora) {
+        d.estado = "ATIVO";
+        d.inicio = agora;
+    }
+
+    /** Paga o vencedor. Devolve quanto ele recebeu. */
+    public int resolverDuelo(Duelo d, String uuidVencedor, long agora) {
+        d.estado = "RESOLVIDO";
+        d.vencedor = uuidVencedor;
+        int pote = d.valor * 2;
+        int rake = pote * config.rakePct / 100;
+        int premio = pote - rake;
+        cofre += rake;
+        credito(uuidVencedor, premio);
+        boolean aGanhou = uuidVencedor.equals(d.uuidA);
+        Jogador ja = jogador(d.uuidA, d.nomeA);
+        Jogador jb = jogador(d.uuidB, d.nomeB);
+        ja.apostas++;
+        jb.apostas++;
+        ja.gasto += d.valor;
+        jb.gasto += d.valor;
+        (aGanhou ? ja : jb).acertos++;
+        (aGanhou ? ja : jb).ganho += premio;
+        historico.add(new Registro(agora, "Duelo: " + (aGanhou ? d.nomeA : d.nomeB) + " venceu " + (aGanhou ? d.nomeB : d.nomeA) + ", levou " + premio + " diamantes"));
+        return premio;
+    }
+
+    /** Cancela e devolve o valor aos dois (só se já estava ativo, pois só aí os diamantes foram tirados). */
+    public void cancelarDuelo(Duelo d, long agora) {
+        if (d.estado.equals("ATIVO")) {
+            credito(d.uuidA, d.valor);
+            credito(d.uuidB, d.valor);
+            historico.add(new Registro(agora, "Duelo " + d.nomeA + " x " + d.nomeB + " cancelado, valores devolvidos"));
+        }
+        d.estado = "CANCELADO";
+    }
+
     // ---------- cápsulas do tempo e lembretes ----------
 
     /** Lembrete pessoal (uuid do dono) ou aviso para todos (uuid "*"), entregue quando chegar a hora. */

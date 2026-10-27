@@ -44,6 +44,7 @@ public class Testes {
         conquistas();
         combinadas();
         lembretes();
+        duelos();
         persistencia();
         System.out.println(falhas == 0 ? "tudo certo (" + total + " checagens)" : falhas + " falhas de " + total);
         if (falhas > 0) System.exit(1);
@@ -315,6 +316,30 @@ public class Testes {
         igual(1, c.capsulasPendentesDe("u1"), "pendentes");
         igual(true, c.removerCapsula(x.id), "remover");
         igual(0, c.capsulasPendentesDe("u1"), "removida");
+    }
+
+    static void duelos() {
+        Casa c = casa();
+        igual("Você não pode duelar contra você mesmo.", c.validarDuelo("u1", "u1", 5), "duelo contra si");
+        igual("Valor máximo: 64 diamantes.", c.validarDuelo("u1", "u2", 65), "duelo valor maximo");
+        igual(null, c.validarDuelo("u1", "u2", 10), "duelo ok");
+        Casa.Duelo d = c.proporDuelo("u1", "Davi", "u2", "Kaue", 10, 0);
+        igual("Você já tem um convite pendente.", c.validarDuelo("u1", "u3", 5), "convite pendente");
+        c.ativarDuelo(d, 1);
+        igual("Você já está em um duelo.", c.validarDuelo("u1", "u3", 5), "ja em duelo");
+        igual("O outro jogador já está em um duelo.", c.validarDuelo("u3", "u2", 5), "outro em duelo");
+        int premio = c.resolverDuelo(d, "u2", 2);
+        igual(19, premio, "premio 20 menos 5%");
+        igual(1L, c.cofre, "rake do duelo");
+        igual(19, c.creditoDe("u2"), "credito do vencedor");
+        igual(0, c.creditoDe("u1"), "perdedor sem credito");
+        igual(1, c.jogadores.get("u2").acertos, "acerto do vencedor");
+        Casa.Duelo e = c.proporDuelo("u1", "Davi", "u2", "Kaue", 8, 0);
+        c.ativarDuelo(e, 1);
+        c.cancelarDuelo(e, 2);
+        igual(27, c.creditoDe("u2"), "devolvido ao b");
+        igual(8, c.creditoDe("u1"), "devolvido ao a");
+        igual(null, c.duelAtivoDe("u1"), "sem duelo ativo");
     }
 
     static void persistencia() throws Exception {

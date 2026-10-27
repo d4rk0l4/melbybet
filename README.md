@@ -84,6 +84,14 @@ No `/bet`, botão **Combinada**: escolha de 2 a 4 bolões abertos, uma opção e
 - `/capsula todos "Reunião no spawn" 30 min`: só OP; manda um aviso com sino para todos os jogadores online na hora marcada.
 - Fica salvo se o servidor reiniciar. Lembrete pessoal de quem estava offline espera a pessoa entrar. Até 20 pendentes por jogador.
 
+## Duelo
+
+- `/duelo <nick> <valor>` manda um convite com [Aceitar] e [Recusar] clicáveis (vale 60 segundos). Ao aceitar, os dois põem o mesmo valor em diamantes.
+- Vence quem matar o outro primeiro, ou quem receber um `/duelo desistir` do adversário. O vencedor leva o pote menos a parte da casa (5%).
+- Depois de um golpe entre os dois, ficam 30 segundos em combate: `/duelo desistir` só funciona depois disso. Sair do jogo conta como derrota (a mensagem avisa se foi em combate).
+- Se um dos dois sair do jogo, perde. Se alguém morrer por outro motivo, ou passarem 15 minutos sem vencedor, o duelo é cancelado e os diamantes voltam.
+- O resultado vai para o ranking de apostadores e para o Discord.
+
 ## Gestos
 
 - `/spin`: o boneco gira como na correnteza do tridente (a câmera não gira) até você andar. `/spin` de novo também para.
