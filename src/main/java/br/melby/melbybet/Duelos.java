@@ -160,8 +160,9 @@ public final class Duelos {
             p.sendSystemMessage(Jogo.prefixo("Não conheço ninguém chamado " + nick + "."));
             return;
         }
-        List<Casa.DueloReg> lista = casa.duelosDe(nome, 300);
-        p.sendSystemMessage(Component.literal("== Duelos de " + nome + " ==").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD));
+        final String alvo = nome;
+        List<Casa.DueloReg> lista = casa.duelosDe(alvo, 300);
+        p.sendSystemMessage(Component.literal("== Duelos de " + alvo + " ==").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD));
         if (lista.isEmpty()) {
             p.sendSystemMessage(Component.literal("Nenhum duelo ainda.").withStyle(ChatFormatting.GRAY));
             return;
@@ -170,7 +171,7 @@ public final class Duelos {
         int dd = 0;
         java.util.Set<String> rivais = new java.util.LinkedHashSet<>();
         for (Casa.DueloReg r : lista) {
-            boolean ganhou = r.nomeVenc.equalsIgnoreCase(nome);
+            boolean ganhou = r.nomeVenc.equalsIgnoreCase(alvo);
             if (ganhou) v++;
             else dd++;
             rivais.add(ganhou ? r.nomePerd : r.nomeVenc);
@@ -178,13 +179,14 @@ public final class Duelos {
         p.sendSystemMessage(Component.literal(v + " vitória(s) e " + dd + " derrota(s).").withStyle(ChatFormatting.WHITE));
         List<String> ordem = new ArrayList<>(rivais);
         ordem.sort((x, y) -> {
-            int[] a = casa.confronto(nome, x);
-            int[] b = casa.confronto(nome, y);
+            int[] a = casa.confronto(alvo, x);
+            int[] b = casa.confronto(alvo, y);
             return Integer.compare(b[0] + b[1], a[0] + a[1]);
         });
         for (int i = 0; i < Math.min(5, ordem.size()); i++) {
-            int[] c = casa.confronto(nome, ordem.get(i));
-            p.sendSystemMessage(Component.literal("contra " + ordem.get(i) + ": " + nome + " " + c[0] + " x " + c[1] + " " + ordem.get(i)).withStyle(ChatFormatting.AQUA));
+
+            int[] c = casa.confronto(alvo, ordem.get(i));
+            p.sendSystemMessage(Component.literal("contra " + ordem.get(i) + ": " + alvo + " " + c[0] + " x " + c[1] + " " + ordem.get(i)).withStyle(ChatFormatting.AQUA));
         }
         p.sendSystemMessage(Component.literal("Últimos duelos:").withStyle(ChatFormatting.YELLOW));
         long agora = System.currentTimeMillis();
