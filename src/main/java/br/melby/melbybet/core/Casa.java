@@ -26,6 +26,8 @@ public class Casa {
         public Map<String, CorNick> cores = new LinkedHashMap<>();
         /** Distância do chat local, em blocos (0 = sem limite). */
         public int chatLocalRaio = 100;
+        /** Quanto o banco invisível do /sit fica abaixo dos pés, em blocos (maior = senta mais baixo). */
+        public double bancoAltura = 1.6;
         /** Títulos dados por OP: nick (minúsculo) -> título. */
         public Map<String, Titulo> titulos = new LinkedHashMap<>();
         public List<String> msgEntrar = new ArrayList<>(List.of(

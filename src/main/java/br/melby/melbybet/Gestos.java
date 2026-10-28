@@ -8,8 +8,9 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.decoration.ArmorStand;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
+import net.minecraft.util.Mth;
+import net.minecraft.network.protocol.game.ClientboundMoveEntityPacket;
+import net.minecraft.network.protocol.game.ClientboundRotateHeadPacket;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.HashMap;
@@ -21,11 +22,22 @@ import java.util.UUID;
 
 import static net.minecraft.commands.Commands.literal;
 
-/** Gestos: /spin (giro de correnteza do tridente até andar), /sit (senta), /wave (acena) e /crawl (rasteja). */
+/** Gestos: /spin (giro em pé até andar), /sit (senta), /wave (acena) e /crawl (rasteja). */
 public final class Gestos {
     private Gestos() {}
 
-    private static final Map<UUID, Vec3> GIRANDO = new HashMap<>();
+    /** Quem está girando: posição de partida (para saber se andou) e o ângulo atual. */
+    private static final class Giro {
+        final Vec3 inicio;
+        float angulo;
+
+        Giro(Vec3 inicio, float angulo) {
+            this.inicio = inicio;
+            this.angulo = angulo;
+        }
+    }
+
+    private static final Map<UUID, Giro> GIRANDO = new HashMap<>();
     private static final Map<UUID, ArmorStand> BANCOS = new HashMap<>();
     private static final Set<UUID> RASTEJANDO = ConcurrentHashMap.newKeySet();
     /** Blocos falsos (barreiras que só o próprio jogador vê) acima da cabeça de quem rasteja. */
@@ -40,11 +52,11 @@ public final class Gestos {
     public static void registrar(CommandDispatcher<CommandSourceStack> d) {
         d.register(literal("spin").executes(c -> {
             ServerPlayer p = c.getSource().getPlayerOrException();
-            if (GIRANDO.remove(p.getUUID()) != null) {
+            if (GIRANDO.containsKey(p.getUUID())) {
+                pararDeGirar(p);
                 p.sendSystemMessage(Jogo.prefixo("Parou de girar."));
             } else {
-                GIRANDO.put(p.getUUID(), p.position());
-                girar(p);
+                GIRANDO.put(p.getUUID(), new Giro(p.position(), p.getYRot()));
                 p.sendSystemMessage(Jogo.prefixo("Girando! Ande para parar."));
             }
             return 1;
@@ -64,7 +76,7 @@ public final class Gestos {
                 p.sendSystemMessage(Jogo.prefixo("Desça primeiro."));
                 return 0;
             }
-            GIRANDO.remove(p.getUUID());
+            pararDeGirar(p);
             RASTEJANDO.add(p.getUUID());
             p.sendSystemMessage(Jogo.prefixo("Rastejando. Use /crawl de novo para levantar."));
             return 1;
@@ -79,9 +91,9 @@ public final class Gestos {
                 p.sendSystemMessage(Jogo.prefixo("Só dá para sentar no chão."));
                 return 0;
             }
-            GIRANDO.remove(p.getUUID());
+            pararDeGirar(p);
             pararDeRastejar(p);
-            ArmorStand banco = new ArmorStand(p.level(), p.getX(), p.getY() - ALTURA_BANCO, p.getZ());
+            ArmorStand banco = new ArmorStand(p.level(), p.getX(), p.getY() - Jogo.casa.config.bancoAltura, p.getZ());
             banco.setYRot(p.getYRot());
             banco.setInvisible(true);
             banco.setNoGravity(true);
@@ -123,18 +135,29 @@ public final class Gestos {
         FALSOS.put(p.getUUID(), novos);
     }
 
-    /** Quanto o banco invisível fica abaixo dos pés, para o jogador sentar rente ao chão. */
-    private static final double ALTURA_BANCO = 1.1;
-
     private static void levantar(ServerPlayer p) {
         ArmorStand banco = BANCOS.remove(p.getUUID());
         if (p.getVehicle() != null) p.stopRiding();
         if (banco != null) banco.discard();
     }
 
-    /** Liga a animação de correnteza. Com 2 ticks e renovada a cada tick, ela acaba logo que paramos de renovar. */
-    private static void girar(ServerPlayer p) {
-        p.startAutoSpinAttack(2, 0.0f, new ItemStack(Items.TRIDENT));
+    private static final float PASSO_GIRO = 30.0f;
+
+    /** Manda a rotação do corpo e da cabeça para quem está perto, sem mexer na câmera de ninguém. */
+    private static void mostrarRotacao(ServerPlayer p, float graus) {
+        byte y = Mth.packDegrees(graus);
+        byte x = Mth.packDegrees(p.getXRot());
+        var corpo = new ClientboundMoveEntityPacket.Rot(p.getId(), y, x, p.onGround());
+        var cabeca = new ClientboundRotateHeadPacket(p, y);
+        for (ServerPlayer o : Jogo.server.getPlayerList().getPlayers()) {
+            if (o.level() != p.level() || o.distanceToSqr(p) > 96.0 * 96.0) continue;
+            o.connection.send(corpo);
+            o.connection.send(cabeca);
+        }
+    }
+
+    private static void pararDeGirar(ServerPlayer p) {
+        if (GIRANDO.remove(p.getUUID()) != null) mostrarRotacao(p, p.getYRot());
     }
 
     /** Chamado a cada tick do servidor. */
@@ -163,14 +186,16 @@ public final class Gestos {
                     it.remove();
                     continue;
                 }
-                Vec3 antes = e.getValue();
-                double dx = p.getX() - antes.x;
-                double dz = p.getZ() - antes.z;
+                Giro giro = e.getValue();
+                double dx = p.getX() - giro.inicio.x;
+                double dz = p.getZ() - giro.inicio.z;
                 if (dx * dx + dz * dz > 0.0016) {
                     it.remove();
+                    mostrarRotacao(p, p.getYRot());
                     continue;
                 }
-                girar(p);
+                giro.angulo += PASSO_GIRO;
+                mostrarRotacao(p, giro.angulo);
             }
         }
         if (!BANCOS.isEmpty()) {

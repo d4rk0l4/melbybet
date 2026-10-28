@@ -172,6 +172,12 @@ public final class Comandos {
             Jogo.salvar();
             return ok(c, r == 0 ? "Chat local sem limite de distância." : "Chat local alcança " + r + " blocos.");
         })));
+        adm.then(literal("sit").then(argument("altura", com.mojang.brigadier.arguments.DoubleArgumentType.doubleArg(0.0, 3.0)).executes(c -> {
+            double h = com.mojang.brigadier.arguments.DoubleArgumentType.getDouble(c, "altura");
+            Jogo.casa.config.bancoAltura = h;
+            Jogo.salvar();
+            return ok(c, "Altura do /sit: " + h + " (maior senta mais baixo). Levante e sente de novo para ver.");
+        })));
         adm.then(literal("lista").executes(Comandos::lista));
         adm.then(literal("cofre").executes(c -> {
             Casa casa = Jogo.casa;

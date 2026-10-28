@@ -95,8 +95,8 @@ No `/bet`, botão **Combinada**: escolha de 2 a 4 bolões abertos, uma opção e
 
 ## Gestos
 
-- `/spin`: o boneco gira como na correnteza do tridente (a câmera não gira) até você andar. `/spin` de novo também para.
-- `/sit`: senta no chão (num banco invisível); shift levanta.
+- `/spin`: o boneco gira em pé, como um pião, para quem está por perto, até você andar. A sua câmera não gira. `/spin` de novo também para.
+- `/sit`: senta no chão (num banco invisível); shift levanta. Se ficar alto ou baixo, o OP ajusta com `/melbybet sit <altura>` (padrão 1.6; maior senta mais baixo).
 - `/wave`: acena.
 - `/crawl`: rasteja onde der, mesmo em espaço aberto, e todos veem você rastejando. `/crawl` de novo levanta.
 
