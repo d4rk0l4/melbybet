@@ -106,6 +106,8 @@ No `/bet`, botão **Combinada**: escolha de 2 a 4 bolões abertos, uma opção e
 
 ## Gestos
 
+`/gestos` abre um menu com um item para cada gesto (também em `/melby` > Meu perfil > Gestos). Cada um também tem o seu comando:
+
 - `/spin`: o boneco gira em pé, como um pião, para quem está por perto, até você andar. A sua câmera não gira. `/spin` de novo também para.
 - `/sit`: senta no chão (num banco invisível); shift levanta. Se ficar alto ou baixo, o OP ajusta com `/melbybet sit <altura>` (padrão 1.6; maior senta mais baixo).
 - `/wave`: acena.

@@ -1,7 +1,12 @@
 package br.melby.melbybet;
 
 import com.mojang.brigadier.CommandDispatcher;
+import eu.pb4.sgui.api.elements.GuiElementBuilder;
+import eu.pb4.sgui.api.gui.SimpleGui;
+import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.item.Items;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket;
 import net.minecraft.world.level.block.Blocks;
@@ -59,65 +64,116 @@ public final class Gestos {
     }
 
     public static void registrar(CommandDispatcher<CommandSourceStack> d) {
-        d.register(literal("spin").executes(c -> {
-            ServerPlayer p = c.getSource().getPlayerOrException();
-            if (GIRANDO.containsKey(p.getUUID())) {
-                pararDeGirar(p);
-                p.sendSystemMessage(Jogo.prefixo("Parou de girar."));
-            } else {
-                GIRANDO.put(p.getUUID(), new Giro(p.position(), p.getYRot()));
-                p.sendSystemMessage(Jogo.prefixo("Girando! Ande para parar."));
-            }
+        d.register(literal("gestos").executes(c -> {
+            abrirMenu(c.getSource().getPlayerOrException());
             return 1;
         }));
+        d.register(literal("spin").executes(c -> girar(c.getSource().getPlayerOrException())));
         d.register(literal("point").executes(c -> {
             apontar(c.getSource().getPlayerOrException());
             return 1;
         }));
-        d.register(literal("wave").executes(c -> {
-            c.getSource().getPlayerOrException().swing(InteractionHand.MAIN_HAND, true);
-            return 1;
-        }));
-        d.register(literal("crawl").executes(c -> {
-            ServerPlayer p = c.getSource().getPlayerOrException();
-            if (RASTEJANDO.contains(p.getUUID())) {
-                pararDeRastejar(p);
-                p.sendSystemMessage(Jogo.prefixo("Você levantou."));
-                return 1;
-            }
-            if (p.getVehicle() != null) {
-                p.sendSystemMessage(Jogo.prefixo("Desça primeiro."));
-                return 0;
-            }
+        d.register(literal("wave").executes(c -> acenar(c.getSource().getPlayerOrException())));
+        d.register(literal("crawl").executes(c -> rastejar(c.getSource().getPlayerOrException())));
+        d.register(literal("sit").executes(c -> sentar(c.getSource().getPlayerOrException())));
+    }
+
+    // ---------- as ações (usadas pelos comandos e pelo menu /gestos) ----------
+
+    static int girar(ServerPlayer p) {
+        if (GIRANDO.containsKey(p.getUUID())) {
             pararDeGirar(p);
-            RASTEJANDO.add(p.getUUID());
-            p.sendSystemMessage(Jogo.prefixo("Rastejando. Use /crawl de novo para levantar."));
-            return 1;
-        }));
-        d.register(literal("sit").executes(c -> {
-            ServerPlayer p = c.getSource().getPlayerOrException();
-            if (BANCOS.containsKey(p.getUUID()) || p.getVehicle() != null) {
-                levantar(p);
-                return 1;
-            }
-            if (!p.onGround()) {
-                p.sendSystemMessage(Jogo.prefixo("Só dá para sentar no chão."));
-                return 0;
-            }
-            pararDeGirar(p);
+            p.sendSystemMessage(Jogo.prefixo("Parou de girar."));
+        } else {
+            GIRANDO.put(p.getUUID(), new Giro(p.position(), p.getYRot()));
+            p.sendSystemMessage(Jogo.prefixo("Girando! Ande para parar."));
+        }
+        return 1;
+    }
+
+    static int acenar(ServerPlayer p) {
+        p.swing(InteractionHand.MAIN_HAND, true);
+        return 1;
+    }
+
+    static int rastejar(ServerPlayer p) {
+        if (RASTEJANDO.contains(p.getUUID())) {
             pararDeRastejar(p);
-            ArmorStand banco = new ArmorStand(p.level(), p.getX(), p.getY() - Jogo.casa.config.bancoAltura, p.getZ());
-            banco.setYRot(p.getYRot());
-            banco.setInvisible(true);
-            banco.setNoGravity(true);
-            banco.setInvulnerable(true);
-            banco.setSilent(true);
-            p.level().addFreshEntity(banco);
-            p.startRiding(banco, true, false);
-            BANCOS.put(p.getUUID(), banco);
-            p.sendSystemMessage(Jogo.prefixo("Sentado. Aperte shift para levantar."));
+            p.sendSystemMessage(Jogo.prefixo("Você levantou."));
             return 1;
-        }));
+        }
+        if (p.getVehicle() != null) {
+            p.sendSystemMessage(Jogo.prefixo("Desça primeiro."));
+            return 0;
+        }
+        pararDeGirar(p);
+        RASTEJANDO.add(p.getUUID());
+        p.sendSystemMessage(Jogo.prefixo("Rastejando. Use /crawl de novo para levantar."));
+        return 1;
+    }
+
+    static int sentar(ServerPlayer p) {
+        if (BANCOS.containsKey(p.getUUID()) || p.getVehicle() != null) {
+            levantar(p);
+            return 1;
+        }
+        if (!p.onGround()) {
+            p.sendSystemMessage(Jogo.prefixo("Só dá para sentar no chão."));
+            return 0;
+        }
+        pararDeGirar(p);
+        pararDeRastejar(p);
+        ArmorStand banco = new ArmorStand(p.level(), p.getX(), p.getY() - Jogo.casa.config.bancoAltura, p.getZ());
+        banco.setYRot(p.getYRot());
+        banco.setInvisible(true);
+        banco.setNoGravity(true);
+        banco.setInvulnerable(true);
+        banco.setSilent(true);
+        p.level().addFreshEntity(banco);
+        p.startRiding(banco, true, false);
+        BANCOS.put(p.getUUID(), banco);
+        p.sendSystemMessage(Jogo.prefixo("Sentado. Aperte shift para levantar."));
+        return 1;
+    }
+
+    // ---------- menu /gestos ----------
+
+    private static GuiElementBuilder item(net.minecraft.world.item.Item icone, String nome, ChatFormatting cor, String... lore) {
+        GuiElementBuilder e = new GuiElementBuilder(icone).setName(Component.literal(nome).withStyle(cor, ChatFormatting.BOLD)).hideDefaultTooltip();
+        for (String l : lore) e.addLoreLine(Component.literal(l).withStyle(ChatFormatting.GRAY));
+        return e;
+    }
+
+    public static void abrirMenu(ServerPlayer p) {
+        SimpleGui g = new SimpleGui(MenuType.GENERIC_9x3, p, false);
+        g.setTitle(Component.literal("Gestos").withStyle(ChatFormatting.GOLD));
+        g.setSlot(10, item(Items.ENDER_PEARL, "Girar (/spin)", ChatFormatting.LIGHT_PURPLE, "Gira em pé até você andar.")
+            .setCallback((i, t, a, gg) -> {
+                gg.close();
+                girar(p);
+            }).build());
+        g.setSlot(11, item(Items.SADDLE, "Sentar (/sit)", ChatFormatting.GREEN, "Senta no chão; shift levanta.")
+            .setCallback((i, t, a, gg) -> {
+                gg.close();
+                sentar(p);
+            }).build());
+        g.setSlot(12, item(Items.TOTEM_OF_UNDYING, "Acenar (/wave)", ChatFormatting.YELLOW, "Acena com o braço.")
+            .setCallback((i, t, a, gg) -> {
+                gg.close();
+                acenar(p);
+            }).build());
+        g.setSlot(13, item(Items.SPYGLASS, "Apontar (/point)", ChatFormatting.AQUA, "Marca onde você está olhando e", "manda as coordenadas a quem está perto.")
+            .setCallback((i, t, a, gg) -> {
+                gg.close();
+                apontar(p);
+            }).build());
+        g.setSlot(14, item(Items.LEATHER_BOOTS, "Rastejar (/crawl)", ChatFormatting.GOLD, "Rasteja em qualquer lugar;", "use de novo para levantar.")
+            .setCallback((i, t, a, gg) -> {
+                gg.close();
+                rastejar(p);
+            }).build());
+        g.setSlot(22, item(Items.BARRIER, "Fechar", ChatFormatting.RED).setCallback((i, t, a, gg) -> gg.close()).build());
+        g.open();
     }
 
     private static void enviarBloco(ServerPlayer p, BlockPos pos, boolean falso) {

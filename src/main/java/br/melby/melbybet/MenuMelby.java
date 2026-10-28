@@ -109,6 +109,8 @@ public final class MenuMelby {
                 else Chat.alternarGlobal(p);
                 perfil(p);
             }).build());
+        g.setSlot(16, btn(Items.TOTEM_OF_UNDYING, "Gestos", ChatFormatting.YELLOW, "Girar, sentar, acenar, apontar e rastejar")
+            .setCallback((i, ty, a, gg) -> Gestos.abrirMenu(p)).build());
         g.setSlot(14, btn(Items.CLOCK, "Ficar AFK", ChatFormatting.GRAY, "Mostra [AFK] até você se mexer")
             .setCallback((i, ty, a, gg) -> {
                 gg.close();
