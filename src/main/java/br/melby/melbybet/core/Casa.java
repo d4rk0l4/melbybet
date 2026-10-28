@@ -28,6 +28,10 @@ public class Casa {
         public int chatLocalRaio = 100;
         /** Quanto o banco invisível do /sit fica abaixo dos pés, em blocos (maior = senta mais baixo). */
         public double bancoAltura = 1.6;
+        /** Horários (HH:mm) em que o servidor reinicia: o mod avisa 30, 15, 10, 5, 3, 2 e 1 minuto antes, e a contagem final. */
+        public List<String> reinicios = new ArrayList<>();
+        /** Fuso dos horários de reinício. */
+        public String fuso = "America/Sao_Paulo";
         /** Títulos dados por OP: nick (minúsculo) -> título. */
         public Map<String, Titulo> titulos = new LinkedHashMap<>();
         public List<String> msgEntrar = new ArrayList<>(List.of(
@@ -56,6 +60,8 @@ public class Casa {
         public int acertos;
         public long gasto;
         public long ganho;
+        public int duelosGanhos;
+        public int duelosPerdidos;
     }
 
     /** Título que um OP deu a um jogador (degradê entre duas cores). */
@@ -238,6 +244,8 @@ public class Casa {
         jb.gasto += d.valor;
         (aGanhou ? ja : jb).acertos++;
         (aGanhou ? ja : jb).ganho += premio;
+        (aGanhou ? ja : jb).duelosGanhos++;
+        (aGanhou ? jb : ja).duelosPerdidos++;
         historico.add(new Registro(agora, "Duelo: " + (aGanhou ? d.nomeA : d.nomeB) + " venceu " + (aGanhou ? d.nomeB : d.nomeA) + ", levou " + premio + " diamantes"));
         return premio;
     }
@@ -252,6 +260,8 @@ public class Casa {
         ja.apostas++;
         jb.apostas++;
         (aGanhou ? ja : jb).acertos++;
+        (aGanhou ? ja : jb).duelosGanhos++;
+        (aGanhou ? jb : ja).duelosPerdidos++;
         historico.add(new Registro(agora, "Duelo de itens: " + (aGanhou ? d.nomeA : d.nomeB) + " venceu " + (aGanhou ? d.nomeB : d.nomeA)));
     }
 

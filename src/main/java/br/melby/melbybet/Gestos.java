@@ -8,12 +8,21 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.decoration.ArmorStand;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.network.chat.ClickEvent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
+import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
 import net.minecraft.network.protocol.game.ClientboundMoveEntityPacket;
 import net.minecraft.network.protocol.game.ClientboundRotateHeadPacket;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -59,6 +68,10 @@ public final class Gestos {
                 GIRANDO.put(p.getUUID(), new Giro(p.position(), p.getYRot()));
                 p.sendSystemMessage(Jogo.prefixo("Girando! Ande para parar."));
             }
+            return 1;
+        }));
+        d.register(literal("point").executes(c -> {
+            apontar(c.getSource().getPlayerOrException());
             return 1;
         }));
         d.register(literal("wave").executes(c -> {
@@ -141,6 +154,68 @@ public final class Gestos {
         if (banco != null) banco.discard();
     }
 
+    // ---------- /point ----------
+
+    private static final class Marca {
+        final ServerLevel nivel;
+        final Vec3 pos;
+        final long fim;
+
+        Marca(ServerLevel nivel, Vec3 pos, long fim) {
+            this.nivel = nivel;
+            this.pos = pos;
+            this.fim = fim;
+        }
+    }
+
+    private static final List<Marca> MARCAS = new ArrayList<>();
+    private static final Map<UUID, Long> ULTIMO_APONTAR = new HashMap<>();
+
+    private static void apontar(ServerPlayer p) {
+        if (!(p.level() instanceof ServerLevel nivel)) return;
+        long agora = System.currentTimeMillis();
+        Long ult = ULTIMO_APONTAR.get(p.getUUID());
+        if (ult != null && agora - ult < 3000) {
+            p.sendSystemMessage(Jogo.prefixo("Calma, espere uns segundos para apontar de novo."));
+            return;
+        }
+        Vec3 olho = p.getEyePosition();
+        Vec3 fim = olho.add(p.getLookAngle().scale(120));
+        BlockHitResult r = nivel.clip(new ClipContext(olho, fim, ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, p));
+        if (r.getType() == HitResult.Type.MISS) {
+            p.sendSystemMessage(Jogo.prefixo("Não há nada para apontar daqui (muito longe ou céu)."));
+            return;
+        }
+        ULTIMO_APONTAR.put(p.getUUID(), agora);
+        Vec3 alvo = r.getLocation();
+        MARCAS.add(new Marca(nivel, alvo, agora + 6000));
+        p.swing(InteractionHand.MAIN_HAND, true);
+        int bx = (int) Math.floor(alvo.x);
+        int by = (int) Math.floor(alvo.y);
+        int bz = (int) Math.floor(alvo.z);
+        String xyz = bx + " " + by + " " + bz;
+        long dist = Math.round(olho.distanceTo(alvo));
+        Component msg = Component.literal(p.getGameProfile().name() + " apontou para " + xyz + " (" + dist + " blocos) ")
+            .withStyle(net.minecraft.ChatFormatting.AQUA)
+            .append(Component.literal("[Copiar]").withStyle(s -> s.withColor(net.minecraft.ChatFormatting.GREEN).withBold(true)
+                .withClickEvent(new ClickEvent.CopyToClipboard(xyz))));
+        for (ServerPlayer o : Jogo.server.getPlayerList().getPlayers()) {
+            if (o.level() != p.level() || o.distanceToSqr(p) > 160.0 * 160.0) continue;
+            o.sendSystemMessage(msg);
+            Jogo.som(o, "minecraft:block.amethyst_block.chime", 1.3f);
+        }
+    }
+
+    private static void desenharMarcas() {
+        long agora = System.currentTimeMillis();
+        MARCAS.removeIf(m -> agora > m.fim);
+        for (Marca m : MARCAS) {
+            for (int k = 0; k < 7; k++) {
+                m.nivel.sendParticles(ParticleTypes.END_ROD, m.pos.x, m.pos.y + k * 0.3, m.pos.z, 1, 0.05, 0.0, 0.05, 0.0);
+            }
+        }
+    }
+
     private static final float PASSO_GIRO = 30.0f;
 
     /** Manda a rotação do corpo e da cabeça para quem está perto, sem mexer na câmera de ninguém. */
@@ -164,6 +239,7 @@ public final class Gestos {
     public static void aCadaTick() {
         if (Jogo.server == null) return;
         ciclo++;
+        if (ciclo % 4 == 0 && !MARCAS.isEmpty()) desenharMarcas();
         if (!RASTEJANDO.isEmpty()) {
             for (UUID id : new HashSet<>(RASTEJANDO)) {
                 ServerPlayer p = Jogo.server.getPlayerList().getPlayer(id);

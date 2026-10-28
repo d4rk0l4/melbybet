@@ -90,6 +90,7 @@ public final class Comandos {
         Capsulas.registrar(d);
         Gestos.registrar(d);
         Duelos.registrar(d);
+        Perfil.registrar(d);
         chatEMais(d);
 
         LiteralArgumentBuilder<CommandSourceStack> adm = literal("melbybet")
@@ -178,6 +179,33 @@ public final class Comandos {
             Jogo.salvar();
             return ok(c, "Altura do /sit: " + h + " (maior senta mais baixo). Levante e sente de novo para ver.");
         })));
+        adm.then(literal("reinicio")
+            .then(literal("add").then(argument("hora", word()).executes(c -> {
+                String h = br.melby.melbybet.core.Reinicio.normalizar(StringArgumentType.getString(c, "hora"));
+                if (h == null) return erro(c, "Use o formato HH:mm, por exemplo 04:30.");
+                if (!Jogo.casa.config.reinicios.contains(h)) Jogo.casa.config.reinicios.add(h);
+                Jogo.salvar();
+                return ok(c, "Reinício às " + h + " (fuso " + Jogo.casa.config.fuso + "). Avisos automáticos ligados.");
+            })))
+            .then(literal("remover").then(argument("hora", word()).executes(c -> {
+                String h = br.melby.melbybet.core.Reinicio.normalizar(StringArgumentType.getString(c, "hora"));
+                if (h == null || !Jogo.casa.config.reinicios.remove(h)) return erro(c, "Esse horário não está na lista.");
+                Jogo.salvar();
+                return ok(c, "Horário " + h + " removido.");
+            })))
+            .then(literal("lista").executes(c -> ok(c, Jogo.casa.config.reinicios.isEmpty()
+                ? "Nenhum horário de reinício. Use /melbybet reinicio add 04:30."
+                : "Reinícios: " + String.join(", ", Jogo.casa.config.reinicios) + " (fuso " + Jogo.casa.config.fuso + ")"))));
+        adm.then(literal("reiniciar")
+            .then(literal("cancelar").executes(c -> {
+                if (!Reinicios.manualAtivo()) return erro(c, "Não há reinício em contagem.");
+                Reinicios.cancelarManual();
+                return 1;
+            }))
+            .then(argument("minutos", integer(1, 120)).executes(c -> {
+                Reinicios.iniciarManual(IntegerArgumentType.getInteger(c, "minutos"));
+                return ok(c, "Contagem iniciada. O servidor salva e desliga no fim; /melbybet reiniciar cancelar desiste.");
+            })));
         adm.then(literal("lista").executes(Comandos::lista));
         adm.then(literal("cofre").executes(c -> {
             Casa casa = Jogo.casa;

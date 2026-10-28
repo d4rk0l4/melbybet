@@ -93,11 +93,18 @@ No `/bet`, botão **Combinada**: escolha de 2 a 4 bolões abertos, uma opção e
 - O resultado vai para o ranking de apostadores e para o Discord.
 - **Duelo de itens:** `/duelo <nick> inv`. Cada um vê o inventário do outro e escolhe até 5 itens dele; depois os dois aceitam os termos. Nada sai do inventário na hora: só quando o duelo acaba o perdedor entrega os itens apostados ao vencedor (no instante da morte, antes de caírem). Sem taxa da casa. O item é reconhecido pelo tipo, encantamentos e nome, e a durabilidade não conta (a espada pode gastar ou ser reparada pelo Remendo durante o duelo); o vencedor recebe o item no estado em que estiver. Se alguém tirar o item apostado do inventário durante o duelo, perde.
 
+## Perfil e reinício
+
+- `/perfil [nick]`: cartão do jogador (online ou offline): título, status, tempo na Gangue, tempo online, distância, blocos, mobs, mortes (com a posição no ranking), apostas, saldo e duelos.
+- **Aviso de reinício:** `/melbybet reinicio add 04:30` (ou `/melby` > Administração > Reinício) cadastra os horários em que o servidor reinicia. O mod avisa 30, 15, 10, 5, 3, 2 e 1 minuto antes, e faz a contagem dos últimos 10 segundos na tela. O fuso padrão é America/Sao_Paulo (`fuso` em `casa.json`). `/melbybet reinicio lista` e `remover <hora>` também existem.
+- `/melbybet reiniciar <minutos>`: contagem manual; no fim o mod salva e desliga o servidor (a hospedagem precisa religar). `/melbybet reiniciar cancelar` desiste.
+
 ## Gestos
 
 - `/spin`: o boneco gira em pé, como um pião, para quem está por perto, até você andar. A sua câmera não gira. `/spin` de novo também para.
 - `/sit`: senta no chão (num banco invisível); shift levanta. Se ficar alto ou baixo, o OP ajusta com `/melbybet sit <altura>` (padrão 1.6; maior senta mais baixo).
 - `/wave`: acena.
+- `/point`: aponta para onde você olha (até 120 blocos): sobe uma coluna de brilho por 6 segundos e quem está perto recebe as coordenadas com [Copiar].
 - `/crawl`: rasteja onde der, mesmo em espaço aberto, e todos veem você rastejando. `/crawl` de novo levanta.
 
 ## Coordenadas

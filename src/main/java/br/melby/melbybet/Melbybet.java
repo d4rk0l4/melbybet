@@ -80,6 +80,7 @@ public class Melbybet implements ModInitializer {
         if (tick % 20 == 0) Extras.aCadaSegundo();
         if (tick % 20 == 0) Capsulas.aCadaSegundo();
         if (tick % 20 == 0) Duelos.aCadaSegundo();
+        if (tick % 20 == 0) Reinicios.aCadaSegundo();
         if (tick % 600 == 0) Jogo.conferirConquistas();
         if (tick % 6000 == 0) Jogo.salvar();
     }

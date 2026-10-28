@@ -45,6 +45,7 @@ public class Testes {
         combinadas();
         lembretes();
         duelos();
+        reinicio();
         persistencia();
         System.out.println(falhas == 0 ? "tudo certo (" + total + " checagens)" : falhas + " falhas de " + total);
         if (falhas > 0) System.exit(1);
@@ -354,6 +355,32 @@ public class Testes {
         f.ativarDuelo(dj, 1);
         f.cancelarDuelo(dj, 2);
         igual(0, f.creditoDe("u1"), "duelo de itens cancelado nao devolve diamantes");
+    }
+
+    static void reinicio() {
+        igual(true, Reinicio.valido("04:30"), "hora valida");
+        igual(true, Reinicio.valido("4:30"), "hora sem zero");
+        igual(false, Reinicio.valido("24:00"), "hora invalida");
+        igual(false, Reinicio.valido("4:7"), "minuto invalido");
+        igual("04:30", Reinicio.normalizar("4:30"), "normaliza");
+        igual(null, Reinicio.normalizar("abc"), "normaliza invalido");
+        java.time.ZoneId z = java.time.ZoneId.of("UTC");
+        java.time.Instant ag = java.time.Instant.parse("2026-10-27T03:00:00Z");
+        igual(5_400_000L, Reinicio.msAteProximo(List.of("04:30"), z, ag), "ate 04:30");
+        igual(5_400_000L, Reinicio.msAteProximo(List.of("20:00", "04:30"), z, ag), "pega o mais proximo");
+        igual(23L * 3600_000L, Reinicio.msAteProximo(List.of("02:00"), z, ag), "amanha");
+        igual(-1L, Reinicio.msAteProximo(List.of(), z, ag), "sem horarios");
+        igual(300L, Reinicio.avisoCruzado(301_000, 299_000), "cruzou 5 min");
+        igual(-1L, Reinicio.avisoCruzado(400_000, 350_000), "nao cruzou");
+        igual(10L, Reinicio.avisoCruzado(11_000, 10_000), "cruzou 10s");
+        igual("5 minutos", Reinicio.texto(300), "texto minutos");
+        igual("1 segundo", Reinicio.texto(1), "texto segundo");
+        Casa c = casa();
+        Casa.Duelo d = c.proporDuelo("u1", "Davi", "u2", "Kaue", 5, 0);
+        c.ativarDuelo(d, 1);
+        c.resolverDuelo(d, "u1", 2);
+        igual(1, c.jogadores.get("u1").duelosGanhos, "duelo ganho");
+        igual(1, c.jogadores.get("u2").duelosPerdidos, "duelo perdido");
     }
 
     static void persistencia() throws Exception {

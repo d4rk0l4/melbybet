@@ -270,7 +270,46 @@ public final class MenuMelby {
             .setCallback((i, ty, a, gg) -> config(p)).build());
         g.setSlot(16, btn(Items.SHIELD, "Jogadores", ChatFormatting.RED, "Inventário, título, kick e ban")
             .setCallback((i, ty, a, gg) -> jogadores(p)).build());
+        g.setSlot(22, btn(Items.CLOCK, "Reinício do servidor", ChatFormatting.RED, "Horários e avisos automáticos")
+            .setCallback((i, ty, a, gg) -> reinicio(p)).build());
         voltar(g, 3, () -> principal(p));
+        g.open();
+    }
+
+    private static void reinicio(ServerPlayer p) {
+        Casa.Config c = Jogo.casa.config;
+        SimpleGui g = tela(p, 4, "Reinício do servidor");
+        for (int i = 0; i < c.reinicios.size() && i < 18; i++) {
+            String h = c.reinicios.get(i);
+            g.setSlot(i, btn(Items.CLOCK, h, ChatFormatting.WHITE, "Clique para remover", "Fuso: " + c.fuso)
+                .setCallback((ix, ty, a, gg) -> {
+                    c.reinicios.remove(h);
+                    Jogo.salvar();
+                    reinicio(p);
+                }).build());
+        }
+        g.setSlot(29, btn(Items.EMERALD, "Adicionar horário", ChatFormatting.GREEN, "Digite no formato HH:mm")
+            .setCallback((i, ty, a, gg) -> Chat.perguntar(p, "Digite o horário do reinício, como 04:30.", txt -> {
+                String h = br.melby.melbybet.core.Reinicio.normalizar(txt);
+                if (h == null) info(p, "Use o formato HH:mm, como 04:30.");
+                else {
+                    if (!c.reinicios.contains(h)) c.reinicios.add(h);
+                    Jogo.salvar();
+                    info(p, "Reinício às " + h + " adicionado. O servidor avisa 30, 15, 10, 5, 3, 2 e 1 minuto antes.");
+                }
+                reinicio(p);
+            })).build());
+        g.setSlot(31, btn(Items.TNT, Reinicios.manualAtivo() ? "Cancelar contagem" : "Reiniciar agora (contagem)", ChatFormatting.RED,
+            Reinicios.manualAtivo() ? "Cancela o reinício marcado" : "Digite em quantos minutos; o servidor salva e desliga")
+            .setCallback((i, ty, a, gg) -> {
+                if (Reinicios.manualAtivo()) {
+                    Reinicios.cancelarManual();
+                    reinicio(p);
+                } else {
+                    perguntaNumero(p, "Reiniciar em quantos minutos? (1 a 120)", 1, 120, Reinicios::iniciarManual, () -> reinicio(p));
+                }
+            }).build());
+        voltar(g, 4, () -> admin(p));
         g.open();
     }
 

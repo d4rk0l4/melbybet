@@ -72,6 +72,13 @@ public final class Jogo {
         return Component.literal("[MelbyBet] ").withStyle(ChatFormatting.GOLD).append(Component.literal(s).withStyle(ChatFormatting.WHITE));
     }
 
+    /** Toca um som só para este jogador. */
+    public static void som(ServerPlayer p, String som, float tom) {
+        if (server == null) return;
+        server.getCommands().performPrefixedCommand(server.createCommandSourceStack().withSuppressedOutput(),
+            "playsound " + som + " player " + p.getGameProfile().name() + " ~ ~ ~ 1 " + tom);
+    }
+
     public static void avisar(String s) {
         if (server != null) server.getPlayerList().broadcastSystemMessage(prefixo(s), false);
     }
