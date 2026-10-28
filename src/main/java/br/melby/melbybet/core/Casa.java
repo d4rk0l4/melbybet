@@ -571,10 +571,12 @@ public class Casa {
     public String validarAposta(Bolao b, String uuid, String nome, String opcao, int valor) {
         if (!b.aberto()) return "Esse bolão não está aberto.";
         if (b.opcaoExata(opcao) == null) return "Opção inválida.";
+        if (b.excluidos.contains(uuid)) return "Você está nesse duelo: não pode apostar nele.";
         if (b.opcaoExata(opcao).equalsIgnoreCase(nome)) return "Não pode apostar em você mesmo.";
         if (valor < config.apostaMin) return "Aposta mínima: " + config.apostaMin + " diamante(s).";
-        if (b.apostadoPor(uuid) + valor > config.apostaMax)
-            return "Limite por bolão: " + config.apostaMax + " diamantes (você já pôs " + b.apostadoPor(uuid) + ").";
+        int teto = b.maxAposta > 0 ? b.maxAposta : config.apostaMax;
+        if (b.apostadoPor(uuid) + valor > teto)
+            return "Limite por bolão: " + teto + " diamantes (você já pôs " + b.apostadoPor(uuid) + ").";
         return null;
     }
 

@@ -66,6 +66,12 @@ public class Bolao {
     /** Instante (ms) em que fecha sozinho; 0 = sem prazo. */
     public long expiraEm;
     public int pagoTotal;
+    /** Bolão aberto por um duelo: id do duelo (0 = bolão comum). */
+    public int dueloId;
+    /** Quem não pode apostar neste bolão (os duelistas). */
+    public List<String> excluidos = new ArrayList<>();
+    /** Limite por jogador só deste bolão (0 = vale o limite geral). */
+    public int maxAposta;
 
     public int pote() {
         int t = 0;

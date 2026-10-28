@@ -47,6 +47,7 @@ public class Testes {
         duelos();
         reinicio();
         morteEPlacar();
+        apostaNoDuelo();
         persistencia();
         System.out.println(falhas == 0 ? "tudo certo (" + total + " checagens)" : falhas + " falhas de " + total);
         if (falhas > 0) System.exit(1);
@@ -422,6 +423,25 @@ public class Testes {
         c.resolverDueloItens(f, "u2", 13, "1x Espada");
         igual("1x Espada", c.duelosDe("Kaue", 1).get(0).resumo, "resumo do duelo de itens");
         igual(true, c.duelosDe("Kaue", 1).get(0).itens, "marcado como itens");
+    }
+
+    static void apostaNoDuelo() {
+        Casa c = casa();
+        Bolao b = c.criar("Duelo: Davi x Kaue", Bolao.Gatilho.MANUAL, List.of("Davi", "Kaue"), 0);
+        b.dueloId = 7;
+        b.excluidos.add("u1");
+        b.excluidos.add("u2");
+        b.maxAposta = 16;
+        c.abrir(b);
+        igual("Você está nesse duelo: não pode apostar nele.", c.validarAposta(b, "u1", "Davi", "Kaue", 5), "duelista nao aposta");
+        igual("Você está nesse duelo: não pode apostar nele.", c.validarAposta(b, "u2", "Kaue", "Davi", 5), "outro duelista nao aposta");
+        igual(null, c.validarAposta(b, "u3", "Edu", "Davi", 16), "espectador no limite");
+        igual("Limite por bolão: 16 diamantes (você já pôs 0).", c.validarAposta(b, "u3", "Edu", "Davi", 17), "limite do duelo");
+        c.apostar(b, "u3", "Edu", "Davi", 10);
+        c.apostar(b, "u4", "Gota", "Kaue", 10);
+        c.resolver(b, "Davi", 1);
+        igual(19, c.creditoDe("u3"), "espectador que acertou recebe");
+        igual(0, c.creditoDe("u4"), "espectador que errou nao recebe");
     }
 
     static void persistencia() throws Exception {

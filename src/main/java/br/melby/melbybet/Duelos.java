@@ -39,6 +39,9 @@ public final class Duelos {
     private static final long DURACAO_MS = 15 * 60_000L;
     private static final long COMBATE_MS = 30_000L;
     static final int MAX_ITENS = 5;
+    /** Quanto tempo ficam abertas as apostas no duelo dos outros, e o limite por apostador. */
+    private static final long APOSTAS_MS = 60_000L;
+    private static final int APOSTA_MAX_DUELO = 16;
 
     /** uuid -> instante do último golpe entre os dois duelistas. Só na memória. */
     private static final Map<UUID, Long> COMBATE = new HashMap<>();
@@ -148,6 +151,43 @@ public final class Duelos {
                     propor(c.getSource().getPlayerOrException(), EntityArgument.getPlayer(c, "alvo"), IntegerArgumentType.getInteger(c, "valor"));
                     return 1;
                 }))));
+    }
+
+    // ---------- apostas dos espectadores ----------
+
+    /** Quando o duelo começa, abre um bolão curto com os dois lutadores. Eles mesmos não podem apostar. */
+    private static void abrirApostas(Casa.Duelo x) {
+        Casa casa = Jogo.casa;
+        long agora = System.currentTimeMillis();
+        var b = casa.criar("Duelo: " + x.nomeA + " x " + x.nomeB, br.melby.melbybet.core.Bolao.Gatilho.MANUAL, List.of(x.nomeA, x.nomeB), agora);
+        b.dueloId = x.id;
+        b.excluidos.add(x.uuidA);
+        b.excluidos.add(x.uuidB);
+        b.maxAposta = APOSTA_MAX_DUELO;
+        b.expiraEm = agora + APOSTAS_MS;
+        casa.abrir(b);
+        Jogo.avisar("Apostas abertas no duelo " + x.nomeA + " x " + x.nomeB + " por " + (APOSTAS_MS / 1000) + "s (até " + APOSTA_MAX_DUELO + " diamantes). Use /bet!");
+    }
+
+    private static br.melby.melbybet.core.Bolao bolaoDoDuelo(Casa.Duelo x) {
+        for (var b : Jogo.casa.bolaos) if (b.dueloId == x.id && b.emAndamento()) return b;
+        return null;
+    }
+
+    /** Fecha o bolão do duelo: paga quem acertou, ou devolve tudo se o duelo foi cancelado. */
+    private static void encerrarApostas(Casa.Duelo x, String vencedorNome) {
+        var b = bolaoDoDuelo(x);
+        if (b == null) return;
+        if (b.apostas.isEmpty()) {
+            b.status = br.melby.melbybet.core.Bolao.Status.CANCELADO;
+            return;
+        }
+        if (vencedorNome != null) {
+            Jogo.resolver(b, vencedorNome);
+        } else {
+            Jogo.casa.cancelar(b, System.currentTimeMillis());
+            Jogo.avisar("Apostas do duelo " + x.nomeA + " x " + x.nomeB + " devolvidas.");
+        }
     }
 
     // ---------- placar ----------
@@ -317,6 +357,7 @@ public final class Duelos {
             return;
         }
         Jogo.casa.ativarDuelo(st.d, System.currentTimeMillis());
+        abrirApostas(st.d);
         Jogo.salvar();
         Jogo.avisar("Duelo de itens valendo! " + st.d.nomeA + " x " + st.d.nomeB + ". Quem matar o outro primeiro leva os itens. Não guarde nem jogue fora os itens da aposta!");
     }
@@ -429,6 +470,7 @@ public final class Duelos {
         Jogo.tirar(a, x.valor);
         Jogo.tirar(b, x.valor);
         Jogo.casa.ativarDuelo(x, System.currentTimeMillis());
+        abrirApostas(x);
         Jogo.salvar();
         Jogo.avisar("Duelo valendo! " + x.nomeA + " x " + x.nomeB + ", " + x.valor + " diamante(s) cada. Quem matar o outro primeiro leva o pote.");
     }
@@ -476,12 +518,14 @@ public final class Duelos {
             Jogo.casa.resolverDueloItens(x, uuidVencedor, System.currentTimeMillis(), passou.isEmpty() ? "nada" : descricao(passou));
             Jogo.avisar("Fim do duelo! " + motivo + " " + nome + " leva: " + (passou.isEmpty() ? "nada (os itens não estavam mais lá)" : descricao(passou)) + ".");
             Jogo.webhook("⚔️ **Duelo de itens** — " + nome + " venceu " + perdedorNome + (passou.isEmpty() ? "" : " e levou " + descricao(passou)));
+            encerrarApostas(x, nome);
             Jogo.salvar();
             return;
         }
         int premio = Jogo.casa.resolverDuelo(x, uuidVencedor, System.currentTimeMillis());
         Jogo.avisar("Fim do duelo! " + motivo + " " + nome + " leva " + premio + " diamante(s).");
         Jogo.webhook("⚔️ **Duelo** — " + nome + " venceu " + perdedorNome + " e levou **" + premio + "** 💎");
+        encerrarApostas(x, nome);
         Jogo.entregarTodos();
         Jogo.salvar();
     }
@@ -489,6 +533,7 @@ public final class Duelos {
     private static void cancelar(Casa.Duelo x, String motivo) {
         ITENS.remove(x.id);
         Jogo.casa.cancelarDuelo(x, System.currentTimeMillis());
+        encerrarApostas(x, null);
         Jogo.avisar("Duelo " + x.nomeA + " x " + x.nomeB + " cancelado: " + motivo + (x.itens ? "" : " Os diamantes foram devolvidos."));
         Jogo.entregarTodos();
         Jogo.salvar();
@@ -578,5 +623,14 @@ public final class Duelos {
     /** Ao ligar o servidor: convites e duelos de itens que estavam no ar somem (nada foi tirado de ninguém). */
     public static void aoLigar() {
         Jogo.casa.duelos.removeIf(x -> x.estado.equals("PROPOSTO") || x.estado.equals("ESCOLHENDO") || (x.itens && x.estado.equals("ATIVO")));
+        // bolões de duelos que não existem mais: devolve as apostas
+        for (var b : new ArrayList<>(Jogo.casa.bolaos)) {
+            if (b.dueloId <= 0 || !b.emAndamento()) continue;
+            Casa.Duelo x = Jogo.casa.achaDuelo(b.dueloId);
+            if (x == null || !x.estado.equals("ATIVO")) {
+                if (b.apostas.isEmpty()) b.status = br.melby.melbybet.core.Bolao.Status.CANCELADO;
+                else Jogo.casa.cancelar(b, System.currentTimeMillis());
+            }
+        }
     }
 }

@@ -79,7 +79,7 @@ public final class MenuBet {
         GuiElementBuilder e = new GuiElementBuilder(icone)
             .setName(t("#" + b.id + "  " + b.titulo, ChatFormatting.GOLD, ChatFormatting.BOLD))
             .hideDefaultTooltip()
-            .addLoreLine(t("Resolve: " + b.gatilho.rotulo, ChatFormatting.GRAY))
+            .addLoreLine(t(b.dueloId > 0 ? "Resolve: o resultado do duelo" : "Resolve: " + b.gatilho.rotulo, ChatFormatting.GRAY))
             .addLoreLine(t("Pote: " + b.pote() + " diamantes", ChatFormatting.AQUA));
         int meu = b.apostadoPor(uuid);
         if (meu > 0) e.addLoreLine(t("Você apostou: " + meu, ChatFormatting.GREEN));

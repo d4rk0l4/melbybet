@@ -91,6 +91,7 @@ No `/bet`, botão **Combinada**: escolha de 2 a 4 bolões abertos, uma opção e
 - Depois de um golpe entre os dois, ficam 30 segundos em combate: `/duelo desistir` só funciona depois disso. Sair do jogo conta como derrota (a mensagem avisa se foi em combate).
 - Se um dos dois sair do jogo, perde. Se alguém morrer por outro motivo, ou passarem 15 minutos sem vencedor, o duelo é cancelado e os diamantes voltam.
 - O resultado vai para o ranking de apostadores e para o Discord.
+- **Apostas no duelo dos outros:** quando um duelo começa, abre sozinho um bolão com os dois lutadores (em `/bet`), aberto por 60 segundos, com limite de 16 diamantes por apostador. Os dois duelistas não podem apostar. O resultado do duelo paga quem acertou (com a taxa normal da casa); se o duelo for cancelado, as apostas voltam.
 - **Duelo de itens:** `/duelo <nick> inv`. Cada um vê o inventário do outro e escolhe até 5 itens dele; depois os dois aceitam os termos. Nada sai do inventário na hora: só quando o duelo acaba o perdedor entrega os itens apostados ao vencedor (no instante da morte, antes de caírem). Sem taxa da casa. O item é reconhecido pelo tipo, encantamentos e nome, e a durabilidade não conta (a espada pode gastar ou ser reparada pelo Remendo durante o duelo); o vencedor recebe o item no estado em que estiver. Se alguém tirar o item apostado do inventário durante o duelo, perde.
 
 ## Morte e placar de duelos
