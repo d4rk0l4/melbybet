@@ -46,6 +46,7 @@ public class Testes {
         lembretes();
         duelos();
         reinicio();
+        morteEPlacar();
         persistencia();
         System.out.println(falhas == 0 ? "tudo certo (" + total + " checagens)" : falhas + " falhas de " + total);
         if (falhas > 0) System.exit(1);
@@ -381,6 +382,46 @@ public class Testes {
         c.resolverDuelo(d, "u1", 2);
         igual(1, c.jogadores.get("u1").duelosGanhos, "duelo ganho");
         igual(1, c.jogadores.get("u2").duelosPerdidos, "duelo perdido");
+    }
+
+    static void morteEPlacar() {
+        igual("norte", Direcao.cardinal(0, -10), "norte");
+        igual("sul", Direcao.cardinal(0, 10), "sul");
+        igual("leste", Direcao.cardinal(10, 0), "leste");
+        igual("oeste", Direcao.cardinal(-10, 0), "oeste");
+        igual("sudoeste", Direcao.cardinal(-10, 10), "sudoeste");
+        igual("nordeste", Direcao.cardinal(7, -7), "nordeste");
+        // olhando para o sul (yaw 0), um ponto ao sul está à frente
+        igual("↑", Direcao.seta(0, 10, 0), "seta a frente");
+        // olhando para o sul, o leste fica à esquerda
+        igual("←", Direcao.seta(10, 0, 0), "seta esquerda");
+        // olhando para o norte (yaw 180), um ponto ao sul está atrás
+        igual("↓", Direcao.seta(0, 10, 180), "seta atras");
+        // olhando para o oeste (yaw 90), o norte fica à direita
+        igual("→", Direcao.seta(0, -10, 90), "seta direita");
+
+        Casa c = casa();
+        Casa.Duelo a = c.proporDuelo("u1", "Davi", "u2", "Kaue", 5, 0);
+        c.ativarDuelo(a, 1);
+        c.resolverDuelo(a, "u1", 10);
+        Casa.Duelo b = c.proporDuelo("u2", "Kaue", "u1", "Davi", 5, 0);
+        c.ativarDuelo(b, 1);
+        c.resolverDuelo(b, "u2", 11);
+        Casa.Duelo e = c.proporDuelo("u1", "Davi", "u2", "Kaue", 5, 0);
+        c.ativarDuelo(e, 1);
+        c.resolverDuelo(e, "u1", 12);
+        int[] pl = c.confronto("davi", "KAUE");
+        igual(2, pl[0], "Davi venceu 2");
+        igual(1, pl[1], "Kaue venceu 1");
+        igual(3, c.duelosDe("Davi", 10).size(), "historico do Davi");
+        igual(12L, c.duelosDe("Kaue", 10).get(0).ts, "mais novo primeiro");
+        igual(1, c.duelosDe("Davi", 1).size(), "limite do historico");
+        Casa.Duelo f = c.proporDuelo("u1", "Davi", "u2", "Kaue", 0, 0);
+        f.itens = true;
+        c.ativarDuelo(f, 1);
+        c.resolverDueloItens(f, "u2", 13, "1x Espada");
+        igual("1x Espada", c.duelosDe("Kaue", 1).get(0).resumo, "resumo do duelo de itens");
+        igual(true, c.duelosDe("Kaue", 1).get(0).itens, "marcado como itens");
     }
 
     static void persistencia() throws Exception {

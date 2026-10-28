@@ -75,10 +75,41 @@ public final class Coords {
 
     /** Ao morrer: mostra só para quem morreu onde foi, com [Copiar] e [Enviar]. */
     public static void avisarMorte(ServerPlayer p) {
-        p.sendSystemMessage(linha("Você morreu em", aqui(p), null));
+        Casa.Local l = aqui(p);
+        l.quando = System.currentTimeMillis();
+        Jogo.casa.mortes.put(p.getUUID().toString(), l);
+        Jogo.salvar();
+        p.sendSystemMessage(linha("Você morreu em", l, null));
+    }
+
+    /** /morte: onde foi a última morte, a que distância e em que direção. */
+    private static void ultimaMorte(ServerPlayer p) {
+        Casa.Local l = Jogo.casa.mortes.get(p.getUUID().toString());
+        if (l == null) {
+            p.sendSystemMessage(Jogo.prefixo("Você ainda não morreu por aqui."));
+            return;
+        }
+        long ha = System.currentTimeMillis() - l.quando;
+        MutableComponent m = linha("Você morreu em", l, null);
+        p.sendSystemMessage(m);
+        if (l.dim.equals(dimensao(p))) {
+            double dx = l.x + 0.5 - p.getX();
+            double dz = l.z + 0.5 - p.getZ();
+            long dist = Math.round(Math.sqrt(dx * dx + dz * dz));
+            p.sendSystemMessage(Component.literal("Está a " + dist + " blocos, para o " + br.melby.melbybet.core.Direcao.cardinal(dx, dz)
+                + " " + br.melby.melbybet.core.Direcao.seta(dx, dz, p.getYRot()) + " (a seta é em relação a onde você olha). Há "
+                + br.melby.melbybet.core.Fmt.duracao(ha) + ".").withStyle(ChatFormatting.GRAY));
+        } else {
+            p.sendSystemMessage(Component.literal("Foi em outra dimensão (" + nomeDim(l.dim) + "). Há " + br.melby.melbybet.core.Fmt.duracao(ha) + ".")
+                .withStyle(ChatFormatting.GRAY));
+        }
     }
 
     public static void registrar(CommandDispatcher<CommandSourceStack> d) {
+        d.register(literal("morte").executes(c -> {
+            ultimaMorte(c.getSource().getPlayerOrException());
+            return 1;
+        }));
         d.register(literal("coords")
             .executes(c -> {
                 ServerPlayer p = c.getSource().getPlayerOrException();

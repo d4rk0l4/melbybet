@@ -104,7 +104,7 @@ public final class Perfil {
             quem.sendSystemMessage(linha("Apostas", j.apostas + " (" + j.acertos + " acertos, " + pct + "%), saldo " + (lucro >= 0 ? "+" : "") + lucro + " diamantes"));
         }
         if (j != null && (j.duelosGanhos + j.duelosPerdidos) > 0) {
-            quem.sendSystemMessage(linha("Duelos", j.duelosGanhos + " vitória(s), " + j.duelosPerdidos + " derrota(s)"));
+            quem.sendSystemMessage(linha("Duelos", j.duelosGanhos + " vitória(s), " + j.duelosPerdidos + " derrota(s) (veja /duelo placar " + nome + ")"));
         }
         if (meu == null && j == null) quem.sendSystemMessage(Component.literal("Ainda sem dados.").withStyle(ChatFormatting.GRAY));
     }

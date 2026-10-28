@@ -111,6 +111,18 @@ public final class Duelos {
                 aceitarTermos(c.getSource().getPlayerOrException(), IntegerArgumentType.getInteger(c, "id"));
                 return 1;
             })))
+            .then(literal("placar")
+                .executes(c -> {
+                    ServerPlayer p = c.getSource().getPlayerOrException();
+                    placar(p, p.getGameProfile().name());
+                    return 1;
+                })
+                .then(argument("nick", com.mojang.brigadier.arguments.StringArgumentType.word())
+                    .suggests((c, b) -> net.minecraft.commands.SharedSuggestionProvider.suggest(Jogo.casa.conhecidos.values(), b))
+                    .executes(c -> {
+                        placar(c.getSource().getPlayerOrException(), com.mojang.brigadier.arguments.StringArgumentType.getString(c, "nick"));
+                        return 1;
+                    })))
             .then(literal("desistir").executes(c -> {
                 ServerPlayer p = c.getSource().getPlayerOrException();
                 Casa.Duelo x = Jogo.casa.duelAtivoDe(p.getUUID().toString());
@@ -136,6 +148,51 @@ public final class Duelos {
                     propor(c.getSource().getPlayerOrException(), EntityArgument.getPlayer(c, "alvo"), IntegerArgumentType.getInteger(c, "valor"));
                     return 1;
                 }))));
+    }
+
+    // ---------- placar ----------
+
+    private static void placar(ServerPlayer p, String nick) {
+        Casa casa = Jogo.casa;
+        String nome = null;
+        for (String n : casa.conhecidos.values()) if (n.equalsIgnoreCase(nick)) nome = n;
+        if (nome == null) {
+            p.sendSystemMessage(Jogo.prefixo("Não conheço ninguém chamado " + nick + "."));
+            return;
+        }
+        List<Casa.DueloReg> lista = casa.duelosDe(nome, 300);
+        p.sendSystemMessage(Component.literal("== Duelos de " + nome + " ==").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD));
+        if (lista.isEmpty()) {
+            p.sendSystemMessage(Component.literal("Nenhum duelo ainda.").withStyle(ChatFormatting.GRAY));
+            return;
+        }
+        int v = 0;
+        int dd = 0;
+        java.util.Set<String> rivais = new java.util.LinkedHashSet<>();
+        for (Casa.DueloReg r : lista) {
+            boolean ganhou = r.nomeVenc.equalsIgnoreCase(nome);
+            if (ganhou) v++;
+            else dd++;
+            rivais.add(ganhou ? r.nomePerd : r.nomeVenc);
+        }
+        p.sendSystemMessage(Component.literal(v + " vitória(s) e " + dd + " derrota(s).").withStyle(ChatFormatting.WHITE));
+        List<String> ordem = new ArrayList<>(rivais);
+        ordem.sort((x, y) -> {
+            int[] a = casa.confronto(nome, x);
+            int[] b = casa.confronto(nome, y);
+            return Integer.compare(b[0] + b[1], a[0] + a[1]);
+        });
+        for (int i = 0; i < Math.min(5, ordem.size()); i++) {
+            int[] c = casa.confronto(nome, ordem.get(i));
+            p.sendSystemMessage(Component.literal("contra " + ordem.get(i) + ": " + nome + " " + c[0] + " x " + c[1] + " " + ordem.get(i)).withStyle(ChatFormatting.AQUA));
+        }
+        p.sendSystemMessage(Component.literal("Últimos duelos:").withStyle(ChatFormatting.YELLOW));
+        long agora = System.currentTimeMillis();
+        for (int i = 0; i < Math.min(5, lista.size()); i++) {
+            Casa.DueloReg r = lista.get(i);
+            p.sendSystemMessage(Component.literal(r.nomeVenc + " venceu " + r.nomePerd + (r.resumo.isEmpty() ? "" : " (" + r.resumo + ")")
+                + ", há " + br.melby.melbybet.core.Fmt.duracao(agora - r.ts)).withStyle(ChatFormatting.GRAY));
+        }
     }
 
     // ---------- duelo em diamantes ----------
@@ -414,7 +471,7 @@ public final class Duelos {
             ServerPlayer perd = on(perdUuid);
             List<ItemStack> apostados = st == null ? new ArrayList<>() : (perdUuid.equals(x.uuidA) ? st.daA : st.daB);
             List<ItemStack> passou = perd == null ? new ArrayList<>() : transferir(perd, venc, apostados);
-            Jogo.casa.resolverDueloItens(x, uuidVencedor, System.currentTimeMillis());
+            Jogo.casa.resolverDueloItens(x, uuidVencedor, System.currentTimeMillis(), passou.isEmpty() ? "nada" : descricao(passou));
             Jogo.avisar("Fim do duelo! " + motivo + " " + nome + " leva: " + (passou.isEmpty() ? "nada (os itens não estavam mais lá)" : descricao(passou)) + ".");
             Jogo.webhook("⚔️ **Duelo de itens** — " + nome + " venceu " + perdedorNome + (passou.isEmpty() ? "" : " e levou " + descricao(passou)));
             Jogo.salvar();

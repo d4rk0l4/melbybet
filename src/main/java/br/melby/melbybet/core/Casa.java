@@ -145,7 +145,11 @@ public class Casa {
     public static class Local {
         public String dim = "overworld";
         public int x, y, z;
+        public long quando;
     }
+
+    /** Onde cada jogador morreu por último (uuid -> local). */
+    public Map<String, Local> mortes = new LinkedHashMap<>();
 
     /** Locais salvos por jogador (uuid -> nome -> local). Só anotações: não teleporta. */
     public Map<String, Map<String, Local>> locais = new LinkedHashMap<>();
@@ -164,6 +168,50 @@ public class Casa {
         public long criadoEm;
         public long inicio;
         public String vencedor = "";
+    }
+
+    /** Um duelo terminado, para o placar. */
+    public static class DueloReg {
+        public long ts;
+        public String uuidVenc = "", nomeVenc = "", uuidPerd = "", nomePerd = "";
+        public boolean itens;
+        public String resumo = "";
+    }
+
+    public List<DueloReg> placarDuelos = new ArrayList<>();
+
+    private void registrarDuelo(Duelo d, String uuidVencedor, boolean itens, String resumo, long agora) {
+        boolean aGanhou = uuidVencedor.equals(d.uuidA);
+        DueloReg r = new DueloReg();
+        r.ts = agora;
+        r.uuidVenc = aGanhou ? d.uuidA : d.uuidB;
+        r.nomeVenc = aGanhou ? d.nomeA : d.nomeB;
+        r.uuidPerd = aGanhou ? d.uuidB : d.uuidA;
+        r.nomePerd = aGanhou ? d.nomeB : d.nomeA;
+        r.itens = itens;
+        r.resumo = resumo;
+        placarDuelos.add(r);
+        while (placarDuelos.size() > 300) placarDuelos.remove(0);
+    }
+
+    /** Os duelos do jogador (nick), do mais novo para o mais antigo. */
+    public List<DueloReg> duelosDe(String nick, int max) {
+        List<DueloReg> r = new ArrayList<>();
+        for (int i = placarDuelos.size() - 1; i >= 0 && r.size() < max; i--) {
+            DueloReg x = placarDuelos.get(i);
+            if (x.nomeVenc.equalsIgnoreCase(nick) || x.nomePerd.equalsIgnoreCase(nick)) r.add(x);
+        }
+        return r;
+    }
+
+    /** Vitórias de a contra b e de b contra a. */
+    public int[] confronto(String a, String b) {
+        int[] v = new int[2];
+        for (DueloReg x : placarDuelos) {
+            if (x.nomeVenc.equalsIgnoreCase(a) && x.nomePerd.equalsIgnoreCase(b)) v[0]++;
+            else if (x.nomeVenc.equalsIgnoreCase(b) && x.nomePerd.equalsIgnoreCase(a)) v[1]++;
+        }
+        return v;
     }
 
     public int proximoDuelo = 1;
@@ -247,11 +295,16 @@ public class Casa {
         (aGanhou ? ja : jb).duelosGanhos++;
         (aGanhou ? jb : ja).duelosPerdidos++;
         historico.add(new Registro(agora, "Duelo: " + (aGanhou ? d.nomeA : d.nomeB) + " venceu " + (aGanhou ? d.nomeB : d.nomeA) + ", levou " + premio + " diamantes"));
+        registrarDuelo(d, uuidVencedor, false, premio + " diamantes", agora);
         return premio;
     }
 
     /** Duelo de itens: quem perde entrega os itens apostados (feito pela camada do jogo). Sem taxa da casa. */
     public void resolverDueloItens(Duelo d, String uuidVencedor, long agora) {
+        resolverDueloItens(d, uuidVencedor, agora, "");
+    }
+
+    public void resolverDueloItens(Duelo d, String uuidVencedor, long agora, String resumo) {
         d.estado = "RESOLVIDO";
         d.vencedor = uuidVencedor;
         boolean aGanhou = uuidVencedor.equals(d.uuidA);
@@ -263,6 +316,7 @@ public class Casa {
         (aGanhou ? ja : jb).duelosGanhos++;
         (aGanhou ? jb : ja).duelosPerdidos++;
         historico.add(new Registro(agora, "Duelo de itens: " + (aGanhou ? d.nomeA : d.nomeB) + " venceu " + (aGanhou ? d.nomeB : d.nomeA)));
+        registrarDuelo(d, uuidVencedor, true, resumo, agora);
     }
 
     /** Cancela e devolve o valor aos dois (só se já estava ativo, pois só aí os diamantes foram tirados). */

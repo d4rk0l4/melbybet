@@ -93,6 +93,11 @@ No `/bet`, botão **Combinada**: escolha de 2 a 4 bolões abertos, uma opção e
 - O resultado vai para o ranking de apostadores e para o Discord.
 - **Duelo de itens:** `/duelo <nick> inv`. Cada um vê o inventário do outro e escolhe até 5 itens dele; depois os dois aceitam os termos. Nada sai do inventário na hora: só quando o duelo acaba o perdedor entrega os itens apostados ao vencedor (no instante da morte, antes de caírem). Sem taxa da casa. O item é reconhecido pelo tipo, encantamentos e nome, e a durabilidade não conta (a espada pode gastar ou ser reparada pelo Remendo durante o duelo); o vencedor recebe o item no estado em que estiver. Se alguém tirar o item apostado do inventário durante o duelo, perde.
 
+## Morte e placar de duelos
+
+- `/morte`: mostra onde foi a sua última morte, a que distância e em que direção (norte, sul..., e uma seta em relação a onde você olha), com [Copiar] e [Enviar]. Fica salvo se o servidor reiniciar.
+- `/duelo placar [nick]`: vitórias e derrotas, os confrontos diretos ("Davi 3 x 1 Kaue") e os últimos 5 duelos, com o que foi apostado.
+
 ## Perfil e reinício
 
 - `/perfil [nick]`: cartão do jogador (online ou offline): título, status, tempo na Gangue, tempo online, distância, blocos, mobs, mortes (com a posição no ranking), apostas, saldo e duelos.
