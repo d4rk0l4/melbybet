@@ -48,6 +48,7 @@ public class Testes {
         reinicio();
         morteEPlacar();
         apostaNoDuelo();
+        limpeza();
         persistencia();
         System.out.println(falhas == 0 ? "tudo certo (" + total + " checagens)" : falhas + " falhas de " + total);
         if (falhas > 0) System.exit(1);
@@ -442,6 +443,18 @@ public class Testes {
         c.resolver(b, "Davi", 1);
         igual(19, c.creditoDe("u3"), "espectador que acertou recebe");
         igual(0, c.creditoDe("u4"), "espectador que errou nao recebe");
+    }
+
+    static void limpeza() {
+        igual(List.of(30L, 10L, 5L, 3L, 2L, 1L), br.melby.melbybet.core.Limpeza.limiares(30), "limiares 30s");
+        igual(List.of(8L, 5L, 3L, 2L, 1L), br.melby.melbybet.core.Limpeza.limiares(8), "limiares 8s");
+        igual(List.of(), br.melby.melbybet.core.Limpeza.limiares(0), "sem aviso");
+        var l = br.melby.melbybet.core.Limpeza.limiares(30);
+        igual(30L, br.melby.melbybet.core.Limpeza.cruzado(l, 31_000, 29_000), "cruzou 30s");
+        igual(-1L, br.melby.melbybet.core.Limpeza.cruzado(l, 20_000, 19_000), "nao cruzou");
+        igual(10L, br.melby.melbybet.core.Limpeza.cruzado(l, 11_000, 10_000), "cruzou 10s");
+        igual(0, new Casa().config.limpezaMinutos, "limpeza desligada por padrao");
+        igual(true, new Casa().config.limpezaProtege, "protege valiosos por padrao");
     }
 
     static void persistencia() throws Exception {

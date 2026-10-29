@@ -91,6 +91,7 @@ public final class Comandos {
         Gestos.registrar(d);
         Duelos.registrar(d);
         Perfil.registrar(d);
+        Limpeza.registrar(d);
         chatEMais(d);
 
         LiteralArgumentBuilder<CommandSourceStack> adm = literal("melbybet")

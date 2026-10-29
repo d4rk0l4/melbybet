@@ -94,6 +94,10 @@ No `/bet`, botão **Combinada**: escolha de 2 a 4 bolões abertos, uma opção e
 - **Apostas no duelo dos outros:** quando um duelo começa, abre sozinho um bolão com os dois lutadores (em `/bet`), aberto por 60 segundos, com limite de 16 diamantes por apostador. Os dois duelistas não podem apostar. O resultado do duelo paga quem acertou (com a taxa normal da casa); se o duelo for cancelado, as apostas voltam.
 - **Duelo de itens:** `/duelo <nick> inv`. Cada um vê o inventário do outro e escolhe até 5 itens dele; depois os dois aceitam os termos. Nada sai do inventário na hora: só quando o duelo acaba o perdedor entrega os itens apostados ao vencedor (no instante da morte, antes de caírem). Sem taxa da casa. O item é reconhecido pelo tipo, encantamentos e nome, e a durabilidade não conta (a espada pode gastar ou ser reparada pelo Remendo durante o duelo); o vencedor recebe o item no estado em que estiver. Se alguém tirar o item apostado do inventário durante o duelo, perde.
 
+## Limpeza do chão (`/limpar`)
+
+`/limpar` (só OP, também em `/melby` > Administração > Limpeza do chão) abre o menu: escolha de quanto em quanto tempo o servidor apaga os itens largados (5, 10, 15, 30, 60 min ou outro valor, ou desligado), quantos segundos antes avisa no chat (depois vem a contagem 10, 5, 3, 2, 1 na tela), por quanto tempo um item recém-largado fica protegido (padrão 30 s) e se itens valiosos ficam no chão (diamante, netherite, elytra, totem, estrela do Nether, encantados e com nome). Também tem "Limpar agora". `/limpar agora` faz o mesmo pelo comando. Vem desligada por padrão.
+
 ## Morte e placar de duelos
 
 - `/morte`: mostra onde foi a sua última morte, a que distância e em que direção (norte, sul..., e uma seta em relação a onde você olha), com [Copiar] e [Enviar]. Fica salvo se o servidor reiniciar.

@@ -272,6 +272,8 @@ public final class MenuMelby {
             .setCallback((i, ty, a, gg) -> config(p)).build());
         g.setSlot(16, btn(Items.SHIELD, "Jogadores", ChatFormatting.RED, "Inventário, título, kick e ban")
             .setCallback((i, ty, a, gg) -> jogadores(p)).build());
+        g.setSlot(20, btn(Items.HOPPER, "Limpeza do chão", ChatFormatting.GREEN, "Apaga os itens largados de tempos em tempos")
+            .setCallback((i, ty, a, gg) -> MenuLimpeza.abrir(p, () -> admin(p))).build());
         g.setSlot(22, btn(Items.CLOCK, "Reinício do servidor", ChatFormatting.RED, "Horários e avisos automáticos")
             .setCallback((i, ty, a, gg) -> reinicio(p)).build());
         voltar(g, 3, () -> principal(p));

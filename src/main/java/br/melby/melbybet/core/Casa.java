@@ -28,6 +28,14 @@ public class Casa {
         public int chatLocalRaio = 100;
         /** Quanto o banco invisível do /sit fica abaixo dos pés, em blocos (maior = senta mais baixo). */
         public double bancoAltura = 1.6;
+        /** De quantos em quantos minutos o servidor apaga os itens do chão (0 = desligado). */
+        public int limpezaMinutos = 0;
+        /** Quantos segundos antes da limpeza o servidor avisa (depois vem a contagem final). */
+        public int limpezaAvisoSeg = 30;
+        /** Itens que acabaram de cair (há menos de tantos segundos) não são apagados. */
+        public int limpezaIdadeMinSeg = 30;
+        /** Não apagar itens valiosos (diamante, netherite, elytra, totem, estrela do Nether), nem encantados ou com nome. */
+        public boolean limpezaProtege = true;
         /** Horários (HH:mm) em que o servidor reinicia: o mod avisa 30, 15, 10, 5, 3, 2 e 1 minuto antes, e a contagem final. */
         public List<String> reinicios = new ArrayList<>();
         /** Fuso dos horários de reinício. */
