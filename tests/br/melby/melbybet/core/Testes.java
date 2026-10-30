@@ -49,6 +49,7 @@ public class Testes {
         morteEPlacar();
         apostaNoDuelo();
         limpeza();
+        apelidos();
         persistencia();
         System.out.println(falhas == 0 ? "tudo certo (" + total + " checagens)" : falhas + " falhas de " + total);
         if (falhas > 0) System.exit(1);
@@ -455,6 +456,22 @@ public class Testes {
         igual(10L, br.melby.melbybet.core.Limpeza.cruzado(l, 11_000, 10_000), "cruzou 10s");
         igual(0, new Casa().config.limpezaMinutos, "limpeza desligada por padrao");
         igual(true, new Casa().config.limpezaProtege, "protege valiosos por padrao");
+    }
+
+    static void apelidos() {
+        var r = Apelido.ler("&6Rei&eDoMel");
+        igual("ReiDoMel", r.texto, "apelido sem codigos");
+        igual(0xFFAA00, r.cor1, "cor 1 do apelido");
+        igual(0xFFFF55, r.cor2, "cor 2 do apelido");
+        var h = Apelido.ler("&#ff0000Fogo&#0000ffAgua");
+        igual("FogoAgua", h.texto, "apelido hex");
+        igual(0xFF0000, h.cor1, "hex 1");
+        igual(0x0000FF, h.cor2, "hex 2");
+        var s = Apelido.ler("Simples");
+        igual(-1, s.cor1, "sem cor");
+        igual(null, Apelido.validar("Simples"), "valido");
+        igual(true, Apelido.validar("a") != null, "curto demais");
+        igual(true, Apelido.validar("nome<>") != null, "caractere ruim");
     }
 
     static void persistencia() throws Exception {

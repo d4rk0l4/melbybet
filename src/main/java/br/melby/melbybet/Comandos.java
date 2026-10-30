@@ -1,6 +1,7 @@
 package br.melby.melbybet;
 
 import br.melby.melbybet.core.Bolao;
+import br.melby.melbybet.core.Apelido;
 import br.melby.melbybet.core.Casa;
 import br.melby.melbybet.core.Gradiente;
 import com.mojang.brigadier.CommandDispatcher;
@@ -91,6 +92,7 @@ public final class Comandos {
         Gestos.registrar(d);
         Duelos.registrar(d);
         Perfil.registrar(d);
+        apelido(d);
         Limpeza.registrar(d);
         chatEMais(d);
 
@@ -339,6 +341,8 @@ public final class Comandos {
         Casa.CorNick cn = new Casa.CorNick();
         cn.cor1 = c1;
         cn.cor2 = c2;
+        Casa.CorNick antes = Jogo.casa.config.cores.get(nick.toLowerCase());
+        if (antes != null) cn.apelido = antes.apelido;
         Jogo.casa.config.cores.put(nick.toLowerCase(), cn);
         Jogo.salvar();
         return null;
@@ -428,6 +432,43 @@ public final class Comandos {
                 .suggests((c, b) -> SharedSuggestionProvider.suggest(Gradiente.NOMES_PRESETS, b))
                 .executes(c -> corDoJogador(c, null))
                 .then(argument("cor2", word()).executes(c -> corDoJogador(c, StringArgumentType.getString(c, "cor2"))))));
+    }
+
+    /** /nick <jogador> <apelido>: muda o nome mostrado no chat e na tab. Códigos de cor viram degradê. */
+    private static void apelido(CommandDispatcher<CommandSourceStack> d) {
+        d.register(literal("nick")
+            .requires(PermissionPredicates.require(ADMIN, PermissionLevel.ADMINS))
+            .then(argument("jogador", word()).suggests(Comandos::nomes)
+                .then(literal("reset").executes(c -> {
+                    String nick = StringArgumentType.getString(c, "jogador");
+                    Casa.CorNick cn = Jogo.casa.config.cores.get(nick.toLowerCase());
+                    if (cn == null || cn.apelido == null) return erro(c, nick + " não tem apelido.");
+                    cn.apelido = null;
+                    Jogo.salvar();
+                    Prefixos.esquecer();
+                    return ok(c, "Apelido de " + nick + " removido.");
+                }))
+                .then(argument("apelido", greedyString()).executes(c -> {
+                    String nick = StringArgumentType.getString(c, "jogador");
+                    if (uuidDe(nick) == null && Jogo.server.getPlayerList().getPlayerByName(nick) == null)
+                        return erro(c, "Não conheço " + nick + ".");
+                    Apelido.Resultado r = Apelido.ler(StringArgumentType.getString(c, "apelido"));
+                    String motivo = Apelido.validar(r.texto);
+                    if (motivo != null) return erro(c, motivo);
+                    Casa.CorNick cn = Jogo.casa.config.cores.get(nick.toLowerCase());
+                    if (cn == null) {
+                        cn = new Casa.CorNick();
+                        Jogo.casa.config.cores.put(nick.toLowerCase(), cn);
+                    }
+                    if (r.cor1 >= 0) {
+                        cn.cor1 = r.cor1;
+                        cn.cor2 = r.cor2;
+                    }
+                    cn.apelido = r.texto;
+                    Jogo.salvar();
+                    Prefixos.esquecer();
+                    return ok(c, "Apelido de " + nick + ": " + r.texto + (r.cor1 >= 0 ? " (com degradê)" : ""));
+                }))));
     }
 
     private static int corDeOutro(CommandContext<CommandSourceStack> c, String cor2) {

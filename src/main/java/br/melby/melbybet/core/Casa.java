@@ -85,6 +85,8 @@ public class Casa {
     public static class CorNick {
         public int cor1 = 0xFFFFFF;
         public int cor2 = 0xFFFFFF;
+        /** Nome mostrado no lugar do nick (chat e tab); null = o nick de verdade. */
+        public String apelido;
     }
 
     /** Uma mensagem privada, guardada para os admins conferirem. */

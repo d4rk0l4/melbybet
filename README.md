@@ -159,3 +159,7 @@ Ainda não feito: empréstimo do Mineiro, apostas combinadas, bolões automátic
 
 
 O degradê de cor do nick (`/melby` > Perfil) também aparece na lista de jogadores (tab), junto com o título e o [AFK].
+
+## Apelido (`/nick`)
+
+`/nick <jogador> <apelido>` (só OP) troca o nome mostrado no chat e na tab, sem mudar o nick de verdade. Códigos de cor viram degradê: `&6Rei&eDoMel` vai do laranja ao amarelo (também vale `&#rrggbb`); a primeira e a última cor definem o degradê. `/nick <jogador> reset` volta ao normal.

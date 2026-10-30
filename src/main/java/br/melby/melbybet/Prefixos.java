@@ -84,6 +84,7 @@ public final class Prefixos {
         String nome = p.getGameProfile().name();
         Casa.CorNick c = Jogo.casa.config.cores.get(nome.toLowerCase());
         if (c == null) return Component.literal(nome).withStyle(ChatFormatting.WHITE);
+        if (c.apelido != null && !c.apelido.isBlank()) nome = c.apelido;
         return degrade(nome, c.cor1, c.cor2);
     }
 
@@ -126,7 +127,7 @@ public final class Prefixos {
         Object[] titulo = tituloDe(p, ranking);
         Casa.CorNick cn = Jogo.casa.config.cores.get(p.getGameProfile().name().toLowerCase());
         String assinatura = (afk ? "A" : "-") + (titulo == null ? "" : titulo[0] + "|" + titulo[1] + "|" + titulo[2])
-            + "#" + (cn == null ? "" : cn.cor1 + "|" + cn.cor2);
+            + "#" + (cn == null ? "" : cn.cor1 + "|" + cn.cor2 + "|" + cn.apelido);
         if (assinatura.equals(ASSINATURA.get(p.getUUID()))) return;
         avisarTab(p);
 
