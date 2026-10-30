@@ -31,6 +31,23 @@ public final class Limpeza {
                 MenuLimpeza.abrir(c.getSource().getPlayerOrException(), null);
                 return 1;
             })
+            .then(literal("aviso")
+                .then(com.mojang.brigadier.builder.RequiredArgumentBuilder.<CommandSourceStack, String>argument("valor", com.mojang.brigadier.arguments.StringArgumentType.word())
+                    .suggests((c, s) -> net.minecraft.commands.SharedSuggestionProvider.suggest(new String[] {"sim", "nao"}, s))
+                    .executes(c -> {
+                        String v = com.mojang.brigadier.arguments.StringArgumentType.getString(c, "valor").toLowerCase();
+                        boolean liga;
+                        if (v.equals("sim") || v.equals("s") || v.equals("on")) liga = true;
+                        else if (v.equals("nao") || v.equals("não") || v.equals("n") || v.equals("off")) liga = false;
+                        else {
+                            c.getSource().sendFailure(Component.literal("Use: /limpar aviso sim  ou  /limpar aviso nao"));
+                            return 0;
+                        }
+                        Jogo.casa.config.limpezaAviso = liga;
+                        Jogo.salvar();
+                        c.getSource().sendSuccess(() -> Component.literal("Aviso da limpeza " + (liga ? "ligado." : "desligado.")), false);
+                        return 1;
+                    })))
             .then(literal("agora").executes(c -> {
                 executar();
                 return 1;
@@ -116,7 +133,7 @@ public final class Limpeza {
         }
         if (ultimoMs >= 0) {
             long aviso = br.melby.melbybet.core.Limpeza.cruzado(br.melby.melbybet.core.Limpeza.limiares(Jogo.casa.config.limpezaAvisoSeg), ultimoMs, resta);
-            if (aviso > 0) avisar(aviso);
+            if (aviso > 0 && Jogo.casa.config.limpezaAviso) avisar(aviso);
         }
         ultimoMs = resta;
     }

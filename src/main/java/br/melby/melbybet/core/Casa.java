@@ -36,6 +36,8 @@ public class Casa {
         public int limpezaIdadeMinSeg = 30;
         /** Não apagar itens valiosos (diamante, netherite, elytra, totem, estrela do Nether), nem encantados ou com nome. */
         public boolean limpezaProtege = true;
+        /** Avisar no chat (e na tela) antes de limpar. */
+        public boolean limpezaAviso = true;
         /** Horários (HH:mm) em que o servidor reinicia: o mod avisa 30, 15, 10, 5, 3, 2 e 1 minuto antes, e a contagem final. */
         public List<String> reinicios = new ArrayList<>();
         /** Fuso dos horários de reinício. */

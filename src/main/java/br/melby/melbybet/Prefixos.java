@@ -87,6 +87,19 @@ public final class Prefixos {
         return degrade(nome, c.cor1, c.cor2);
     }
 
+    /** Nome da tab com degradê (título e AFK incluídos); null se o jogador não tem cor, e então vale o time normal. */
+    public static Component nomeNaTab(ServerPlayer p) {
+        if (Jogo.casa == null || Jogo.server == null) return null;
+        Casa.CorNick c = Jogo.casa.config.cores.get(p.getGameProfile().name().toLowerCase());
+        if (c == null) return null;
+        return Component.empty().append(prefixoDe(p)).append(nomeColorido(p));
+    }
+
+    private static void avisarTab(ServerPlayer p) {
+        Jogo.server.getPlayerList().broadcastAll(new net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket(
+            net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket.Action.UPDATE_DISPLAY_NAME, p));
+    }
+
     public static void atualizarTodos() {
         List<Casa.Jogador> ranking = Jogo.casa.rankingApostadores();
         Set<UUID> online = new java.util.HashSet<>();
@@ -111,8 +124,11 @@ public final class Prefixos {
     public static void atualizar(ServerPlayer p, List<Casa.Jogador> ranking) {
         boolean afk = Extras.estaAfk(p.getUUID());
         Object[] titulo = tituloDe(p, ranking);
-        String assinatura = (afk ? "A" : "-") + (titulo == null ? "" : titulo[0] + "|" + titulo[1] + "|" + titulo[2]);
+        Casa.CorNick cn = Jogo.casa.config.cores.get(p.getGameProfile().name().toLowerCase());
+        String assinatura = (afk ? "A" : "-") + (titulo == null ? "" : titulo[0] + "|" + titulo[1] + "|" + titulo[2])
+            + "#" + (cn == null ? "" : cn.cor1 + "|" + cn.cor2);
         if (assinatura.equals(ASSINATURA.get(p.getUUID()))) return;
+        avisarTab(p);
 
         Scoreboard sb = Jogo.server.getScoreboard();
         String nome = p.getScoreboardName();

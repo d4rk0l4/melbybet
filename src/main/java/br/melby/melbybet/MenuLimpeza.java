@@ -83,6 +83,13 @@ final class MenuLimpeza {
                 Jogo.salvar();
                 abrir(p, voltar);
             }).build());
+        g.setSlot(22, btn(c.limpezaAviso ? Items.BELL : Items.BARRIER, c.limpezaAviso ? "Avisar no chat: sim" : "Avisar no chat: não",
+            c.limpezaAviso ? ChatFormatting.GREEN : ChatFormatting.RED, "Liga ou desliga o aviso antes da limpeza", "(o mesmo que /limpar aviso sim|nao)")
+            .setCallback((i, ty, a, gg) -> {
+                c.limpezaAviso = !c.limpezaAviso;
+                Jogo.salvar();
+                abrir(p, voltar);
+            }).build());
         g.setSlot(23, btn(Items.TNT, "Limpar agora", ChatFormatting.RED, "Apaga já, sem aviso, e conta de novo o tempo")
             .setCallback((i, ty, a, gg) -> {
                 Limpeza.executar();
