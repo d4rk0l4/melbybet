@@ -92,7 +92,7 @@ final class MenuLimpeza {
             }).build());
         g.setSlot(23, btn(Items.TNT, "Limpar agora", ChatFormatting.RED, "Apaga já, sem aviso, e conta de novo o tempo")
             .setCallback((i, ty, a, gg) -> {
-                Limpeza.executar();
+                Limpeza.executar(p);
                 abrir(p, voltar);
             }).build());
 

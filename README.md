@@ -96,7 +96,7 @@ No `/bet`, botão **Combinada**: escolha de 2 a 4 bolões abertos, uma opção e
 
 ## Limpeza do chão (`/limpar`)
 
-`/limpar` (só OP, também em `/melby` > Administração > Limpeza do chão) abre o menu: escolha de quanto em quanto tempo o servidor apaga os itens largados (5, 10, 15, 30, 60 min ou outro valor, ou desligado), quantos segundos antes avisa no chat (depois vem a contagem 10, 5, 3, 2, 1 na tela), por quanto tempo um item recém-largado fica protegido (padrão 30 s) e se itens valiosos ficam no chão (diamante, netherite, elytra, totem, estrela do Nether, encantados e com nome). Também tem "Limpar agora". `/limpar agora` faz o mesmo pelo comando. `/limpar aviso sim|nao` liga ou desliga o aviso antes da limpeza. Vem desligada por padrão.
+`/limpar` (só OP, também em `/melby` > Administração > Limpeza do chão) abre o menu: escolha de quanto em quanto tempo o servidor apaga os itens largados (5, 10, 15, 30, 60 min ou outro valor, ou desligado), quantos segundos antes avisa no chat (depois vem a contagem 10, 5, 3, 2, 1 na tela), por quanto tempo um item recém-largado fica protegido (padrão 30 s) e se itens valiosos ficam no chão (diamante, netherite, elytra, totem, estrela do Nether, encantados e com nome). Também tem "Limpar agora". `/limpar agora` faz o mesmo pelo comando. `/limpar aviso sim|nao` liga ou desliga todos os avisos da limpeza (a contagem e o resumo no chat; com ele desligado, só quem mandou limpar vê o resumo). Vem desligada por padrão.
 
 ## Morte e placar de duelos
 

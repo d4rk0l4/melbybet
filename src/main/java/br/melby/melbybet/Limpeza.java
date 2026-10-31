@@ -49,7 +49,7 @@ public final class Limpeza {
                         return 1;
                     })))
             .then(literal("agora").executes(c -> {
-                executar();
+                executar(c.getSource().getPlayer());
                 return 1;
             })));
     }
@@ -77,6 +77,11 @@ public final class Limpeza {
 
     /** Apaga os itens do chão agora, respeitando as proteções. Devolve quantos itens (entidades) saíram. */
     public static int executar() {
+        return executar(null);
+    }
+
+    /** Com o aviso desligado, o resumo só vai para quem mandou limpar (se for um jogador). */
+    public static int executar(ServerPlayer quem) {
         Casa.Config cfg = Jogo.casa.config;
         int removidos = 0;
         int protegidos = 0;
@@ -99,7 +104,11 @@ public final class Limpeza {
             .append(Component.literal(removidos == 0 ? "Nada para apagar no chão."
                 : removidos + " item(ns) do chão foram apagados." + (protegidos > 0 ? " (" + protegidos + " ficaram: recém-largados ou valiosos)" : ""))
                 .withStyle(ChatFormatting.WHITE));
-        for (ServerPlayer p : Jogo.server.getPlayerList().getPlayers()) p.sendSystemMessage(msg);
+        if (cfg.limpezaAviso) {
+            for (ServerPlayer p : Jogo.server.getPlayerList().getPlayers()) p.sendSystemMessage(msg);
+        } else if (quem != null) {
+            quem.sendSystemMessage(msg);
+        }
         reagendar();
         return removidos;
     }
