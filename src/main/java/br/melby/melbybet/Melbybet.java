@@ -42,7 +42,10 @@ public class Melbybet implements ModInitializer {
         ServerTickEvents.END_SERVER_TICK.register(server -> aCadaTick());
         ServerLivingEntityEvents.AFTER_DEATH.register(Melbybet::aoMorrer);
         ServerLivingEntityEvents.ALLOW_DEATH.register((entidade, fonte, dano) -> {
-            if (entidade instanceof ServerPlayer p) Duelos.antesDeMorrer(p, fonte);
+            if (entidade instanceof ServerPlayer p) {
+                Duelos.antesDeMorrer(p, fonte);
+                MsgMatar.antes(p, fonte);
+            }
             return true;
         });
         ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> Duelos.aoSair(handler.getPlayer()));
@@ -82,6 +85,7 @@ public class Melbybet implements ModInitializer {
         if (tick % 20 == 0) Duelos.aCadaSegundo();
         if (tick % 20 == 0) Reinicios.aCadaSegundo();
         if (tick % 20 == 0) Limpeza.aCadaSegundo();
+        if (tick % 20 == 0) Sorteio.aCadaSegundo();
         if (tick % 600 == 0) Jogo.conferirConquistas();
         if (tick % 6000 == 0) Jogo.salvar();
     }

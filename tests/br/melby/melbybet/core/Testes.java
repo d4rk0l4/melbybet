@@ -51,6 +51,7 @@ public class Testes {
         limpeza();
         apelidos();
         placas();
+        loteria();
         persistencia();
         System.out.println(falhas == 0 ? "tudo certo (" + total + " checagens)" : falhas + " falhas de " + total);
         if (falhas > 0) System.exit(1);
@@ -492,6 +493,34 @@ public class Testes {
         igual("abcd", TextoPlaca.semCodigos("<#ff0000-#0000ff>abc</>d"), "placa: sem codigos");
         igual(false, TextoPlaca.temCodigo("Loja do Melby"), "placa: sem codigo");
         igual(true, TextoPlaca.temCodigo("&aLoja"), "placa: com codigo");
+    }
+
+    static void loteria() {
+        Casa casa = new Casa();
+        var l = casa.loteria;
+        igual(true, l.abrir(0, 10, 10, 0) != null, "loteria: preco invalido");
+        igual(null, l.abrir(2, 10, 5, 0L), "loteria: abre");
+        igual(true, l.abrir(2, 10, 5, 0L) != null, "loteria: nao abre duas");
+        igual(null, l.validarCompra("a", 3, 1000L), "loteria: compra ok");
+        l.comprar("a", "Ana", 3);
+        igual(true, l.validarCompra("a", 3, 1000L) != null, "loteria: passou do limite");
+        igual(true, l.validarCompra("b", 1, 10 * 60_000L + 1) != null, "loteria: tempo acabou");
+        l.comprar("b", "Beto", 2);
+        igual(10, l.pote(), "loteria: pote");
+        var r = l.sortear(casa, new java.util.Random(1), 5L);
+        igual(false, r.devolvido, "loteria: sorteou");
+        igual(10 - 10 * casa.config.rakePct / 100, r.premio, "loteria: premio com taxa");
+        igual(r.premio, casa.creditoDe(r.uuid), "loteria: credito ao vencedor");
+        igual(false, l.ativa, "loteria: encerrou");
+        l.abrir(1, 5, 10, 0L);
+        l.comprar("a", "Ana", 4);
+        var d = l.sortear(casa, new java.util.Random(1), 5L);
+        igual(true, d.devolvido, "loteria: so uma pessoa devolve");
+        igual(4 + r.premio * (r.uuid.equals("a") ? 1 : 0), casa.creditoDe("a"), "loteria: devolveu os bilhetes");
+        l.abrir(1, 5, 10, 0L);
+        l.comprar("b", "Beto", 2);
+        igual(true, l.cancelar(casa, 1L), "loteria: cancela");
+        igual(false, l.cancelar(casa, 1L), "loteria: nada a cancelar");
     }
 
     static void persistencia() throws Exception {

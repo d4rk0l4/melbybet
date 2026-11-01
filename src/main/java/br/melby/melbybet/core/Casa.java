@@ -38,6 +38,8 @@ public class Casa {
         public boolean limpezaProtege = true;
         /** Avisar no chat (e na tela) antes de limpar. */
         public boolean limpezaAviso = true;
+        /** Mensagem de cada jogador quando ele mata outro: usa {matador} e {vitima}. Chave: nick em minúsculas. */
+        public Map<String, String> msgMatar = new LinkedHashMap<>();
         /** Horários (HH:mm) em que o servidor reinicia: o mod avisa 30, 15, 10, 5, 3, 2 e 1 minuto antes, e a contagem final. */
         public List<String> reinicios = new ArrayList<>();
         /** Fuso dos horários de reinício. */
@@ -139,6 +141,7 @@ public class Casa {
     public long cofre;
     /** Pote acumulado de bolões em que ninguém acertou. Vai para o próximo bolão resolvido. */
     public long jackpot;
+    public Loteria loteria = new Loteria();
     public List<Bolao> bolaos = new ArrayList<>();
     /** uuid -> estatísticas de aposta. */
     public Map<String, Jogador> jogadores = new LinkedHashMap<>();

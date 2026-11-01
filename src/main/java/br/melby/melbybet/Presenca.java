@@ -25,6 +25,7 @@ public final class Presenca {
     /** Troca as mensagens padrão de entrar e sair pelas da Gangue. */
     private static boolean permitir(Component mensagem) {
         if (Jogo.server == null) return true;
+        if (!MsgMatar.permitir(mensagem)) return false;
         if (!(mensagem.getContents() instanceof TranslatableContents tc)) return true;
         String chave = tc.getKey();
         boolean entrou = chave.startsWith("multiplayer.player.joined");

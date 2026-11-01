@@ -171,3 +171,11 @@ Na tela do villager, escolha a troca e dê shift+clique no resultado: o servidor
 ## Placas bonitas
 
 Ao escrever numa placa (ou com `/placa <linha 1-4> <texto>` olhando para ela, sem o limite de largura do teclado), os códigos viram cor: `&0`-`&f` (cores), `&l` negrito, `&o` itálico, `&n` sublinhado, `&m` riscado, `&k` embaralhado, `&r` limpa, `&#ff8a24` (cor exata) e degradê com `<#ff0000-#0000ff>texto</>`. `/placa limpar` apaga a placa. Placa encerada não muda. Vale também para placa pendurada e para o verso. Ao editar de novo uma placa já colorida, o campo mostra só o texto: os códigos precisam ser escritos outra vez.
+
+## Loteria da Gangue (`/loteria`)
+
+O OP abre com `/loteria criar <minutos> <preço> [limite]`: tempo até o sorteio (1 min a 7 dias), preço do bilhete em diamantes (1 a 64) e limite de bilhetes por pessoa (padrão 10). Os jogadores usam `/loteria` (status, com botões clicáveis) e `/loteria comprar [qtd]`. Na hora marcada o servidor sorteia, com chance proporcional aos bilhetes, e o vencedor leva o pote menos a taxa da casa (a mesma dos bolões); o prêmio chega como os outros (crédito entregue ao entrar ou com espaço no inventário). Entrou menos de 2 pessoas: todos os bilhetes são devolvidos. Avisos no chat quando faltam 10 min, 5 min, 1 min e 10 s. `/loteria sortear` sorteia já e `/loteria cancelar` devolve tudo. Sobrevive a reinício do servidor.
+
+## Mensagem de kill (`/msgmatar`)
+
+`/msgmatar <texto>` define a frase que aparece no chat quando você mata outro jogador, no lugar da mensagem padrão do jogo. Use `{vitima}` (obrigatório) e `{matador}`, e os códigos de cor das placas (`&c`, `&l`, `&#ff8a24`). Ex.: `/msgmatar &c{matador} &7mandou {vitima} pro espaço`. `/msgmatar off` volta ao normal. Se o jogo não tiver sido trocado a tempo, a mensagem padrão aparece junto.
