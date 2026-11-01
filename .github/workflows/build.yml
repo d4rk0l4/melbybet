@@ -21,7 +21,13 @@ jobs:
       - name: make gradle wrapper executable
         run: chmod +x ./gradlew
       - name: build
+        continue-on-error: true
         run: ./gradlew build
+      - name: javap (temporario)
+        if: always()
+        run: |
+          J=~/.gradle/caches/fabric-loom/26.2/minecraft-common.jar
+          javap -p -cp "$J" net.minecraft.world.level.block.ColorCollection | cut -c1-170
       - name: testes da lógica (apostas, pagamento, ranking)
         run: |
           GSON=$(find ~/.gradle -name 'gson-*.jar' ! -name '*sources*' | head -1)
