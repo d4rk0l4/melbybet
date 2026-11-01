@@ -1,5 +1,8 @@
 # Versões do MelbyBet
 
+## 1.3.1
+- Backup diário do casa.json (7 dias), /backup manual e cópia de segurança quando o arquivo não abre
+
 ## 1.3.0
 - /msgmatar com várias mensagens (sorteadas) e uma específica por vítima
 - Aviso de horas online (5, 10, 25, 50, 100... horas) e aviso de durabilidade na action bar (/durabilidade)

@@ -99,6 +99,7 @@ public final class Comandos {
         MsgMatar.registrar(d);
         Corpos.registrar(d);
         Durabilidade.registrar(d);
+        Backup.registrar(d);
         chatEMais(d);
 
         LiteralArgumentBuilder<CommandSourceStack> adm = literal("melbybet")

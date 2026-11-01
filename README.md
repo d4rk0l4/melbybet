@@ -187,3 +187,7 @@ Quando um jogador morre (sem keepInventory), todos os itens ficam num corpo: a c
 ## Horas online e durabilidade
 
 Quando alguém completa 5, 10, 25, 50, 100, 150, 200, 250, 300, 400, 500, 600, 750, 1000, 1500 ou 2000 horas de servidor, o chat comemora (e o Discord, se o webhook estiver ligado). Só os marcos novos são anunciados; quem já tinha horas quando o mod viu pela primeira vez só é registrado. Além disso, quando uma ferramenta ou peça de armadura que você está usando chega a 10% e depois a 5% de durabilidade, aparece um aviso na action bar (no 5% também toca um som). `/durabilidade` liga e desliga o aviso para você.
+
+## Backup do casa.json
+
+Uma vez por dia o mod copia o `casa.json` para `config/melbybet/backups/casa-AAAA-MM-DD.json` e mantém os 7 mais recentes (`backupDias` na config; 0 desliga). Se o `casa.json` não abrir ao ligar o servidor, o mod guarda uma cópia dele como `corrompido-...json` antes de começar uma casa nova (antes, esse arquivo era sobrescrito). `/backup` (OP) cria um backup manual na hora (guarda os 10 últimos). Para restaurar: pare o servidor, copie o backup para `config/melbybet/casa.json` e ligue de novo.

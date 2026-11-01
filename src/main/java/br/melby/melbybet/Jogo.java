@@ -44,7 +44,8 @@ public final class Jogo {
         try {
             casa = Armazem.carregar(arquivo);
         } catch (Exception e) {
-            Melbybet.LOGGER.error("Não consegui ler {}; começando uma casa nova (o arquivo antigo não foi apagado).", arquivo, e);
+            Melbybet.LOGGER.error("Não consegui ler {}; guardei uma cópia dele em backups e começo uma casa nova.", arquivo, e);
+            Backup.guardarCorrompido();
             casa = new Casa();
         }
         Prefixos.limparTudo();

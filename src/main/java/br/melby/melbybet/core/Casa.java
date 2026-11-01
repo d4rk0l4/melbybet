@@ -46,6 +46,8 @@ public class Casa {
         public java.util.Set<String> semAvisoDurabilidade = new java.util.LinkedHashSet<>();
         /** Depois de quantas horas o corpo some e solta os itens no chão (0 = nunca). */
         public int corpoHoras = 0;
+        /** Quantos backups diários do casa.json guardar. */
+        public int backupDias = 7;
         /** Horários (HH:mm) em que o servidor reinicia: o mod avisa 30, 15, 10, 5, 3, 2 e 1 minuto antes, e a contagem final. */
         public List<String> reinicios = new ArrayList<>();
         /** Fuso dos horários de reinício. */

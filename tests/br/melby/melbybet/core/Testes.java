@@ -54,6 +54,7 @@ public class Testes {
         loteria();
         corpos();
         msgMatar();
+        backups();
         persistencia();
         System.out.println(falhas == 0 ? "tudo certo (" + total + " checagens)" : falhas + " falhas de " + total);
         if (falhas > 0) System.exit(1);
@@ -558,6 +559,20 @@ public class Testes {
         igual(0, Marcos.maiorAte(4.9), "marcos: nenhum");
         igual(10, Marcos.maiorAte(12), "marcos: 10h");
         igual(2000, Marcos.maiorAte(99999), "marcos: maior");
+    }
+
+    static void backups() throws Exception {
+        java.nio.file.Path dir = java.nio.file.Files.createTempDirectory("mbbk");
+        java.nio.file.Path orig = dir.resolve("casa.json");
+        igual(null, Backups.copiar(orig, dir.resolve("b"), "x.json"), "backup: sem origem");
+        java.nio.file.Files.writeString(orig, "{}");
+        for (int i = 1; i <= 5; i++) Backups.copiar(orig, dir.resolve("b"), "casa-2026-01-0" + i + ".json");
+        Backups.copiar(orig, dir.resolve("b"), "manual-1.json");
+        igual(true, Backups.existe(dir.resolve("b"), "casa-2026-01-03.json"), "backup: existe");
+        igual(3, Backups.limpar(dir.resolve("b"), "casa-2", 2), "backup: apagou os antigos");
+        igual(false, Backups.existe(dir.resolve("b"), "casa-2026-01-01.json"), "backup: o mais antigo saiu");
+        igual(true, Backups.existe(dir.resolve("b"), "casa-2026-01-05.json"), "backup: o mais novo ficou");
+        igual(true, Backups.existe(dir.resolve("b"), "manual-1.json"), "backup: outro prefixo intacto");
     }
 
     static void persistencia() throws Exception {
