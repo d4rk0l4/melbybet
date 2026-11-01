@@ -30,6 +30,10 @@ public abstract class VenderTudoMixin {
     private void melbybet$repor(Player player, int index, CallbackInfoReturnable<ItemStack> cir) {
         if (index != 2 || this.melbybet$troca < 0 || !(player instanceof ServerPlayer)) return;
         if (cir.getReturnValue() == null || cir.getReturnValue().isEmpty()) return;
-        ((MerchantMenu) (Object) this).tryMoveItems(this.melbybet$troca);
+        MerchantMenu menu = (MerchantMenu) (Object) this;
+        menu.tryMoveItems(this.melbybet$troca);
+        // o cliente só previu uma troca: manda o estado real das ofertas para ele mostrar a troca esgotada
+        ((ServerPlayer) player).sendMerchantOffers(menu.containerId, menu.getOffers(), menu.getTraderLevel(), menu.getTraderXp(),
+            menu.showProgressBar(), menu.canRestock());
     }
 }

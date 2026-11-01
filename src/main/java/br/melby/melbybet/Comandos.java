@@ -98,6 +98,7 @@ public final class Comandos {
         Sorteio.registrar(d);
         MsgMatar.registrar(d);
         Corpos.registrar(d);
+        Durabilidade.registrar(d);
         chatEMais(d);
 
         LiteralArgumentBuilder<CommandSourceStack> adm = literal("melbybet")

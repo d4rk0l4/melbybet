@@ -53,6 +53,7 @@ public class Testes {
         placas();
         loteria();
         corpos();
+        msgMatar();
         persistencia();
         System.out.println(falhas == 0 ? "tudo certo (" + total + " checagens)" : falhas + " falhas de " + total);
         if (falhas > 0) System.exit(1);
@@ -537,6 +538,26 @@ public class Testes {
         casa.removerCorpo(1);
         igual(null, casa.corpo(1), "corpo: removido");
         igual(1, casa.corpos.size(), "corpo: sobrou um");
+    }
+
+    static void msgMatar() {
+        Casa casa = new Casa();
+        var r = new java.util.Random(3);
+        igual(null, casa.escolherMsgMatar("Ana", "Beto", r), "msgmatar: nenhuma");
+        casa.config.msgMatar.put("ana", "antiga {vitima}");
+        igual("antiga {vitima}", casa.escolherMsgMatar("Ana", "Beto", r), "msgmatar: migra a antiga");
+        igual(0, casa.config.msgMatar.size(), "msgmatar: antiga limpa");
+        casa.msgsMatar("Ana", null).add("B {vitima}");
+        casa.msgsMatar("Ana", "Beto").add("so pro Beto {vitima}");
+        igual("so pro Beto {vitima}", casa.escolherMsgMatar("Ana", "Beto", r), "msgmatar: especifica vence");
+        igual(true, casa.escolherMsgMatar("Ana", "Caio", r) != null, "msgmatar: padrao para os outros");
+        igual(3, casa.todasMsgsMatar("Ana").size(), "msgmatar: lista numerada");
+        igual(true, casa.removerMsgMatar("Ana", 3), "msgmatar: remove a especifica");
+        igual(2, casa.todasMsgsMatar("Ana").size(), "msgmatar: sobraram 2");
+        igual(false, casa.removerMsgMatar("Ana", 9), "msgmatar: numero invalido");
+        igual(0, Marcos.maiorAte(4.9), "marcos: nenhum");
+        igual(10, Marcos.maiorAte(12), "marcos: 10h");
+        igual(2000, Marcos.maiorAte(99999), "marcos: maior");
     }
 
     static void persistencia() throws Exception {

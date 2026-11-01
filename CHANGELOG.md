@@ -1,5 +1,10 @@
 # Versões do MelbyBet
 
+## 1.3.0
+- /msgmatar com várias mensagens (sorteadas) e uma específica por vítima
+- Aviso de horas online (5, 10, 25, 50, 100... horas) e aviso de durabilidade na action bar (/durabilidade)
+- Vender tudo no villager: a tela agora mostra a troca esgotada
+
 ## 1.2.0
 - Corpo: itens da morte ficam num corpo que qualquer um abre e escolhe o que pegar (substitui o mod Gravestones); morte no void deixa o corpo no último lugar seguro
 - Mensagem de kill, loteria e placas bonitas (já na 1.1.0 abaixo)

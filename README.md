@@ -178,8 +178,12 @@ O OP abre com `/loteria criar <minutos> <preço> [limite]`: tempo até o sorteio
 
 ## Mensagem de kill (`/msgmatar`)
 
-`/msgmatar <texto>` define a frase que aparece no chat quando você mata outro jogador, no lugar da mensagem padrão do jogo. Use `{vitima}` (obrigatório) e `{matador}`, e os códigos de cor das placas (`&c`, `&l`, `&#ff8a24`). Ex.: `/msgmatar &c{matador} &7mandou {vitima} pro espaço`. `/msgmatar off` volta ao normal. Se o jogo não tiver sido trocado a tempo, a mensagem padrão aparece junto.
+Cada jogador tem as suas frases, que aparecem no chat quando ele mata outro jogador, no lugar da mensagem padrão do jogo. `/msgmatar add <texto>` adiciona uma (até 10; a cada kill uma é sorteada), `/msgmatar contra <jogador> <texto>` adiciona uma só para quando matar aquela pessoa (essa vence a padrão), `/msgmatar` lista com números, `/msgmatar remover <n>` tira uma e `/msgmatar off` apaga todas. Use `{vitima}` (obrigatório) e `{matador}`, e os códigos de cor das placas (`&c`, `&l`, `&#ff8a24`). Ex.: `/msgmatar add &c{matador} &7mandou {vitima} pro espaço`.
 
 ## Corpo (itens da morte)
 
 Quando um jogador morre (sem keepInventory), todos os itens ficam num corpo: a cabeça dele flutuando com o nome "Corpo de Fulano". Qualquer jogador abre com o botão direito e vê os itens numa tela; clicar num item pega só ele, e "Pegar tudo" leva o que couber. Quando esvazia, o corpo some; o dono é avisado quando outro mexe. Morte no void deixa o corpo no último lugar seguro em que o jogador esteve. `/corpo` lista os seus corpos com coordenadas; OPs têm `/corpo lista` e `/corpo abrir <id>`. Os itens ficam salvos no `casa.json`, então sobrevivem a reinício. Opcional: `corpoHoras` na config (padrão 0 = nunca) faz o corpo soltar os itens no chão depois de N horas. **Não use junto com o mod Gravestones**: os dois disputam os itens da morte.
+
+## Horas online e durabilidade
+
+Quando alguém completa 5, 10, 25, 50, 100, 150, 200, 250, 300, 400, 500, 600, 750, 1000, 1500 ou 2000 horas de servidor, o chat comemora (e o Discord, se o webhook estiver ligado). Só os marcos novos são anunciados; quem já tinha horas quando o mod viu pela primeira vez só é registrado. Além disso, quando uma ferramenta ou peça de armadura que você está usando chega a 10% e depois a 5% de durabilidade, aparece um aviso na action bar (no 5% também toca um som). `/durabilidade` liga e desliga o aviso para você.

@@ -39,7 +39,11 @@ public class Casa {
         /** Avisar no chat (e na tela) antes de limpar. */
         public boolean limpezaAviso = true;
         /** Mensagem de cada jogador quando ele mata outro: usa {matador} e {vitima}. Chave: nick em minúsculas. */
-        public Map<String, String> msgMatar = new LinkedHashMap<>();
+        public Map<String, String> msgMatar = new LinkedHashMap<>(); // formato antigo (uma só), migrado para msgMatarLista
+        /** Mensagens de kill: "matador" = padrão; "matador>vitima" = só quando mata aquela pessoa. Chaves em minúsculas. */
+        public Map<String, List<String>> msgMatarLista = new LinkedHashMap<>();
+        /** Jogadores que desligaram o aviso de durabilidade (nick em minúsculas). */
+        public java.util.Set<String> semAvisoDurabilidade = new java.util.LinkedHashSet<>();
         /** Depois de quantas horas o corpo some e solta os itens no chão (0 = nunca). */
         public int corpoHoras = 0;
         /** Horários (HH:mm) em que o servidor reinicia: o mod avisa 30, 15, 10, 5, 3, 2 e 1 minuto antes, e a contagem final. */
@@ -154,6 +158,53 @@ public class Casa {
         public List<String> itens = new ArrayList<>();
         /** UUID do boneco (armor stand) que marca o corpo no mundo. */
         public String boneco = "";
+    }
+
+    /** Último marco de horas online já anunciado, por UUID. */
+    public Map<String, Integer> marcos = new LinkedHashMap<>();
+
+    // ---------- mensagens de kill ----------
+
+    public void migrarMsgMatar() {
+        if (config.msgMatar.isEmpty()) return;
+        for (var e : config.msgMatar.entrySet()) config.msgMatarLista.computeIfAbsent(e.getKey(), k -> new ArrayList<>()).add(e.getValue());
+        config.msgMatar.clear();
+    }
+
+    /** Lista de mensagens: de qualquer vítima (alvo = null) ou só de uma. */
+    public List<String> msgsMatar(String matador, String alvo) {
+        migrarMsgMatar();
+        String chave = matador.toLowerCase() + (alvo == null ? "" : ">" + alvo.toLowerCase());
+        return config.msgMatarLista.computeIfAbsent(chave, k -> new ArrayList<>());
+    }
+
+    /** Escolhe uma mensagem: a da vítima, se houver, senão uma das padrão. Null se não tiver nenhuma. */
+    public String escolherMsgMatar(String matador, String vitima, java.util.Random r) {
+        migrarMsgMatar();
+        List<String> especifica = config.msgMatarLista.get(matador.toLowerCase() + ">" + vitima.toLowerCase());
+        List<String> l = especifica != null && !especifica.isEmpty() ? especifica : config.msgMatarLista.get(matador.toLowerCase());
+        return l == null || l.isEmpty() ? null : l.get(r.nextInt(l.size()));
+    }
+
+    /** Todas as mensagens do jogador, numeradas: [chave, texto]. As padrão primeiro. */
+    public List<String[]> todasMsgsMatar(String matador) {
+        migrarMsgMatar();
+        List<String[]> r = new ArrayList<>();
+        String m = matador.toLowerCase();
+        for (String t : config.msgMatarLista.getOrDefault(m, List.of())) r.add(new String[] {m, t});
+        for (var e : config.msgMatarLista.entrySet())
+            if (e.getKey().startsWith(m + ">")) for (String t : e.getValue()) r.add(new String[] {e.getKey(), t});
+        return r;
+    }
+
+    public boolean removerMsgMatar(String matador, int n) {
+        List<String[]> todas = todasMsgsMatar(matador);
+        if (n < 1 || n > todas.size()) return false;
+        String[] alvo = todas.get(n - 1);
+        List<String> l = config.msgMatarLista.get(alvo[0]);
+        l.remove(alvo[1]);
+        if (l.isEmpty()) config.msgMatarLista.remove(alvo[0]);
+        return true;
     }
 
     public List<Corpo> corpos = new ArrayList<>();
