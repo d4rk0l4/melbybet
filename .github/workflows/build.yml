@@ -22,6 +22,11 @@ jobs:
         run: chmod +x ./gradlew
       - name: build
         run: ./gradlew build
+      - name: javap (temporario)
+        run: |
+          J=~/.gradle/caches/fabric-loom/26.2/minecraft-common.jar
+          javap -p -cp "$J" net.minecraft.world.item.Items | grep -i "dye\|WHITE_DYE\|BLUE_DYE" | cut -c1-160
+          javap -p -cp "$J" net.minecraft.world.item.DyeColor | cut -c1-160 | head -60
       - name: testes da lógica (apostas, pagamento, ranking)
         run: |
           GSON=$(find ~/.gradle -name 'gson-*.jar' ! -name '*sources*' | head -1)
