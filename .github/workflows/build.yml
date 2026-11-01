@@ -22,6 +22,15 @@ jobs:
         run: chmod +x ./gradlew
       - name: build
         run: ./gradlew build
+      - name: javap (temporario)
+        run: |
+          for J in $(find ~/.gradle/caches/fabric-loom -name '*.jar' -size +5M | head -20); do
+            if unzip -l "$J" 2>/dev/null | grep -q 'net/minecraft/world/inventory/MerchantMenu.class'; then
+              echo "JAR $J"
+              mkdir -p /tmp/j && javap -p -cp "$J" net.minecraft.world.inventory.MerchantMenu net.minecraft.world.inventory.MerchantResultSlot net.minecraft.world.inventory.AbstractContainerMenu | head -150
+              break
+            fi
+          done
       - name: testes da lógica (apostas, pagamento, ranking)
         run: |
           GSON=$(find ~/.gradle -name 'gson-*.jar' ! -name '*sources*' | head -1)
