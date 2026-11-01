@@ -176,6 +176,8 @@ final class MenuVisual {
                 else escolher(p, alvo, e, c1, c2);
                 abrir(p, alvo, voltar);
             })).build());
+        g.setSlot(44, btn(Items.BLAZE_POWDER, "Cores prontas", ChatFormatting.GOLD, "Fogo, oceano, neon e outras")
+            .setCallback((i, ty, a, gg) -> prontas(p, alvo, e, voltar)).build());
         g.setSlot(40, btn(Items.BARRIER, "Tirar a cor", ChatFormatting.RED, "Volta ao branco").setCallback((i, ty, a, gg) -> {
             if (e.titulo) {
                 if (ti != null) {
@@ -205,6 +207,29 @@ final class MenuVisual {
                 abrir(p, alvo, voltar);
             }).build());
         }
+        g.open();
+    }
+
+    private static final Item[] ICONES_PRONTAS = {Items.BLAZE_POWDER, Items.HEART_OF_THE_SEA, Items.SLIME_BALL, Items.EMERALD,
+        Items.PORKCHOP, Items.GOLD_INGOT, Items.SNOWBALL, Items.LAVA_BUCKET};
+
+    /** As cores prontas de antes (fogo, oceano, neon...). */
+    private static void prontas(ServerPlayer p, String alvo, Estado e, Runnable voltar) {
+        SimpleGui g = new SimpleGui(MenuType.GENERIC_9x3, p, false);
+        g.setTitle(Component.literal("Cores prontas").withStyle(ChatFormatting.DARK_PURPLE));
+        String[] nomes = Gradiente.NOMES_PRESETS;
+        for (int i = 0; i < nomes.length && i < ICONES_PRONTAS.length; i++) {
+            String nome = nomes[i];
+            int[] c = Gradiente.preset(nome);
+            g.setSlot(9 + i, new GuiElementBuilder(ICONES_PRONTAS[i]).hideDefaultTooltip()
+                .setName(Prefixos.degrade(nome, c[0], c[1]))
+                .addLoreLine(Component.literal("Clique para usar" + (e.titulo ? " no título" : " no nick")).withStyle(ChatFormatting.GRAY))
+                .setCallback((ix, ty, a, gg) -> {
+                    escolher(p, alvo, e, c[0], c[1]);
+                    prontas(p, alvo, e, voltar);
+                }).build());
+        }
+        g.setSlot(18, btn(Items.ARROW, "Voltar", ChatFormatting.GRAY).setCallback((i, ty, a, gg) -> abrir(p, alvo, voltar)).build());
         g.open();
     }
 
