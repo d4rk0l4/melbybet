@@ -195,3 +195,7 @@ Uma vez por dia o mod copia o `casa.json` para `config/melbybet/backups/casa-AAA
 ## Visual: apelido, título e cor com corantes
 
 `/melby` > Meu perfil > Visual do nick abre um menu: a prévia de como você aparece no chat, o modo **Cor única** ou **Degradê** e os 16 corantes do jogo, cada um com o nome e o código exato da cor (`#3c44aa` para o azul, por exemplo). O corante escolhido fica brilhando como encantado; no degradê, clique um corante para o começo e outro para o fim. Também tem "Cor exata" (digite `#cor1 #cor2` no chat). OPs veem ainda a **placa** no centro, que abre o chat para escrever o apelido ou o título e volta ao menu, e a aba **Título** (as cores do título também vêm dos corantes). OPs editam o visual de outros jogadores em `/melby` > Moderação > jogador > Visual.
+
+## Painel de cores (página web)
+
+A pasta `docs/` tem uma página (`docs/index.html`) para escolher a cor: cor única ou degradê, os 16 corantes do jogo, prévia do nick e o código pronto para copiar (`#cor1 #cor2`, e também o formato de placa). Ao clicar em **Cor exata** no menu de visual, o jogador recebe o link dela no chat. Para o link funcionar, ative o GitHub Pages do repositório (Settings > Pages > Deploy from a branch > `main` > `/docs`). O endereço é `painelCoresUrl` na config (padrão `https://d4rk0l4.github.io/melbybet/`; vazio = não mostra o link).

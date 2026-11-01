@@ -1,5 +1,8 @@
 # Versões do MelbyBet
 
+## 1.4.1
+- Painel web de cores (docs/index.html) e link dele ao escolher "Cor exata"; cores prontas de volta no menu de visual
+
 ## 1.4.0
 - Novo menu de visual: placa para escrever apelido e título, cor única ou degradê escolhida pelos corantes (com o código da cor e brilho no escolhido)
 

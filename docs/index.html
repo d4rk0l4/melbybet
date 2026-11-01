@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MelbyBet · Painel de cores</title>
+<style>
+  :root {
+    --fundo: #0a0a0d;
+    --painel: #131319;
+    --borda: #2a2140;
+    --amarelo: #ffc928;
+    --roxo: #9b6bff;
+    --texto: #ece9f5;
+    --suave: #8d87a3;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--fundo); color: var(--texto);
+    font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    padding: 24px 16px 48px;
+  }
+  main { max-width: 760px; margin: 0 auto; }
+  h1 { font-size: 26px; margin: 0 0 4px; color: var(--amarelo); letter-spacing: .3px; }
+  .sub { color: var(--suave); margin: 0 0 22px; }
+  .card { background: var(--painel); border: 1px solid var(--borda); border-radius: 14px; padding: 18px; margin-bottom: 16px; }
+  h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 1.2px; color: var(--roxo); margin: 0 0 12px; font-weight: 700; }
+  .modo { display: flex; gap: 8px; }
+  .modo button { flex: 1; }
+  button {
+    font: inherit; cursor: pointer; color: var(--texto); background: #1b1b25; border: 1px solid var(--borda);
+    border-radius: 10px; padding: 10px 14px;
+  }
+  button:hover { border-color: var(--roxo); }
+  button.ativo { background: var(--amarelo); color: #111; border-color: var(--amarelo); font-weight: 700; }
+  .cores { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .cores.unica { grid-template-columns: 1fr; }
+  .cor { border: 1px solid var(--borda); border-radius: 12px; padding: 12px; cursor: pointer; }
+  .cor.sel { border-color: var(--amarelo); box-shadow: 0 0 0 1px var(--amarelo) inset; }
+  .cor label { display: block; font-size: 12px; color: var(--roxo); margin-bottom: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+  .linha { display: flex; gap: 8px; align-items: center; }
+  input[type=color] { width: 52px; height: 42px; border: 1px solid var(--borda); border-radius: 8px; background: none; padding: 2px; cursor: pointer; }
+  input[type=text] {
+    font: 16px ui-monospace, Menlo, Consolas, monospace; color: var(--texto); background: #0e0e13; border: 1px solid var(--borda);
+    border-radius: 8px; padding: 9px 10px; width: 100%; min-width: 0;
+  }
+  input[type=text]:focus { outline: 2px solid var(--roxo); border-color: transparent; }
+  .dyes { display: grid; grid-template-columns: repeat(8, 1fr); gap: 8px; }
+  .dye { aspect-ratio: 1; border-radius: 10px; border: 2px solid transparent; cursor: pointer; padding: 0; position: relative; }
+  .dye:hover { border-color: var(--roxo); transform: translateY(-1px); }
+  .dica { color: var(--suave); font-size: 13px; margin: 10px 0 0; }
+  .previa { background: #000; border-radius: 12px; padding: 22px 16px; text-align: center; border: 1px solid var(--borda); }
+  .previa .nome { font: 700 30px ui-monospace, Menlo, Consolas, monospace; letter-spacing: 1px; word-break: break-all; }
+  .barra { height: 10px; border-radius: 6px; margin-top: 16px; }
+  .texto-previa { margin-top: 12px; }
+  .saida { display: flex; gap: 8px; align-items: stretch; margin-bottom: 10px; }
+  .saida code {
+    flex: 1; font: 700 20px ui-monospace, Menlo, Consolas, monospace; color: var(--amarelo); background: #0e0e13;
+    border: 1px solid var(--amarelo); border-radius: 10px; padding: 12px; word-break: break-all;
+  }
+  .saida button.copiar { background: var(--amarelo); color: #111; border-color: var(--amarelo); font-weight: 700; min-width: 96px; }
+  .rotulo { font-size: 13px; color: var(--suave); margin: 4px 0 6px; }
+  .rotulo b { color: var(--texto); }
+  .passos { color: var(--suave); font-size: 14px; margin: 14px 0 0; padding-left: 18px; }
+  .passos li { margin-bottom: 4px; }
+  .passos b { color: var(--amarelo); }
+  @media (max-width: 520px) { .cores { grid-template-columns: 1fr; } .dyes { grid-template-columns: repeat(4, 1fr); } }
+</style>
+</head>
+<body>
+<main>
+  <h1>Painel de cores</h1>
+  <p class="sub">Escolha a cor do seu nick, veja como fica e copie o código para colar no chat do servidor.</p>
+
+  <section class="card">
+    <h2>Tipo</h2>
+    <div class="modo">
+      <button id="m-unica" type="button">Cor única</button>
+      <button id="m-degrade" type="button" class="ativo">Degradê</button>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Cores</h2>
+    <div class="cores" id="cores">
+      <div class="cor sel" id="c1" data-i="0">
+        <label id="l1">1ª cor (começo)</label>
+        <div class="linha"><input type="color" id="p1" value="#ff8a24"><input type="text" id="h1" value="#ff8a24" maxlength="7" spellcheck="false"></div>
+      </div>
+      <div class="cor" id="c2" data-i="1">
+        <label>2ª cor (fim)</label>
+        <div class="linha"><input type="color" id="p2" value="#ffd23f"><input type="text" id="h2" value="#ffd23f" maxlength="7" spellcheck="false"></div>
+      </div>
+    </div>
+    <p class="dica">Ou clique num corante do jogo para usar a cor dele na caixa selecionada:</p>
+    <div class="dyes" id="dyes"></div>
+  </section>
+
+  <section class="card">
+    <h2>Prévia</h2>
+    <div class="previa">
+      <div class="nome" id="nome"></div>
+      <div class="barra" id="barra"></div>
+    </div>
+    <div class="texto-previa"><input type="text" id="texto" value="SeuNick" maxlength="16" spellcheck="false" aria-label="Texto da prévia"></div>
+  </section>
+
+  <section class="card">
+    <h2>Seu código</h2>
+    <div class="rotulo"><b>Cor do nick ou do título</b>: cole no chat quando o servidor pedir</div>
+    <div class="saida"><code id="codigo"></code><button class="copiar" id="copiar" type="button">Copiar</button></div>
+    <div class="rotulo"><b>Placa</b>: escreva isto na placa ou use <b>/placa</b></div>
+    <div class="saida"><code id="placa"></code><button class="copiar" id="copiar2" type="button">Copiar</button></div>
+    <ol class="passos">
+      <li>No jogo, abra <b>/melby</b> &gt; Meu perfil &gt; Visual do nick &gt; <b>Cor exata</b>.</li>
+      <li>Cole o código no chat e envie. Só você vê essa mensagem.</li>
+    </ol>
+  </section>
+</main>
+
+<script>
+  var DYES = [
+    ["Branco","#f9fffe"],["Laranja","#f9801d"],["Magenta","#c74ebd"],["Azul-claro","#3ab3da"],
+    ["Amarelo","#fed83d"],["Verde-limão","#80c71f"],["Rosa","#f38baa"],["Cinza","#474f52"],
+    ["Cinza-claro","#9d9d97"],["Ciano","#169c9c"],["Roxo","#8932b8"],["Azul","#3c44aa"],
+    ["Marrom","#835432"],["Verde","#5e7c16"],["Vermelho","#b02e26"],["Preto","#1d1d21"]
+  ];
+  var degrade = true, alvo = 0;
+  var $ = function (id) { return document.getElementById(id); };
+
+  function valido(h) { return /^#[0-9a-fA-F]{6}$/.test(h); }
+  function rgb(h) { return [1, 3, 5].map(function (i) { return parseInt(h.substr(i, 2), 16); }); }
+  function hex(r) { return "#" + r.map(function (v) { return Math.round(v).toString(16).padStart(2, "0"); }).join(""); }
+  function mistura(a, b, t) { var x = rgb(a), y = rgb(b); return hex([0, 1, 2].map(function (i) { return x[i] + (y[i] - x[i]) * t; })); }
+
+  function cores() {
+    var a = valido($("h1").value) ? $("h1").value.toLowerCase() : "#ffffff";
+    var b = degrade ? (valido($("h2").value) ? $("h2").value.toLowerCase() : "#ffffff") : a;
+    return [a, b];
+  }
+
+  function atualizar() {
+    var c = cores(), texto = $("texto").value || "SeuNick", n = texto.length;
+    var html = "";
+    for (var i = 0; i < n; i++) {
+      var t = n === 1 ? 0 : i / (n - 1);
+      var ch = texto[i].replace("&", "&amp;").replace("<", "&lt;");
+      html += '<span style="color:' + mistura(c[0], c[1], t) + '">' + ch + "</span>";
+    }
+    $("nome").innerHTML = html;
+    $("barra").style.background = "linear-gradient(90deg," + c[0] + "," + c[1] + ")";
+    $("codigo").textContent = degrade ? c[0] + " " + c[1] : c[0];
+    $("placa").textContent = degrade ? "<" + c[0] + "-" + c[1] + ">" + texto + "</>" : "&" + c[0] + texto;
+  }
+
+  function escolher(i) {
+    alvo = i;
+    $("c1").classList.toggle("sel", i === 0);
+    $("c2").classList.toggle("sel", i === 1);
+  }
+
+  function modo(d) {
+    degrade = d;
+    $("m-unica").classList.toggle("ativo", !d);
+    $("m-degrade").classList.toggle("ativo", d);
+    $("c2").style.display = d ? "" : "none";
+    $("cores").classList.toggle("unica", !d);
+    $("l1").textContent = d ? "1ª cor (começo)" : "Cor";
+    if (!d) escolher(0);
+    atualizar();
+  }
+
+  function definir(i, h) {
+    $("h" + (i + 1)).value = h;
+    $("p" + (i + 1)).value = h;
+    atualizar();
+  }
+
+  ["1", "2"].forEach(function (n, i) {
+    $("p" + n).addEventListener("input", function () { definir(i, this.value); });
+    $("h" + n).addEventListener("input", function () {
+      var v = this.value.trim();
+      if (v[0] !== "#") v = "#" + v;
+      this.value = v;
+      if (valido(v)) $("p" + n).value = v;
+      atualizar();
+    });
+    $("c" + n).addEventListener("click", function () { escolher(i); });
+  });
+
+  DYES.forEach(function (d) {
+    var b = document.createElement("button");
+    b.type = "button"; b.className = "dye"; b.style.background = d[1];
+    b.title = d[0] + " " + d[1]; b.setAttribute("aria-label", d[0] + " " + d[1]);
+    b.addEventListener("click", function () { definir(degrade ? alvo : 0, d[1]); });
+    $("dyes").appendChild(b);
+  });
+
+  $("m-unica").addEventListener("click", function () { modo(false); });
+  $("m-degrade").addEventListener("click", function () { modo(true); });
+  $("texto").addEventListener("input", atualizar);
+
+  function copiar(botao, origem) {
+    var txt = $(origem).textContent;
+    function ok() { botao.textContent = "Copiado!"; setTimeout(function () { botao.textContent = "Copiar"; }, 1500); }
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(ok, function () {});
+    else { var t = document.createElement("textarea"); t.value = txt; document.body.appendChild(t); t.select(); document.execCommand("copy"); document.body.removeChild(t); ok(); }
+  }
+  $("copiar").addEventListener("click", function () { copiar(this, "codigo"); });
+  $("copiar2").addEventListener("click", function () { copiar(this, "placa"); });
+
+  modo(true);
+</script>
+</body>
+</html>

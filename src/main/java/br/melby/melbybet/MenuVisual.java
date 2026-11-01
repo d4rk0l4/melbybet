@@ -167,15 +167,18 @@ final class MenuVisual {
             if (voltar != null) voltar.run();
             else gg.close();
         }).build());
-        g.setSlot(38, btn(Items.NAME_TAG, "Cor exata", ChatFormatting.AQUA, "Digite no chat: #cor1 [#cor2]", "Ex.: #ff8a24 #ffd23f")
-            .setCallback((i, ty, a, gg) -> Chat.perguntar(p, "Digite uma ou duas cores, como #ff8a24 #ffd23f.", txt -> {
-                String[] t = txt.trim().split("\\s+");
-                int c1 = Gradiente.hex(t[0]);
-                int c2 = t.length > 1 ? Gradiente.hex(t[1]) : c1;
-                if (c1 < 0 || c2 < 0) aviso(p, "Use cores como #ff8a24.");
-                else escolher(p, alvo, e, c1, c2);
-                abrir(p, alvo, voltar);
-            })).build());
+        g.setSlot(38, btn(Items.NAME_TAG, "Cor exata", ChatFormatting.AQUA, "Digite no chat: #cor1 [#cor2]", "Ex.: #ff8a24 #ffd23f", "Você recebe um painel para escolher a cor")
+            .setCallback((i, ty, a, gg) -> {
+                Chat.perguntar(p, "Digite uma ou duas cores, como #ff8a24 #ffd23f.", txt -> {
+                    String[] t = txt.trim().split("\\s+");
+                    int c1 = Gradiente.hex(t[0]);
+                    int c2 = t.length > 1 ? Gradiente.hex(t[1]) : c1;
+                    if (c1 < 0 || c2 < 0) aviso(p, "Use cores como #ff8a24.");
+                    else escolher(p, alvo, e, c1, c2);
+                    abrir(p, alvo, voltar);
+                });
+                linkDoPainel(p);
+            }).build());
         g.setSlot(44, btn(Items.BLAZE_POWDER, "Cores prontas", ChatFormatting.GOLD, "Fogo, oceano, neon e outras")
             .setCallback((i, ty, a, gg) -> prontas(p, alvo, e, voltar)).build());
         g.setSlot(40, btn(Items.BARRIER, "Tirar a cor", ChatFormatting.RED, "Volta ao branco").setCallback((i, ty, a, gg) -> {
@@ -208,6 +211,17 @@ final class MenuVisual {
             }).build());
         }
         g.open();
+    }
+
+    /** Manda o link do painel onde dá para escolher a cor e copiar o código. */
+    private static void linkDoPainel(ServerPlayer p) {
+        String url = Jogo.casa.config.painelCoresUrl;
+        if (url == null || url.isBlank()) return;
+        Component link = Component.literal("[Abrir o painel de cores]").withStyle(st -> st.withColor(0xFFC928).withBold(true).withUnderlined(true)
+            .withClickEvent(new net.minecraft.network.chat.ClickEvent.OpenUrl(java.net.URI.create(url)))
+            .withHoverEvent(new net.minecraft.network.chat.HoverEvent.ShowText(Component.literal(url))));
+        p.sendSystemMessage(Component.literal("Não sabe o código? ").withStyle(ChatFormatting.GRAY).append(link)
+            .append(Component.literal(" escolha a cor, copie o código e cole aqui.").withStyle(ChatFormatting.GRAY)));
     }
 
     private static final Item[] ICONES_PRONTAS = {Items.BLAZE_POWDER, Items.HEART_OF_THE_SEA, Items.SLIME_BALL, Items.EMERALD,
