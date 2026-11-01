@@ -140,7 +140,7 @@ final class MenuVisual {
             final int cor = cores[n].getTextureDiffuseColor() & 0xFFFFFF;
             boolean ehPrimeira = e.degrade ? (e.primeira >= 0 ? e.primeira == cor : atual != null && atual[0] == cor) : atual != null && atual[0] == cor && atual[1] == cor;
             boolean ehSegunda = e.degrade && e.primeira < 0 && atual != null && atual[1] == cor && atual[0] != atual[1];
-            GuiElementBuilder d = new GuiElementBuilder(Items.DYE.get(cores[n])).hideDefaultTooltip()
+            GuiElementBuilder d = new GuiElementBuilder(Items.DYE.pick(cores[n])).hideDefaultTooltip()
                 .setName(Component.literal(PT[n]).withStyle(st -> st.withColor(cor).withBold(true)))
                 .addLoreLine(Component.literal(Gradiente.paraHex(cor)).withStyle(ChatFormatting.GRAY));
             if (e.degrade && ehPrimeira) d.addLoreLine(Component.literal("1ª cor (começo)").withStyle(ChatFormatting.YELLOW));
