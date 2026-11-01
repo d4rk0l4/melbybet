@@ -4,7 +4,8 @@
   "compatibilityLevel": "JAVA_25",
   "mixins": [
     "PlayerPoseMixin",
-    "TabNomeMixin"
+    "TabNomeMixin",
+    "VenderTudoMixin"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -163,3 +163,7 @@ O degradê de cor do nick (`/melby` > Perfil) também aparece na lista de jogado
 ## Apelido (`/nick`)
 
 `/nick <jogador> <apelido>` (só OP) troca o nome mostrado no chat e na tab, sem mudar o nick de verdade. Códigos de cor viram degradê: `&6Rei&eDoMel` vai do laranja ao amarelo (também vale `&#rrggbb`); a primeira e a última cor definem o degradê. `/nick <jogador> reset` volta ao normal.
+
+## Vender tudo no villager
+
+Na tela do villager, escolha a troca e dê shift+clique no resultado: o servidor repete a troca até acabarem os itens (ou o villager esgotar a troca). Funciona com a tela normal do jogo, nada para instalar.
