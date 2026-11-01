@@ -191,3 +191,7 @@ Quando alguém completa 5, 10, 25, 50, 100, 150, 200, 250, 300, 400, 500, 600, 7
 ## Backup do casa.json
 
 Uma vez por dia o mod copia o `casa.json` para `config/melbybet/backups/casa-AAAA-MM-DD.json` e mantém os 7 mais recentes (`backupDias` na config; 0 desliga). Se o `casa.json` não abrir ao ligar o servidor, o mod guarda uma cópia dele como `corrompido-...json` antes de começar uma casa nova (antes, esse arquivo era sobrescrito). `/backup` (OP) cria um backup manual na hora (guarda os 10 últimos). Para restaurar: pare o servidor, copie o backup para `config/melbybet/casa.json` e ligue de novo.
+
+## Visual: apelido, título e cor com corantes
+
+`/melby` > Meu perfil > Visual do nick abre um menu: a prévia de como você aparece no chat, o modo **Cor única** ou **Degradê** e os 16 corantes do jogo, cada um com o nome e o código exato da cor (`#3c44aa` para o azul, por exemplo). O corante escolhido fica brilhando como encantado; no degradê, clique um corante para o começo e outro para o fim. Também tem "Cor exata" (digite `#cor1 #cor2` no chat). OPs veem ainda a **placa** no centro, que abre o chat para escrever o apelido ou o título e volta ao menu, e a aba **Título** (as cores do título também vêm dos corantes). OPs editam o visual de outros jogadores em `/melby` > Moderação > jogador > Visual.

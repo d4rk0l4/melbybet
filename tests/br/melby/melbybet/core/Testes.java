@@ -55,6 +55,8 @@ public class Testes {
         corpos();
         msgMatar();
         backups();
+        igual("#3c44aa", Gradiente.paraHex(0x3C44AA), "hex: formata");
+        igual("#00000f", Gradiente.paraHex(0xF), "hex: zeros");
         persistencia();
         System.out.println(falhas == 0 ? "tudo certo (" + total + " checagens)" : falhas + " falhas de " + total);
         if (falhas > 0) System.exit(1);

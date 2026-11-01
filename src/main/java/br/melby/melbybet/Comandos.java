@@ -440,6 +440,26 @@ public final class Comandos {
                 .then(argument("cor2", word()).executes(c -> corDoJogador(c, StringArgumentType.getString(c, "cor2"))))));
     }
 
+    /** Define o apelido (com códigos de cor virando degradê). Devolve o motivo do erro, ou null. */
+    public static String aplicarApelido(String nick, String bruto) {
+        Apelido.Resultado r = Apelido.ler(bruto);
+        String motivo = Apelido.validar(r.texto);
+        if (motivo != null) return motivo;
+        Casa.CorNick cn = Jogo.casa.config.cores.get(nick.toLowerCase());
+        if (cn == null) {
+            cn = new Casa.CorNick();
+            Jogo.casa.config.cores.put(nick.toLowerCase(), cn);
+        }
+        if (r.cor1 >= 0) {
+            cn.cor1 = r.cor1;
+            cn.cor2 = r.cor2;
+        }
+        cn.apelido = r.texto;
+        Jogo.salvar();
+        Prefixos.esquecer();
+        return null;
+    }
+
     /** /nick <jogador> <apelido>: muda o nome mostrado no chat e na tab. Códigos de cor viram degradê. */
     private static void apelido(CommandDispatcher<CommandSourceStack> d) {
         d.register(literal("nick")
@@ -458,22 +478,8 @@ public final class Comandos {
                     String nick = StringArgumentType.getString(c, "jogador");
                     if (uuidDe(nick) == null && Jogo.server.getPlayerList().getPlayerByName(nick) == null)
                         return erro(c, "Não conheço " + nick + ".");
-                    Apelido.Resultado r = Apelido.ler(StringArgumentType.getString(c, "apelido"));
-                    String motivo = Apelido.validar(r.texto);
-                    if (motivo != null) return erro(c, motivo);
-                    Casa.CorNick cn = Jogo.casa.config.cores.get(nick.toLowerCase());
-                    if (cn == null) {
-                        cn = new Casa.CorNick();
-                        Jogo.casa.config.cores.put(nick.toLowerCase(), cn);
-                    }
-                    if (r.cor1 >= 0) {
-                        cn.cor1 = r.cor1;
-                        cn.cor2 = r.cor2;
-                    }
-                    cn.apelido = r.texto;
-                    Jogo.salvar();
-                    Prefixos.esquecer();
-                    return ok(c, "Apelido de " + nick + ": " + r.texto + (r.cor1 >= 0 ? " (com degradê)" : ""));
+                    String erroApelido = aplicarApelido(nick, StringArgumentType.getString(c, "apelido"));
+                    return erroApelido == null ? ok(c, "Apelido de " + nick + " atualizado.") : erro(c, erroApelido);
                 }))));
     }
 

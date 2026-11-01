@@ -99,8 +99,8 @@ public final class MenuMelby {
 
     private static void perfil(ServerPlayer p) {
         SimpleGui g = tela(p, 3, "Meu perfil");
-        g.setSlot(10, btn(Items.BLAZE_POWDER, "Cor do nick", ChatFormatting.GOLD, "Degradê no chat")
-            .setCallback((i, ty, a, gg) -> cores(p)).build());
+        g.setSlot(10, btn(Items.BLAZE_POWDER, "Visual do nick", ChatFormatting.GOLD, "Cor única ou degradê, com os corantes")
+            .setCallback((i, ty, a, gg) -> MenuVisual.abrir(p, p.getGameProfile().name(), () -> perfil(p))).build());
         boolean global = Chat.estaNoGlobal(p);
         g.setSlot(12, btn(global ? Items.ENDER_EYE : Items.ENDER_PEARL, global ? "Chat: global" : "Chat: local", ChatFormatting.AQUA,
             "Clique para trocar para " + (global ? "local" : "global"))
@@ -203,26 +203,8 @@ public final class MenuMelby {
                     + ". Posição: " + v.dimensao + " " + v.x + " " + v.y + " " + v.z);
             }).build());
         if (admin) {
-            g.setSlot(19, btn(Items.NAME_TAG, "Dar título", ChatFormatting.GOLD, "Digite: [#cor1 #cor2] texto")
-                .setCallback((i, ty, a, gg) -> Chat.perguntar(p, "Digite o título (até 20 letras). Pode começar com duas cores: #ff8a24 #ffd23f Lenda.", txt -> {
-                    String e = Comandos.aplicarTitulo(nick, txt);
-                    info(p, e == null ? "Título aplicado." : e);
-                    jogador(p, nick);
-                })).build());
-            g.setSlot(20, btn(Items.BARRIER, "Tirar título", ChatFormatting.RED)
-                .setCallback((i, ty, a, gg) -> {
-                    Jogo.casa.config.titulos.remove(nick.toLowerCase());
-                    Jogo.salvar();
-                    Prefixos.esquecer();
-                    info(p, "Título removido.");
-                }).build());
-            g.setSlot(21, btn(Items.BLAZE_POWDER, "Cor do nick", ChatFormatting.GOLD, "Digite: #cor1 #cor2 ou um nome pronto")
-                .setCallback((i, ty, a, gg) -> Chat.perguntar(p, "Digite as cores (#ff0000 #0000ff) ou um nome: " + String.join(", ", Gradiente.NOMES_PRESETS) + ".", txt -> {
-                    String[] x = txt.trim().split("\\s+");
-                    String e = Comandos.aplicarCor(nick, x[0], x.length > 1 ? x[1] : null);
-                    info(p, e == null ? "Cor aplicada." : e);
-                    jogador(p, nick);
-                })).build());
+            g.setSlot(19, btn(Items.OAK_SIGN, "Visual (apelido, título e cor)", ChatFormatting.GOLD, "Placa para escrever e corantes para a cor")
+                .setCallback((i, ty, a, gg) -> MenuVisual.abrir(p, nick, () -> jogador(p, nick))).build());
             boolean ehMod = Jogo.casa.config.moderadores.stream().anyMatch(n -> n.equalsIgnoreCase(nick));
             g.setSlot(22, btn(Items.SHIELD, ehMod ? "Tirar de moderador" : "Tornar moderador", ChatFormatting.RED)
                 .setCallback((i, ty, a, gg) -> {

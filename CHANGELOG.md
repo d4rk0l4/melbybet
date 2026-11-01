@@ -1,5 +1,8 @@
 # Versões do MelbyBet
 
+## 1.4.0
+- Novo menu de visual: placa para escrever apelido e título, cor única ou degradê escolhida pelos corantes (com o código da cor e brilho no escolhido)
+
 ## 1.3.1
 - Backup diário do casa.json (7 dias), /backup manual e cópia de segurança quando o arquivo não abre
 

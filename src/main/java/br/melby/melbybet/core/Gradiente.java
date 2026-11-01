@@ -23,6 +23,11 @@ public final class Gradiente {
         return Integer.parseInt(s.substring(1), 16);
     }
 
+    /** 0x3C44AA -> "#3c44aa". */
+    public static String paraHex(int cor) {
+        return String.format("#%06x", cor & 0xFFFFFF);
+    }
+
     public static final String[] NOMES_PRESETS = {"fogo", "oceano", "neon", "floresta", "rosa", "ouro", "gelo", "por-do-sol"};
 
     /** Degradês prontos: {cor1, cor2}, ou null se o nome não existir. */
