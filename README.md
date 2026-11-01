@@ -167,3 +167,7 @@ O degradê de cor do nick (`/melby` > Perfil) também aparece na lista de jogado
 ## Vender tudo no villager
 
 Na tela do villager, escolha a troca e dê shift+clique no resultado: o servidor repete a troca até acabarem os itens (ou o villager esgotar a troca). Funciona com a tela normal do jogo, nada para instalar.
+
+## Placas bonitas
+
+Ao escrever numa placa (ou com `/placa <linha 1-4> <texto>` olhando para ela, sem o limite de largura do teclado), os códigos viram cor: `&0`-`&f` (cores), `&l` negrito, `&o` itálico, `&n` sublinhado, `&m` riscado, `&k` embaralhado, `&r` limpa, `&#ff8a24` (cor exata) e degradê com `<#ff0000-#0000ff>texto</>`. `/placa limpar` apaga a placa. Placa encerada não muda. Vale também para placa pendurada e para o verso. Ao editar de novo uma placa já colorida, o campo mostra só o texto: os códigos precisam ser escritos outra vez.

@@ -93,6 +93,7 @@ public final class Comandos {
         Duelos.registrar(d);
         Perfil.registrar(d);
         apelido(d);
+        Placas.registrar(d);
         Limpeza.registrar(d);
         chatEMais(d);
 

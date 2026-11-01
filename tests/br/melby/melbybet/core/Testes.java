@@ -50,6 +50,7 @@ public class Testes {
         apostaNoDuelo();
         limpeza();
         apelidos();
+        placas();
         persistencia();
         System.out.println(falhas == 0 ? "tudo certo (" + total + " checagens)" : falhas + " falhas de " + total);
         if (falhas > 0) System.exit(1);
@@ -472,6 +473,25 @@ public class Testes {
         igual(null, Apelido.validar("Simples"), "valido");
         igual(true, Apelido.validar("a") != null, "curto demais");
         igual(true, Apelido.validar("nome<>") != null, "caractere ruim");
+    }
+
+    static void placas() {
+        var s = TextoPlaca.ler("&cVermelho &lNegrito");
+        igual(2, s.size(), "placa: 2 trechos");
+        igual(0xFF5555, s.get(0).cor, "placa: cor &c");
+        igual(true, s.get(1).negrito, "placa: negrito");
+        igual(0xFF5555, s.get(1).cor, "placa: negrito mantem a cor");
+        var h = TextoPlaca.ler("&#00ff00Verde&rNormal");
+        igual(0x00FF00, h.get(0).cor, "placa: hex");
+        igual(-1, h.get(1).cor, "placa: &r limpa");
+        var g = TextoPlaca.ler("<#ff0000-#0000ff>abc</>d");
+        igual(4, g.size(), "placa: degrade 3 letras + 1");
+        igual(0xFF0000, g.get(0).cor, "placa: degrade comeca");
+        igual(0x0000FF, g.get(2).cor, "placa: degrade termina");
+        igual(-1, g.get(3).cor, "placa: depois do degrade");
+        igual("abcd", TextoPlaca.semCodigos("<#ff0000-#0000ff>abc</>d"), "placa: sem codigos");
+        igual(false, TextoPlaca.temCodigo("Loja do Melby"), "placa: sem codigo");
+        igual(true, TextoPlaca.temCodigo("&aLoja"), "placa: com codigo");
     }
 
     static void persistencia() throws Exception {
