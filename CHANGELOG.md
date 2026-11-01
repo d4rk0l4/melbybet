@@ -1,5 +1,9 @@
 # Versões do MelbyBet
 
+## 1.2.0
+- Corpo: itens da morte ficam num corpo que qualquer um abre e escolhe o que pegar (substitui o mod Gravestones); morte no void deixa o corpo no último lugar seguro
+- Mensagem de kill, loteria e placas bonitas (já na 1.1.0 abaixo)
+
 ## 1.1.0
 - Duelos (diamantes ou itens), apostas nos duelos dos outros e placar de duelos
 - Gestos (/gestos, /spin, /point, /wave, /crawl, /sit), /morte, /perfil, /coords, /capsula

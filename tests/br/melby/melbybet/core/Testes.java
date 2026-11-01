@@ -52,6 +52,7 @@ public class Testes {
         apelidos();
         placas();
         loteria();
+        corpos();
         persistencia();
         System.out.println(falhas == 0 ? "tudo certo (" + total + " checagens)" : falhas + " falhas de " + total);
         if (falhas > 0) System.exit(1);
@@ -521,6 +522,21 @@ public class Testes {
         l.comprar("b", "Beto", 2);
         igual(true, l.cancelar(casa, 1L), "loteria: cancela");
         igual(false, l.cancelar(casa, 1L), "loteria: nada a cancelar");
+    }
+
+    static void corpos() {
+        Casa casa = new Casa();
+        var c = casa.novoCorpo("u1", "Ana", "overworld", 1, 64, 2, java.util.List.of("a", "b"), 10L);
+        c.boneco = "stand-1";
+        var d = casa.novoCorpo("u2", "Beto", "the_nether", 0, 70, 0, java.util.List.of("x"), 11L);
+        igual(1, c.id, "corpo: primeiro id");
+        igual(2, d.id, "corpo: segundo id");
+        igual(1, casa.corposDe("u1").size(), "corpo: do jogador");
+        igual(c, casa.corpoDoBoneco("stand-1"), "corpo: pelo boneco");
+        igual(null, casa.corpoDoBoneco("nada"), "corpo: boneco inexistente");
+        casa.removerCorpo(1);
+        igual(null, casa.corpo(1), "corpo: removido");
+        igual(1, casa.corpos.size(), "corpo: sobrou um");
     }
 
     static void persistencia() throws Exception {

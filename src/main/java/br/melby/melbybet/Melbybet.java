@@ -45,6 +45,7 @@ public class Melbybet implements ModInitializer {
             if (entidade instanceof ServerPlayer p) {
                 Duelos.antesDeMorrer(p, fonte);
                 MsgMatar.antes(p, fonte);
+                Corpos.antes(p, fonte);
             }
             return true;
         });
@@ -86,6 +87,7 @@ public class Melbybet implements ModInitializer {
         if (tick % 20 == 0) Reinicios.aCadaSegundo();
         if (tick % 20 == 0) Limpeza.aCadaSegundo();
         if (tick % 20 == 0) Sorteio.aCadaSegundo();
+        if (tick % 20 == 0) Corpos.aCadaSegundo();
         if (tick % 600 == 0) Jogo.conferirConquistas();
         if (tick % 6000 == 0) Jogo.salvar();
     }

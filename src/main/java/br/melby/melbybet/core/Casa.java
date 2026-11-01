@@ -40,6 +40,8 @@ public class Casa {
         public boolean limpezaAviso = true;
         /** Mensagem de cada jogador quando ele mata outro: usa {matador} e {vitima}. Chave: nick em minúsculas. */
         public Map<String, String> msgMatar = new LinkedHashMap<>();
+        /** Depois de quantas horas o corpo some e solta os itens no chão (0 = nunca). */
+        public int corpoHoras = 0;
         /** Horários (HH:mm) em que o servidor reinicia: o mod avisa 30, 15, 10, 5, 3, 2 e 1 minuto antes, e a contagem final. */
         public List<String> reinicios = new ArrayList<>();
         /** Fuso dos horários de reinício. */
@@ -142,6 +144,55 @@ public class Casa {
     /** Pote acumulado de bolões em que ninguém acertou. Vai para o próximo bolão resolvido. */
     public long jackpot;
     public Loteria loteria = new Loteria();
+
+    /** Corpo deixado por quem morreu: os itens ficam aqui até alguém pegar. Itens guardados como texto (JSON). */
+    public static class Corpo {
+        public int id;
+        public String uuid = "", nome = "", dim = "overworld";
+        public double x, y, z;
+        public long quando;
+        public List<String> itens = new ArrayList<>();
+        /** UUID do boneco (armor stand) que marca o corpo no mundo. */
+        public String boneco = "";
+    }
+
+    public List<Corpo> corpos = new ArrayList<>();
+    public int proximoCorpo = 1;
+
+    public Corpo novoCorpo(String uuid, String nome, String dim, double x, double y, double z, List<String> itens, long agora) {
+        Corpo c = new Corpo();
+        c.id = proximoCorpo++;
+        c.uuid = uuid;
+        c.nome = nome;
+        c.dim = dim;
+        c.x = x;
+        c.y = y;
+        c.z = z;
+        c.quando = agora;
+        c.itens.addAll(itens);
+        corpos.add(c);
+        return c;
+    }
+
+    public Corpo corpo(int id) {
+        for (Corpo c : corpos) if (c.id == id) return c;
+        return null;
+    }
+
+    public Corpo corpoDoBoneco(String boneco) {
+        for (Corpo c : corpos) if (c.boneco.equals(boneco)) return c;
+        return null;
+    }
+
+    public List<Corpo> corposDe(String uuid) {
+        List<Corpo> r = new ArrayList<>();
+        for (Corpo c : corpos) if (c.uuid.equals(uuid)) r.add(c);
+        return r;
+    }
+
+    public void removerCorpo(int id) {
+        corpos.removeIf(c -> c.id == id);
+    }
     public List<Bolao> bolaos = new ArrayList<>();
     /** uuid -> estatísticas de aposta. */
     public Map<String, Jogador> jogadores = new LinkedHashMap<>();

@@ -179,3 +179,7 @@ O OP abre com `/loteria criar <minutos> <preço> [limite]`: tempo até o sorteio
 ## Mensagem de kill (`/msgmatar`)
 
 `/msgmatar <texto>` define a frase que aparece no chat quando você mata outro jogador, no lugar da mensagem padrão do jogo. Use `{vitima}` (obrigatório) e `{matador}`, e os códigos de cor das placas (`&c`, `&l`, `&#ff8a24`). Ex.: `/msgmatar &c{matador} &7mandou {vitima} pro espaço`. `/msgmatar off` volta ao normal. Se o jogo não tiver sido trocado a tempo, a mensagem padrão aparece junto.
+
+## Corpo (itens da morte)
+
+Quando um jogador morre (sem keepInventory), todos os itens ficam num corpo: a cabeça dele flutuando com o nome "Corpo de Fulano". Qualquer jogador abre com o botão direito e vê os itens numa tela; clicar num item pega só ele, e "Pegar tudo" leva o que couber. Quando esvazia, o corpo some; o dono é avisado quando outro mexe. Morte no void deixa o corpo no último lugar seguro em que o jogador esteve. `/corpo` lista os seus corpos com coordenadas; OPs têm `/corpo lista` e `/corpo abrir <id>`. Os itens ficam salvos no `casa.json`, então sobrevivem a reinício. Opcional: `corpoHoras` na config (padrão 0 = nunca) faz o corpo soltar os itens no chão depois de N horas. **Não use junto com o mod Gravestones**: os dois disputam os itens da morte.
