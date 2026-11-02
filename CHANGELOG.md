@@ -1,5 +1,9 @@
 # Versões do MelbyBet
 
+## 1.4.2
+- Todo jogador escreve o próprio apelido (títulos continuam só do OP); apelido não pode ser nick de outro jogador nem repetido
+- Painel de cores com quadrado de cor e barra de matiz
+
 ## 1.4.1
 - Painel web de cores (docs/index.html) e link dele ao escolher "Cor exata"; cores prontas de volta no menu de visual
 

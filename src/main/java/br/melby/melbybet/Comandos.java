@@ -445,6 +445,11 @@ public final class Comandos {
         Apelido.Resultado r = Apelido.ler(bruto);
         String motivo = Apelido.validar(r.texto);
         if (motivo != null) return motivo;
+        for (String real : Jogo.casa.conhecidos.values())
+            if (real.equalsIgnoreCase(r.texto) && !real.equalsIgnoreCase(nick)) return "Esse é o nick de outro jogador. Escolha outro apelido.";
+        for (var outro : Jogo.casa.config.cores.entrySet())
+            if (!outro.getKey().equalsIgnoreCase(nick) && outro.getValue().apelido != null && outro.getValue().apelido.equalsIgnoreCase(r.texto))
+                return "Outro jogador já usa esse apelido.";
         Casa.CorNick cn = Jogo.casa.config.cores.get(nick.toLowerCase());
         if (cn == null) {
             cn = new Casa.CorNick();

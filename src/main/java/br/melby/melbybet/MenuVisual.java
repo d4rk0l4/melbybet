@@ -91,8 +91,8 @@ final class MenuVisual {
                 }).build());
         }
 
-        // placa: escrever o texto no chat
-        if (admin) {
+        // placa: escrever o texto no chat (apelido: todo jogador no próprio; título: só OP)
+        if (admin || !e.titulo) {
             String textoAtual = e.titulo ? (ti == null ? "(nenhum)" : ti.texto) : (cn == null || cn.apelido == null ? "(o nick de verdade)" : cn.apelido);
             g.setSlot(13, btn(Items.OAK_SIGN, e.titulo ? "Escrever o título" : "Escrever o apelido", ChatFormatting.YELLOW,
                 "Atual: " + textoAtual, e.titulo ? "Até 20 letras. Pode usar duas cores: #ff8a24 #ffd23f Lenda" : "Pode usar &c, &l e &#ff8a24; os códigos viram degradê")
@@ -198,7 +198,7 @@ final class MenuVisual {
             Prefixos.esquecer();
             abrir(p, alvo, voltar);
         }).build());
-        if (admin) {
+        if (admin || !e.titulo) {
             g.setSlot(42, btn(Items.TNT, e.titulo ? "Tirar o título" : "Tirar o apelido", ChatFormatting.DARK_RED).setCallback((i, ty, a, gg) -> {
                 if (e.titulo) {
                     Jogo.casa.config.titulos.remove(chave);

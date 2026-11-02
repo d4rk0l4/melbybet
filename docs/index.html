@@ -39,7 +39,16 @@
   .cor.sel { border-color: var(--amarelo); box-shadow: 0 0 0 1px var(--amarelo) inset; }
   .cor label { display: block; font-size: 12px; color: var(--roxo); margin-bottom: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
   .linha { display: flex; gap: 8px; align-items: center; }
-  input[type=color] { width: 52px; height: 42px; border: 1px solid var(--borda); border-radius: 8px; background: none; padding: 2px; cursor: pointer; }
+  .amostra { flex: 0 0 52px; height: 42px; border: 1px solid var(--borda); border-radius: 8px; }
+  .seletor { margin-top: 14px; }
+  .sv { position: relative; width: 100%; height: 220px; border-radius: 12px; overflow: hidden; cursor: crosshair; touch-action: none; border: 1px solid var(--borda); }
+  .sv canvas { display: block; width: 100%; height: 100%; }
+  .sv .bola { position: absolute; width: 18px; height: 18px; margin: -9px 0 0 -9px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 0 1.5px #000, 0 0 6px rgba(0,0,0,.6); pointer-events: none; }
+  .matiz { width: 100%; height: 16px; margin-top: 12px; border-radius: 8px; border: 1px solid var(--borda); cursor: pointer;
+    background: linear-gradient(90deg, #f00, #ff0, #0f0, #0ff, #00f, #f0f, #f00); position: relative; touch-action: none; }
+  .matiz .marca { position: absolute; top: -4px; width: 10px; height: 22px; margin-left: -5px; border-radius: 4px; border: 2px solid #fff; box-shadow: 0 0 0 1.5px #000; pointer-events: none; }
+  .quem { font-size: 13px; color: var(--suave); margin: 0 0 8px; }
+  .quem b { color: var(--amarelo); }
   input[type=text] {
     font: 16px ui-monospace, Menlo, Consolas, monospace; color: var(--texto); background: #0e0e13; border: 1px solid var(--borda);
     border-radius: 8px; padding: 9px 10px; width: 100%; min-width: 0;
@@ -85,14 +94,19 @@
     <div class="cores" id="cores">
       <div class="cor sel" id="c1" data-i="0">
         <label id="l1">1ª cor (começo)</label>
-        <div class="linha"><input type="color" id="p1" value="#ff8a24"><input type="text" id="h1" value="#ff8a24" maxlength="7" spellcheck="false"></div>
+        <div class="linha"><span class="amostra" id="p1"></span><input type="text" id="h1" value="#ff8a24" maxlength="7" spellcheck="false"></div>
       </div>
       <div class="cor" id="c2" data-i="1">
         <label>2ª cor (fim)</label>
-        <div class="linha"><input type="color" id="p2" value="#ffd23f"><input type="text" id="h2" value="#ffd23f" maxlength="7" spellcheck="false"></div>
+        <div class="linha"><span class="amostra" id="p2"></span><input type="text" id="h2" value="#ffd23f" maxlength="7" spellcheck="false"></div>
       </div>
     </div>
-    <p class="dica">Ou clique num corante do jogo para usar a cor dele na caixa selecionada:</p>
+    <div class="seletor">
+      <p class="quem">Arraste no quadrado para escolher a <b id="quem">1ª cor</b>:</p>
+      <div class="sv" id="sv"><canvas id="svc" width="400" height="260"></canvas><div class="bola" id="bola"></div></div>
+      <div class="matiz" id="matiz"><div class="marca" id="marca"></div></div>
+    </div>
+    <p class="dica">Ou clique num corante do jogo para usar a cor dele:</p>
     <div class="dyes" id="dyes"></div>
   </section>
 
@@ -155,6 +169,7 @@
 
   function escolher(i) {
     alvo = i;
+    carregarSeletor();
     $("c1").classList.toggle("sel", i === 0);
     $("c2").classList.toggle("sel", i === 1);
   }
@@ -170,19 +185,60 @@
     atualizar();
   }
 
-  function definir(i, h) {
+  // quadrado de cor: saturação (esquerda->direita) e brilho (cima->baixo), mais a barra de matiz
+  var hsv = {h: 0, s: 1, v: 1}, svc = $("svc"), ctx = svc.getContext("2d");
+  function hsvParaHex(h, s, v) {
+    var f = function (n) { var k = (n + h / 60) % 6; return v - v * s * Math.max(0, Math.min(k, 4 - k, 1)); };
+    return hex([f(5) * 255, f(3) * 255, f(1) * 255]);
+  }
+  function hexParaHsv(x) {
+    var c = rgb(x).map(function (n) { return n / 255; }), mx = Math.max.apply(null, c), mn = Math.min.apply(null, c), d = mx - mn, h = 0;
+    if (d) {
+      if (mx === c[0]) h = ((c[1] - c[2]) / d) % 6; else if (mx === c[1]) h = (c[2] - c[0]) / d + 2; else h = (c[0] - c[1]) / d + 4;
+      h *= 60; if (h < 0) h += 360;
+    }
+    return {h: h, s: mx ? d / mx : 0, v: mx};
+  }
+  function desenharSV() {
+    var w = svc.width, hh = svc.height, g = ctx.createLinearGradient(0, 0, w, 0);
+    g.addColorStop(0, "#fff"); g.addColorStop(1, hsvParaHex(hsv.h, 1, 1));
+    ctx.fillStyle = g; ctx.fillRect(0, 0, w, hh);
+    var g2 = ctx.createLinearGradient(0, 0, 0, hh);
+    g2.addColorStop(0, "rgba(0,0,0,0)"); g2.addColorStop(1, "#000");
+    ctx.fillStyle = g2; ctx.fillRect(0, 0, w, hh);
+    $("bola").style.left = (hsv.s * 100) + "%"; $("bola").style.top = ((1 - hsv.v) * 100) + "%";
+    $("marca").style.left = (hsv.h / 360 * 100) + "%";
+  }
+  function pintarAmostras() {
+    $("p1").style.background = valido($("h1").value) ? $("h1").value : "#fff";
+    $("p2").style.background = valido($("h2").value) ? $("h2").value : "#fff";
+  }
+  function carregarSeletor() {
+    var v = $("h" + (alvo + 1)).value;
+    if (valido(v)) { hsv = hexParaHsv(v); desenharSV(); }
+    $("quem").textContent = degrade ? (alvo === 0 ? "1ª cor" : "2ª cor") : "cor";
+  }
+  function definir(i, h, doSeletor) {
     $("h" + (i + 1)).value = h;
-    $("p" + (i + 1)).value = h;
+    pintarAmostras();
+    if (!doSeletor && i === alvo) carregarSeletor();
     atualizar();
   }
+  function arrastar(el, fn) {
+    function mover(e) { var r = el.getBoundingClientRect(); fn(Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)), Math.max(0, Math.min(1, (e.clientY - r.top) / r.height))); }
+    el.addEventListener("pointerdown", function (e) { el.setPointerCapture(e.pointerId); mover(e); el.onpointermove = mover; });
+    el.addEventListener("pointerup", function () { el.onpointermove = null; });
+  }
+  arrastar($("sv"), function (x, y) { hsv.s = x; hsv.v = 1 - y; desenharSV(); definir(alvo, hsvParaHex(hsv.h, hsv.s, hsv.v), true); });
+  arrastar($("matiz"), function (x) { hsv.h = x * 360; desenharSV(); definir(alvo, hsvParaHex(hsv.h, hsv.s, hsv.v), true); });
 
   ["1", "2"].forEach(function (n, i) {
-    $("p" + n).addEventListener("input", function () { definir(i, this.value); });
     $("h" + n).addEventListener("input", function () {
       var v = this.value.trim();
       if (v[0] !== "#") v = "#" + v;
       this.value = v;
-      if (valido(v)) $("p" + n).value = v;
+      pintarAmostras();
+      if (valido(v) && i === alvo) carregarSeletor();
       atualizar();
     });
     $("c" + n).addEventListener("click", function () { escolher(i); });
@@ -209,6 +265,8 @@
   $("copiar").addEventListener("click", function () { copiar(this, "codigo"); });
   $("copiar2").addEventListener("click", function () { copiar(this, "placa"); });
 
+  pintarAmostras();
+  carregarSeletor();
   modo(true);
 </script>
 </body>
