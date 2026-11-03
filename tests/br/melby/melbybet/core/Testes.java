@@ -55,6 +55,7 @@ public class Testes {
         corpos();
         msgMatar();
         backups();
+        busca();
         igual("#3c44aa", Gradiente.paraHex(0x3C44AA), "hex: formata");
         igual("#00000f", Gradiente.paraHex(0xF), "hex: zeros");
         persistencia();
@@ -575,6 +576,16 @@ public class Testes {
         igual(false, Backups.existe(dir.resolve("b"), "casa-2026-01-01.json"), "backup: o mais antigo saiu");
         igual(true, Backups.existe(dir.resolve("b"), "casa-2026-01-05.json"), "backup: o mais novo ficou");
         igual(true, Backups.existe(dir.resolve("b"), "manual-1.json"), "backup: outro prefixo intacto");
+    }
+
+    static void busca() {
+        igual(100, Busca.pontuar("cortador de pedras", "Cortador de Pedras"), "busca: igual");
+        igual(true, Busca.pontuar("cortador de pedra", "Cortador de Pedras") >= 60, "busca: singular acha plural");
+        igual(true, Busca.pontuar("Tabuas", "Tábuas de Carvalho") >= 60, "busca: sem acento");
+        igual(0, Busca.pontuar("espada", "Cortador de Pedras"), "busca: nao combina");
+        igual(true, Busca.pontuar("diamante", "Diamante") > Busca.pontuar("diamante", "Bloco de Diamante"), "busca: o exato vence");
+        igual(true, Busca.melhor("stonecutter", "Cortador de Pedras", "Stonecutter", "stonecutter") == 100, "busca: id em ingles");
+        igual(true, Busca.pontuar("pedra", "Cortador de Pedras") > 0, "busca: parte do nome");
     }
 
     static void persistencia() throws Exception {

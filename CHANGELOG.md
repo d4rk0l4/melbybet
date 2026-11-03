@@ -1,5 +1,8 @@
 # Versões do MelbyBet
 
+## 1.5.0
+- /find: olhando para um baú, pega o item pelo nome (português ou inglês) direto para o inventário
+
 ## 1.4.2
 - Todo jogador escreve o próprio apelido (títulos continuam só do OP); apelido não pode ser nick de outro jogador nem repetido
 - Painel de cores com quadrado de cor e barra de matiz

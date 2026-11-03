@@ -199,3 +199,7 @@ Uma vez por dia o mod copia o `casa.json` para `config/melbybet/backups/casa-AAA
 ## Painel de cores (página web)
 
 A pasta `docs/` tem uma página (`docs/index.html`) para escolher a cor: cor única ou degradê, um quadrado de cor (arrastar para escolher) com barra de matiz, os 16 corantes do jogo, prévia do nick e o código pronto para copiar (`#cor1 #cor2`, e também o formato de placa). Ao clicar em **Cor exata** no menu de visual, o jogador recebe o link dela no chat. Para o link funcionar, ative o GitHub Pages do repositório (Settings > Pages > Deploy from a branch > `main` > `/docs`). O endereço é `painelCoresUrl` na config (padrão `https://d4rk0l4.github.io/melbybet/`; vazio = não mostra o link).
+
+## /find (pegar item do baú)
+
+Olhando para um baú, barril ou outro recipiente (a até 6 blocos), `/find <item>` tira o item de lá e coloca direto no seu inventário. O nome pode ser em português ou em inglês, sem acento e aceita só o começo das palavras (`/find cortador de pedra`, `/find stonecutter`, `/find diam`). Se achar mais de um item parecido, pega o que combina melhor com o que você digitou. Por padrão leva tudo daquele item; `/find 16 tocha` leva só 16. Respeita baú trancado e áreas protegidas, e cada uso fica no console do servidor (quem pegou o quê, e onde). Não funciona no ender chest.
