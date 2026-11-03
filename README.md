@@ -11,7 +11,7 @@ Mod de servidor (Fabric, Minecraft 26.3) da Gangue do Melby: casa de apostas sat
 
 ## Instalar no servidor (teste num servidor separado primeiro)
 
-Na pasta `mods` do servidor: Fabric Loader, a **Fabric API** mais recente para 26.2 e o `melbybet-1.0.0.jar`. O sgui (menus) já vai dentro do jar.
+Na pasta `mods` do servidor: Fabric Loader, a **Fabric API** mais recente para 26.3 e o `melbybet-2.0.0.jar`. O sgui (menus) já vai dentro do jar.
 
 Quem é OP (nível de admin) usa `/melbybet`. Os dados ficam em `config/melbybet/casa.json`.
 
