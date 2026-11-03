@@ -9,6 +9,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
+import net.minecraft.world.level.block.entity.SignTextSlot;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 
@@ -37,11 +38,11 @@ public final class Placas {
     }
 
     /** Chamado depois que um jogador escreve na placa: converte as linhas que têm códigos. */
-    public static void converter(SignBlockEntity placa, boolean frente) {
+    public static void converter(SignBlockEntity placa, SignTextSlot frente) {
         placa.updateText(st -> {
             for (int i = 0; i < 4; i++) {
-                String raw = st.getMessage(i, false).getString();
-                if (TextoPlaca.temCodigo(raw)) st = st.setMessage(i, componente(raw));
+                String raw = st.getMessages(false).get(i).getString();
+                if (TextoPlaca.temCodigo(raw)) st = st.asMutable().setLine(i, componente(raw)).asImmutable();
             }
             return st;
         }, frente);
@@ -71,8 +72,8 @@ public final class Placas {
     }
 
     private static void editar(SignBlockEntity s, ServerPlayer p, int linha, String texto) {
-        boolean frente = s.isFacingFrontText(p);
-        s.updateText(st -> st.setMessage(linha, componente(texto)), frente);
+        SignTextSlot frente = s.getSlotPlayerIsFacing(p);
+        s.updateText(st -> st.asMutable().setLine(linha, componente(texto)).asImmutable(), frente);
     }
 
     private static SignBlockEntity placaOlhada(ServerPlayer p) {

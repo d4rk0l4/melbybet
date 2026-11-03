@@ -417,7 +417,7 @@ public final class Duelos {
             for (ItemStack it : passou) {
                 ItemStack resto = it.copy();
                 vencedor.getInventory().add(resto);
-                if (!resto.isEmpty()) vencedor.drop(resto, false);
+                if (!resto.isEmpty()) vencedor.drop(resto, false, net.minecraft.util.Prediction.SERVER_ONLY);
             }
             vencedor.containerMenu.broadcastChanges();
         }

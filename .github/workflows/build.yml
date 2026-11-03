@@ -22,14 +22,6 @@ jobs:
         run: chmod +x ./gradlew
       - name: build
         run: ./gradlew build
-        continue-on-error: true
-      - name: javap (temporario)
-        run: |
-          J=$(find ~/.gradle/caches/fabric-loom -name 'minecraft-common*.jar' | head -1)
-          for k in 'net.minecraft.world.level.block.entity.SignText$Mutable' net.minecraft.world.item.component.SwingAnimation net.minecraft.util.Prediction; do echo "##### $k"; javap -cp "$J" -public "$k" 2>&1 | head -30; done
-          echo "##### Player drop"; javap -cp "$J" -public net.minecraft.world.entity.player.Player | grep -i " drop"
-          echo "##### LE drop"; javap -cp "$J" -public net.minecraft.world.entity.LivingEntity | grep -i " drop"
-          echo "##### swing enums"; unzip -l "$J" | grep -i "SwingAnimation"
       - name: testes da lógica (apostas, pagamento, ranking)
         run: |
           GSON=$(find ~/.gradle -name 'gson-*.jar' ! -name '*sources*' | head -1)

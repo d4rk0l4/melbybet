@@ -168,7 +168,7 @@ public final class Corpos {
         boneco.addTag(TAG);
         boneco.setInvisible(true);
         boneco.setNoGravity(true);
-        boneco.setInvulnerable(true);
+        boneco.setPermanentlyInvulnerable(true);
         boneco.setCustomName(Component.literal("Corpo de " + p.getGameProfile().name()).withStyle(ChatFormatting.GRAY));
         boneco.setCustomNameVisible(true);
         boneco.setItemSlot(EquipmentSlot.HEAD, new GuiElementBuilder(Items.PLAYER_HEAD).setProfile(p.getGameProfile().name()).asStack());

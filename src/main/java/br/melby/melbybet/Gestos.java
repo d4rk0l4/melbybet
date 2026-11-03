@@ -12,6 +12,7 @@ import net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.ClickEvent;
@@ -92,7 +93,7 @@ public final class Gestos {
     }
 
     static int acenar(ServerPlayer p) {
-        p.swing(InteractionHand.MAIN_HAND, true);
+        p.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, true);
         return 1;
     }
 
@@ -127,7 +128,7 @@ public final class Gestos {
         banco.setYRot(p.getYRot());
         banco.setInvisible(true);
         banco.setNoGravity(true);
-        banco.setInvulnerable(true);
+        banco.setPermanentlyInvulnerable(true);
         banco.setSilent(true);
         p.level().addFreshEntity(banco);
         p.startRiding(banco, true, false);
@@ -245,7 +246,7 @@ public final class Gestos {
         ULTIMO_APONTAR.put(p.getUUID(), agora);
         Vec3 alvo = r.getLocation();
         MARCAS.add(new Marca(nivel, alvo, agora + 6000));
-        p.swing(InteractionHand.MAIN_HAND, true);
+        p.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, true);
         int bx = (int) Math.floor(alvo.x);
         int by = (int) Math.floor(alvo.y);
         int bz = (int) Math.floor(alvo.z);
