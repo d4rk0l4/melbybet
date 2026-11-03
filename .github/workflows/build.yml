@@ -22,6 +22,18 @@ jobs:
         run: chmod +x ./gradlew
       - name: build
         run: ./gradlew build
+        continue-on-error: true
+      - name: javap (temporario)
+        run: |
+          J=$(find ~/.gradle/caches/fabric-loom -name 'minecraft-common*.jar' | head -1); echo $J
+          C=$(find ~/.gradle/caches/fabric-loom -name 'minecraft-clientonly*.jar' | head -1)
+          for k in net.minecraft.world.level.block.entity.SignText net.minecraft.world.level.block.entity.SignTextSlot net.minecraft.world.entity.SwingAnimation; do echo "##### $k"; javap -cp "$J" -public $k 2>&1 | head -60; done
+          echo "##### SignBlockEntity"; javap -cp "$J" -public net.minecraft.world.level.block.entity.SignBlockEntity | grep -i "text\|front\|player\|update"
+          echo "##### LivingEntity swing"; javap -cp "$J" -public net.minecraft.world.entity.LivingEntity | grep -i "swing"
+          echo "##### Entity invul/drop"; javap -cp "$J" -public net.minecraft.world.entity.Entity | grep -i "invul\|drop\|spawnAtLocation"
+          echo "##### Player drop"; javap -cp "$J" -public net.minecraft.world.entity.player.Player | grep -i "drop"
+          echo "##### ServerPlayer drop"; javap -cp "$J" -public net.minecraft.server.level.ServerPlayer | grep -i "drop"
+          echo "##### ArmorStand"; javap -cp "$J" -public net.minecraft.world.entity.decoration.ArmorStand | grep -i "invul\|marker\|hurt"
       - name: testes da lógica (apostas, pagamento, ranking)
         run: |
           GSON=$(find ~/.gradle -name 'gson-*.jar' ! -name '*sources*' | head -1)
