@@ -127,7 +127,7 @@ public final class Comandos {
             }))
             .then(literal("teste").executes(c -> {
                 if (Jogo.casa.config.discordWebhook.isBlank()) return erro(c, "Nenhum webhook configurado.");
-                Jogo.webhook("✅ MelbyBet conectado ao Discord!");
+                Jogo.webhook("✅ MelbyCraft conectado ao Discord!");
                 return ok(c, "Mensagem de teste enviada.");
             }))
             .then(argument("url", greedyString()).executes(c -> {

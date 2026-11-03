@@ -70,7 +70,7 @@ public final class Jogo {
     }
 
     public static Component prefixo(String s) {
-        return Component.literal("[MelbyBet] ").withStyle(ChatFormatting.GOLD).append(Component.literal(s).withStyle(ChatFormatting.WHITE));
+        return Component.literal("[MelbyCraft] ").withStyle(ChatFormatting.GOLD).append(Component.literal(s).withStyle(ChatFormatting.WHITE));
     }
 
     /** Toca um som só para este jogador. */

@@ -485,7 +485,7 @@ public final class MenuMelby {
         if (temHook) {
             g.setSlot(20, btn(Items.PAPER, "Testar webhook", ChatFormatting.GREEN)
                 .setCallback((i, ty, a, gg) -> {
-                    Jogo.webhook("✅ MelbyBet conectado ao Discord!");
+                    Jogo.webhook("✅ MelbyCraft conectado ao Discord!");
                     info(p, "Mensagem de teste enviada.");
                 }).build());
             g.setSlot(21, btn(Items.BARRIER, "Desligar webhook", ChatFormatting.RED)

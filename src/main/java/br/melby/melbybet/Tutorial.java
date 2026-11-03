@@ -7,7 +7,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 
-/** Livro de boas-vindas da MelbyBet: entregue na primeira vez que a pessoa usa /bet. */
+/** Livro de boas-vindas do MelbyCraft: entregue na primeira vez que a pessoa usa /bet. */
 public final class Tutorial {
     private Tutorial() {}
 
@@ -17,10 +17,10 @@ public final class Tutorial {
 
     public static BookElementBuilder livro() {
         BookElementBuilder b = new BookElementBuilder();
-        b.setTitle("Guia da MelbyBet");
+        b.setTitle("Guia do MelbyCraft");
         b.setAuthor("Gangue do Melby");
         b.addPage(
-            t("MelbyBet\n", ChatFormatting.GOLD, ChatFormatting.BOLD),
+            t("MelbyCraft\n", ChatFormatting.GOLD, ChatFormatting.BOLD),
             t("A casa de apostas da Gangue.\n\n", ChatFormatting.DARK_GRAY),
             t("Você aposta diamantes de verdade em coisas que vão acontecer no servidor, e quem acerta divide o pote.\n\n", ChatFormatting.BLACK),
             t("Abra o menu com /bet", ChatFormatting.DARK_AQUA));
@@ -53,7 +53,7 @@ public final class Tutorial {
         if (Jogo.casa.tutorial.contains(id)) return;
         Jogo.casa.tutorial.add(id);
         Jogo.salvar();
-        p.sendSystemMessage(Component.literal("Primeira vez na MelbyBet? Leia o livro que você recebeu!").withStyle(ChatFormatting.GOLD), true);
+        p.sendSystemMessage(Component.literal("Primeira vez no MelbyCraft? Leia o livro que você recebeu!").withStyle(ChatFormatting.GOLD), true);
         ItemStack livro = livro().asStack();
         p.getInventory().add(livro);
         if (!livro.isEmpty()) p.sendSystemMessage(Jogo.prefixo("Inventário cheio, então não deu para te entregar o livro. Use /bet ajuda para ler."));

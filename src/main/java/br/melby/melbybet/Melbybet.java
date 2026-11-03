@@ -53,7 +53,7 @@ public class Melbybet implements ModInitializer {
         ServerLivingEntityEvents.AFTER_DAMAGE.register((entidade, fonte, base, tomado, bloqueado) -> Duelos.aoDano(entidade, fonte));
         ServerMessageDecoratorEvent.EVENT.register(ServerMessageDecoratorEvent.CONTENT_PHASE, Extras::decorar);
 
-        LOGGER.info("MelbyBet carregado. /bet e /top estão prontos.");
+        LOGGER.info("MelbyCraft carregado. /bet e /top estão prontos.");
     }
 
     private void aCadaTick() {

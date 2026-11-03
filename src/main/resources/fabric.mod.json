@@ -2,7 +2,7 @@
 	"schemaVersion": 1,
 	"id": "melbybet",
 	"version": "${version}",
-	"name": "MelbyBet",
+	"name": "MelbyCraft",
 	"description": "Casa de apostas satírica da Gangue do Melby: bolões com diamantes e ranking de stats (/bet e /top). Só no servidor.",
 	"authors": [
 		"Guilherme"

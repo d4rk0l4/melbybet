@@ -1,5 +1,8 @@
 # Versões do MelbyBet
 
+## 1.6.1
+- O mod agora se chama MelbyCraft (nome, prefixo do chat, livro de boas-vindas, README e painel). IDs internos, pasta de config e dados salvos continuam os mesmos; o menu de bolões segue como MelbyBet
+
 ## 1.6.0
 - Barra de busca no topo de baús, barris e shulker boxes (opcional, só no cliente: quem instalar o mesmo jar vê a barra). Digite o nome do item: os que combinam ganham borda dourada e os outros escurecem; o botão "Pegar" leva todos os que combinam para o inventário
 - O servidor continua funcionando normalmente sem o mod no cliente; /find segue como alternativa

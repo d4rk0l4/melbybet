@@ -1,4 +1,4 @@
-# MelbyBet
+# MelbyCraft
 
 Mod de servidor (Fabric, Minecraft 26.2) com a casa de apostas satírica da Gangue do Melby. **Só o servidor precisa dele**: os jogadores entram normalmente, sem instalar nada.
 
