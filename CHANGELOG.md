@@ -1,5 +1,9 @@
 # Versões do MelbyBet
 
+## 1.6.0
+- Barra de busca no topo de baús, barris e shulker boxes (opcional, só no cliente: quem instalar o mesmo jar vê a barra). Digite o nome do item: os que combinam ganham borda dourada e os outros escurecem; o botão "Pegar" leva todos os que combinam para o inventário
+- O servidor continua funcionando normalmente sem o mod no cliente; /find segue como alternativa
+
 ## 1.5.0
 - /find: olhando para um baú, pega o item pelo nome (português ou inglês) direto para o inventário
 

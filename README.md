@@ -203,3 +203,7 @@ A pasta `docs/` tem uma página (`docs/index.html`) para escolher a cor: cor ún
 ## /find (pegar item do baú)
 
 Olhando para um baú, barril ou outro recipiente (a até 6 blocos), `/find <item>` tira o item de lá e coloca direto no seu inventário. O nome pode ser em português ou em inglês, sem acento e aceita só o começo das palavras (`/find cortador de pedra`, `/find stonecutter`, `/find diam`). Se achar mais de um item parecido, pega o que combina melhor com o que você digitou. Por padrão leva tudo daquele item; `/find 16 tocha` leva só 16. Respeita baú trancado e áreas protegidas, e cada uso fica no console do servidor (quem pegou o quê, e onde). Não funciona no ender chest.
+
+## Barra de busca no baú (opcional, cliente)
+
+Quem colocar o mesmo jar na pasta mods do próprio jogo ganha uma barra de busca acima de baús, barris e shulker boxes. Digite o nome (em português ou inglês, conforme o idioma do jogo): os itens que combinam ficam com borda dourada e os outros escurecem. O botão "Pegar" move todos os que combinam para o inventário, como um shift+clique em cada um. Nada é necessário no servidor além do jar de sempre, e quem não instalar o mod no cliente joga normalmente.
