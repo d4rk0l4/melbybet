@@ -1,5 +1,8 @@
 # Versões do MelbyBet
 
+## 2.0.0
+- Atualizado para Minecraft 26.3 (Fabric API 0.165.2+26.3, sgui 2.2.1+26.3). Não roda mais na 26.2: para ficar na 26.2, use a 1.6.1
+
 ## 1.6.1
 - O mod agora se chama MelbyCraft (nome, prefixo do chat, livro de boas-vindas, README e painel). IDs internos, pasta de config e dados salvos continuam os mesmos; o menu de bolões segue como MelbyBet
 

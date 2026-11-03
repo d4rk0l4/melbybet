@@ -1,6 +1,6 @@
 # MelbyCraft
 
-Mod de servidor (Fabric, Minecraft 26.2) da Gangue do Melby: casa de apostas satírica, visual, corpos, /find e vários recursos de servidor. **Só o servidor precisa dele**: os jogadores entram normalmente, sem instalar nada (quem quiser a barra de busca nos baús instala o mesmo jar no cliente, opcional).
+Mod de servidor (Fabric, Minecraft 26.3) da Gangue do Melby: casa de apostas satírica, visual, corpos, /find e vários recursos de servidor. **Só o servidor precisa dele**: os jogadores entram normalmente, sem instalar nada (quem quiser a barra de busca nos baús instala o mesmo jar no cliente, opcional).
 
 ## Como pegar o .jar (sem Java no PC)
 
@@ -151,7 +151,7 @@ As mensagens de entrar e sair do servidor são trocadas por frases da Gangue, so
 
 ## O que não foi testado
 
-A lógica de apostas, pagamento, ranking e leitura de stats tem testes (`tests/`, rodam no workflow). **A parte que fala com o Minecraft 26.2 (menus, comandos, eventos) nunca foi compilada nem rodada**: foi escrita lendo o código-fonte do sgui e da Fabric API do 26.2. É esperado que o primeiro build acuse algum nome de método. Mande o erro que eu corrijo.
+A lógica de apostas, pagamento, ranking e leitura de stats tem testes (`tests/`, rodam no workflow). **A parte que fala com o Minecraft 26.3 (menus, comandos, eventos) nunca foi compilada nem rodada**: foi escrita lendo o código-fonte do sgui e da Fabric API do 26.2. É esperado que o primeiro build acuse algum nome de método. Mande o erro que eu corrijo.
 
 Também aproximado: "blocos colocados" conta itens usados que não são ferramenta (o vanilla não separa). O caminho das stats mudou entre versões, então o mod procura em `world/players/stats` e `world/stats`.
 
