@@ -1,6 +1,6 @@
 # MelbyCraft
 
-Mod de servidor (Fabric, Minecraft 26.2) com a casa de apostas satírica da Gangue do Melby. **Só o servidor precisa dele**: os jogadores entram normalmente, sem instalar nada.
+Mod de servidor (Fabric, Minecraft 26.2) da Gangue do Melby: casa de apostas satírica, visual, corpos, /find e vários recursos de servidor. **Só o servidor precisa dele**: os jogadores entram normalmente, sem instalar nada (quem quiser a barra de busca nos baús instala o mesmo jar no cliente, opcional).
 
 ## Como pegar o .jar (sem Java no PC)
 
