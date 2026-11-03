@@ -24,15 +24,14 @@ jobs:
         run: ./gradlew build
       - name: javap (temporario)
         run: |
-          for J in $(find ~/.gradle/caches -name '*.jar' -size +100k | head -400); do
-            if unzip -l "$J" 2>/dev/null | grep -q 'net/minecraft/client/gui/screens/inventory/AbstractContainerScreen.class'; then CJ="$J"; fi
-            if unzip -l "$J" 2>/dev/null | grep -q 'net/fabricmc/fabric/api/client/screen/v1/ScreenEvents.class'; then FJ="$J"; fi
-          done
-          echo "CJ=$CJ"; echo "FJ=$FJ"
-          javap -p -cp "$CJ" net.minecraft.client.gui.screens.inventory.AbstractContainerScreen | cut -c1-190
-          echo ==EDITBOX; javap -p -cp "$CJ" net.minecraft.client.gui.components.EditBox | cut -c1-190 | head -70
-          echo ==SCREENEVENTS; javap -p -cp "$FJ" net.fabricmc.fabric.api.client.screen.v1.ScreenEvents 'net.fabricmc.fabric.api.client.screen.v1.ScreenEvents$AfterRender' 'net.fabricmc.fabric.api.client.screen.v1.Screens' | cut -c1-190
-          echo ==SLOT; javap -p -cp "$CJ" net.minecraft.world.inventory.Slot | cut -c1-150 | head -30
+          CJ=/home/runner/.gradle/caches/fabric-loom/minecraftMaven/net/minecraft/minecraft-clientonly-deobf/26.2/minecraft-clientonly-deobf-26.2.jar
+          echo ==FILL; javap -p -cp "$CJ" net.minecraft.client.gui.GuiGraphicsExtractor | grep -i " fill\| outline\|renderOutline\|drawString\|text(" | cut -c1-190
+          echo ==CI; javap -p -cp "$CJ" net.minecraft.world.inventory.ContainerInput | cut -c1-150
+          echo ==SCREEN; javap -p -cp "$CJ" net.minecraft.client.gui.screens.Screen | grep -i "addRenderableWidget\|font\|setFocused\|public.*getFocused" | cut -c1-190
+          echo ==BUTTON; javap -p -cp "$CJ" net.minecraft.client.gui.components.Button | grep -i "builder\|bounds\|build" | cut -c1-190
+          javap -p -cp "$CJ" 'net.minecraft.client.gui.components.Button$Builder' | cut -c1-190
+          echo ==SLOT; javap -p -cp "$CJ" net.minecraft.world.inventory.Slot | head -20 | cut -c1-150
+          echo ==KEY; javap -p -cp "$CJ" net.minecraft.client.input.KeyEvent | cut -c1-150
       - name: testes da lógica (apostas, pagamento, ranking)
         run: |
           GSON=$(find ~/.gradle -name 'gson-*.jar' ! -name '*sources*' | head -1)
