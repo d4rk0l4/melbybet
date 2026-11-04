@@ -38,6 +38,7 @@ public class Melbybet implements ModInitializer {
             Jogo.salvar();
         });
         Presenca.registrar();
+        TrocasVillager.registrar();
         Chat.registrar();
         ServerTickEvents.END_SERVER_TICK.register(server -> aCadaTick());
         ServerLivingEntityEvents.AFTER_DEATH.register(Melbybet::aoMorrer);

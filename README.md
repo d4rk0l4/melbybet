@@ -211,3 +211,7 @@ Quem colocar o mesmo jar na pasta mods do próprio jogo ganha uma barra de busca
 ## Bússola para coordenadas (`/bussola`)
 
 Segurando uma bússola, `/bussola <x> <z>` (também aceita `<x> <y> <z>`, o Y é ignorado, então dá para colar direto o que o `/coords` copia) faz a agulha apontar para aquele ponto. Usa o rastreador de pedra-ímã do próprio jogo: não precisa de nada no cliente e a agulha funciona como a de uma bússola de pedra-ímã comum. Só aponta na dimensão em que o comando foi usado (em outra dimensão a agulha gira). `/bussola reset` devolve a bússola ao normal.
+
+## Botão de novas trocas no villager (opcional, cliente)
+
+Quem tem o mod no cliente vê o botão **Novas trocas** acima da tela de troca do villager. Ele refaz as ofertas, como quebrar e repor a bancada de trabalho, mas só funciona enquanto o villager ainda não foi usado (nível 1, sem experiência e nenhuma troca feita), igual ao jogo normal. O servidor confere tudo, então o botão não dá vantagem depois da primeira troca. Sem o mod no cliente, ou em servidor sem o mod, o botão não aparece.

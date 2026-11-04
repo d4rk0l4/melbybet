@@ -11,6 +11,9 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.ChestMenu;
 import net.minecraft.world.inventory.ContainerInput;
+import net.minecraft.world.inventory.MerchantMenu;
+import br.melby.melbybet.RefreshPayload;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.world.inventory.ShulkerBoxMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
@@ -62,6 +65,16 @@ public abstract class BuscaBauMixin extends Screen {
     @Inject(method = "init", at = @At("TAIL"))
     private void melbybet$criarBusca(CallbackInfo ci) {
         melbybet$busca = null;
+        if (melbybet$tela().getMenu() instanceof MerchantMenu mm) {
+            // villager novo (ainda sem uso) e servidor com o mod: botão para trocar as ofertas
+            if (mm.getTraderLevel() <= 1 && mm.getTraderXp() == 0 && ClientPlayNetworking.canSend(RefreshPayload.TYPE)) {
+                this.addRenderableWidget(Button.builder(Component.literal("Novas trocas"), b -> ClientPlayNetworking.send(new RefreshPayload()))
+                    .bounds(this.leftPos + this.imageWidth - 86, this.topPos - 22, 86, 20)
+                    .tooltip(net.minecraft.client.gui.components.Tooltip.create(Component.literal("Troca as ofertas, como quebrar e repor a bancada. Só vale antes da primeira troca.")))
+                    .build());
+            }
+            return;
+        }
         if (!melbybet$ehRecipiente()) return;
         int larg = Math.min(this.imageWidth - 64, 150);
         int x = this.leftPos + (this.imageWidth - (larg + 56)) / 2;

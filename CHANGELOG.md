@@ -1,5 +1,8 @@
 # Versões do MelbyBet
 
+## 2.2.0
+- Botão "Novas trocas" na tela do villager (precisa do mod no cliente): refaz as ofertas, como quebrar e repor a bancada, mas só enquanto o villager não foi usado (nível 1, sem experiência e sem troca feita)
+
 ## 2.1.0
 - /bussola <x> <z> (ou <x> <y> <z>): com uma bússola na mão, a agulha passa a apontar para as coordenadas (o Y é ignorado). /bussola reset volta ao normal
 

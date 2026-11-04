@@ -22,18 +22,6 @@ jobs:
         run: chmod +x ./gradlew
       - name: build
         run: ./gradlew build
-      - name: javap (temporario)
-        run: |
-          J=$(find ~/.gradle/caches/fabric-loom -name 'minecraft-common*.jar' | head -1)
-          N=$(find ~/.gradle -name 'fabric-networking-api-v1-*.jar' ! -name '*sources*' | head -1)
-          echo "##### VillagerData"; javap -cp "$J" -public net.minecraft.world.entity.npc.villager.VillagerData | head -30
-          echo "##### VillagerProfession"; javap -cp "$J" -public net.minecraft.world.entity.npc.villager.VillagerProfession | grep -i "NONE\|NITWIT"
-          echo "##### PayloadTypeRegistry"; javap -cp "$N:$J" -public net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry | head -20
-          echo "##### ServerPlayNetworking"; javap -cp "$N:$J" -public net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking | grep -i "registerGlobalReceiver\|PlayPayloadHandler"
-          javap -cp "$N:$J" -public 'net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking$PlayPayloadHandler' 'net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking$Context'
-          echo "##### ClientPlayNetworking"; unzip -l "$N" | grep -i "ClientPlayNetworking.class"
-          javap -cp "$N:$J" -public net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking 2>&1 | grep -i " send\|canSend"
-          echo "##### StreamCodec unit"; javap -cp "$J" -public net.minecraft.network.codec.StreamCodec | grep -i " unit"
       - name: testes da lógica (apostas, pagamento, ranking)
         run: |
           GSON=$(find ~/.gradle -name 'gson-*.jar' ! -name '*sources*' | head -1)
