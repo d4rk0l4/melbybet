@@ -101,6 +101,7 @@ public final class Comandos {
         Durabilidade.registrar(d);
         Backup.registrar(d);
         Find.registrar(d);
+        Bussola.registrar(d);
         chatEMais(d);
 
         LiteralArgumentBuilder<CommandSourceStack> adm = literal("melbybet")

@@ -1,5 +1,8 @@
 # Versões do MelbyBet
 
+## 2.1.0
+- /bussola <x> <z> (ou <x> <y> <z>): com uma bússola na mão, a agulha passa a apontar para as coordenadas (o Y é ignorado). /bussola reset volta ao normal
+
 ## 2.0.0
 - Atualizado para Minecraft 26.3 (Fabric API 0.165.2+26.3, sgui 2.2.1+26.3). Não roda mais na 26.2: para ficar na 26.2, use a 1.6.1
 
