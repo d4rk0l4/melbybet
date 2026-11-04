@@ -25,14 +25,15 @@ jobs:
       - name: javap (temporario)
         run: |
           J=$(find ~/.gradle/caches/fabric-loom -name 'minecraft-common*.jar' | head -1)
-          C=$(find ~/.gradle/caches/fabric-loom -name 'minecraft-clientonly*.jar' | head -1)
-          echo "##### Villager"; javap -cp "$J" -public net.minecraft.world.entity.npc.villager.Villager 2>&1 | grep -i "data\|xp\|offers\|trading\|level\|restock\|profession" | head -30
-          echo "##### AbstractVillager"; javap -cp "$J" -public net.minecraft.world.entity.npc.villager.AbstractVillager 2>&1 | grep -i "offers\|trading" | head
-          echo "##### find Villager"; unzip -l "$J" | grep -i "npc.*Villager\(Data\|Profession\)\?\.class"
-          echo "##### MerchantMenu"; javap -cp "$J" -public net.minecraft.world.inventory.MerchantMenu | head -30
-          echo "##### MerchantScreen"; javap -cp "$C" -public net.minecraft.client.gui.screens.inventory.MerchantScreen | head -20
-          echo "##### CustomPacketPayload"; javap -cp "$J" -public 'net.minecraft.network.protocol.common.custom.CustomPacketPayload' 'net.minecraft.network.protocol.common.custom.CustomPacketPayload$Type' | head -20
-          echo "##### fabric network jars"; find ~/.gradle -name 'fabric-networking-api*.jar' | head -3
+          N=$(find ~/.gradle -name 'fabric-networking-api-v1-*.jar' ! -name '*sources*' | head -1)
+          echo "##### VillagerData"; javap -cp "$J" -public net.minecraft.world.entity.npc.villager.VillagerData | head -30
+          echo "##### VillagerProfession"; javap -cp "$J" -public net.minecraft.world.entity.npc.villager.VillagerProfession | grep -i "NONE\|NITWIT"
+          echo "##### PayloadTypeRegistry"; javap -cp "$N:$J" -public net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry | head -20
+          echo "##### ServerPlayNetworking"; javap -cp "$N:$J" -public net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking | grep -i "registerGlobalReceiver\|PlayPayloadHandler"
+          javap -cp "$N:$J" -public 'net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking$PlayPayloadHandler' 'net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking$Context'
+          echo "##### ClientPlayNetworking"; unzip -l "$N" | grep -i "ClientPlayNetworking.class"
+          javap -cp "$N:$J" -public net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking 2>&1 | grep -i " send\|canSend"
+          echo "##### StreamCodec unit"; javap -cp "$J" -public net.minecraft.network.codec.StreamCodec | grep -i " unit"
       - name: testes da lógica (apostas, pagamento, ranking)
         run: |
           GSON=$(find ~/.gradle -name 'gson-*.jar' ! -name '*sources*' | head -1)
