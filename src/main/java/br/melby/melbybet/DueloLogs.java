@@ -44,6 +44,21 @@ public final class DueloLogs {
         sujo = true;
     }
 
+    /** Ao ligar: duelo que ficou "em andamento" sem estar mais ativo foi cortado pelo reinício. */
+    public static void aoLigar() {
+        long agora = System.currentTimeMillis();
+        for (DueloLog.Reg r : log.regs) {
+            if (!r.estado.equals("EM ANDAMENTO")) continue;
+            Casa.Duelo x = Jogo.casa.achaDuelo(r.id);
+            if (x != null && x.estado.equals("ATIVO")) continue;
+            r.estado = "CANCELADO";
+            r.fim = agora;
+            r.motivo = "o servidor reiniciou durante o duelo";
+            r.evento(agora, "Cancelado: o servidor reiniciou durante o duelo");
+        }
+        salvar();
+    }
+
     public static void aCadaSegundo() {
         if (sujo) salvar();
     }

@@ -215,3 +215,23 @@ Segurando uma bússola, `/bussola <x> <z>` (também aceita `<x> <y> <z>`, o Y é
 ## Botão de novas trocas no villager (opcional, cliente)
 
 Quem tem o mod no cliente vê o botão **Novas trocas** acima da tela de troca do villager. Ele refaz as ofertas, como quebrar e repor a bancada de trabalho, mas só funciona enquanto o villager ainda não foi usado (nível 1, sem experiência e nenhuma troca feita), igual ao jogo normal. O servidor confere tudo, então o botão não dá vantagem depois da primeira troca. Sem o mod no cliente, ou em servidor sem o mod, o botão não aparece.
+
+## Arena de vidro nos duelos
+
+Todo duelo aceito (`/duelo`, de diamantes ou de itens) acontece numa **jaula de vidro no céu do Overworld**, sem comando extra:
+
+1. Ao aceitar, o mod procura um lugar livre no céu (acima do terreno, abaixo do teto do mundo, só em chunks já carregados). A arena só é construída se **todos** os blocos da caixa e de 1 bloco de margem forem ar; qualquer outro bloco descarta o lugar, então nada existente é tocado. Duelos simultâneos respeitam a distância mínima entre arenas. Sem lugar, o duelo não começa e ninguém perde nada.
+2. A caixa (15x15x10 **por fora**, ou seja 13x13x8 livres) é construída em poucos ticks. Só depois disso os diamantes saem e os dois são teleportados para lados opostos.
+3. Contagem de 5 segundos com títulos na tela e sem dano. Depois o combate é liberado (os 15 minutos máximos contam daí).
+4. Durante o duelo: ninguém quebra o vidro (se uma explosão abrir um buraco, o mod repõe), blocos só podem ser colocados dentro da jaula e só pelos duelistas, pérola do Ender e fruta do coro ficam bloqueadas (o único teleporte é o do começo e o do fim), bichos que aparecerem lá dentro são removidos e quem for achado fora da caixa por mais de 2 segundos perde o duelo.
+5. No fim: resultado no chat, vencedor (e o perdedor, se ainda vivo) voltam para onde estavam uns 3 segundos depois, o **corpo do perdedor** aparece onde ele estava antes do duelo, e a caixa inteira vira ar (inclusive blocos, água, itens e flechas deixados lá). 
+6. Se um jogador sai do jogo no meio, perde o duelo e, ao voltar, é levado para onde estava. Se o servidor reiniciar, `config/melbybet/arenas.json` guarda as arenas pendentes: ao ligar o mod as limpa, cancela os duelos ativos (diamantes devolvidos) e leva de volta quem estava lá dentro assim que entrar.
+
+Configuração (bloco `config` do `casa.json`, sem interface): `arenaAtiva`, `arenaLarg`, `arenaComp`, `arenaAlt`, `arenaMaterial`, `arenaContagemSeg`, `arenaDistMin`, `arenaLimpezaSeg`. Com `arenaAtiva` falso o duelo volta a ser no lugar onde os dois estão.
+
+## Log de duelos, anulação e rastro (staff)
+
+- **Log:** `config/melbybet/duelos-log.jsonl`, uma linha por duelo: id, quem duelou, data e hora, aposta, resultado, eventos (arena, teleporte, contagem, fim) e a origem de cada jogador. `/duelo log` mostra os 10 últimos e `/duelo log <id>` o detalhe (admin e moderador).
+- **Aba Duelos no `/melby`** (staff): lista paginada, detalhes, rastro do prêmio e, só para OP, **Anular duelo** (pede o motivo e uma confirmação). Também `/melbybet duelo anular <id> <motivo>` e `/melbybet duelo rastro <id>`.
+- **Anulação:** no duelo de diamantes, cada um recebe a aposta de volta; o mod recolhe o prêmio do vencedor (primeiro o crédito pendente, depois inventário e ender chest, se ele estiver online) e o que não achar sai do cofre; sai do placar e do ranking. No duelo de itens, os itens voltam ao perdedor (que precisa estar online): o mod recolhe os equivalentes do vencedor e recria o que não achar. Apostas de terceiros no duelo não são desfeitas. Tudo fica registrado com quem anulou, quando e por quê.
+- **Rastro do prêmio:** por `rastroMin` minutos (padrão 30; 0 desliga) depois do duelo, o log registra o que o vencedor faz com o que ganhou: que baú, barril, shulker ou funil abriu e quanto guardou ou pegou (com coordenadas), ender chest, quanto sumiu do inventário e onde, desconexão e morte. É comparação de contagens: não enxerga itens dentro de shulker no inventário, troca direta no chão nem separa o prêmio de itens iguais que o jogador já tinha (nos diamantes, minerar também aparece).

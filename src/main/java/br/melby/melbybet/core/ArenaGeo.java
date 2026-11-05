@@ -50,7 +50,7 @@ public final class ArenaGeo {
 
         /** O ponto (x,y,z) está dentro da parte livre da caixa (os blocos do interior ocupam [x0+1, x1) e assim por diante)? */
         public boolean dentroLivre(double x, double y, double z) {
-            return x >= x0 + 1 && x < x1() && y >= y0 + 1 && y < y1() && z >= z0 + 1 && z < z1();
+            return x >= x0 + 1 && x < x1() && y >= y0 + 0.5 && y < y1() && z >= z0 + 1 && z < z1();
         }
     }
 

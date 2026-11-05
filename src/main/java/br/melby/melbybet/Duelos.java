@@ -730,5 +730,6 @@ public final class Duelos {
                 else Jogo.casa.cancelar(b, System.currentTimeMillis());
             }
         }
+        DueloLogs.aoLigar();
     }
 }
