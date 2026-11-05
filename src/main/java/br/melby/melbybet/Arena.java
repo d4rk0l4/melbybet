@@ -565,7 +565,7 @@ public final class Arena {
             if (s == null) s = sessaoEm(n, hit.getBlockPos());
             if (s == null) return InteractionResult.PASS;
             if (s.duelista(p.getUUID()) && s.caixa.interior(alvo.getX(), alvo.getY(), alvo.getZ())) return InteractionResult.PASS;
-            p.sendSystemMessage(Component.literal("A arena é protegida.").withStyle(ChatFormatting.RED), true);
+            if (p instanceof ServerPlayer sp) sp.sendSystemMessage(Component.literal("A arena é protegida.").withStyle(ChatFormatting.RED), true);
             return InteractionResult.FAIL;
         });
         // pérola e fruta do coro teleportam: o único teleporte permitido é o do começo e o do fim
@@ -574,7 +574,7 @@ public final class Arena {
             ItemStack st = p.getItemInHand(mao);
             if (!(st.is(Items.ENDER_PEARL) || st.is(Items.CHORUS_FRUIT))) return InteractionResult.PASS;
             if (sessaoDe(p.getUUID()) == null) return InteractionResult.PASS;
-            p.sendSystemMessage(Component.literal("Teleporte bloqueado durante o duelo.").withStyle(ChatFormatting.RED), true);
+            if (p instanceof ServerPlayer sp) sp.sendSystemMessage(Component.literal("Teleporte bloqueado durante o duelo.").withStyle(ChatFormatting.RED), true);
             return InteractionResult.FAIL;
         });
         // contagem regressiva: ninguém leva dano
