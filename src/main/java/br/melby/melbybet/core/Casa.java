@@ -24,6 +24,17 @@ public class Casa {
         public List<String> roster = new ArrayList<>(List.of("d4rk_4g10t4", "vitorcs201012", "saya_neku", "has_edu", "patricksmirnoff", "davigamer58GB"));
         /** Cor do nick no chat: nick (minúsculo) -> degradê. */
         public Map<String, CorNick> cores = new LinkedHashMap<>();
+        /** Arena de vidro dos duelos (medidas EXTERNAS em blocos, material, contagem e limpeza). */
+        public boolean arenaAtiva = true;
+        public int arenaLarg = 15;
+        public int arenaComp = 15;
+        public int arenaAlt = 10;
+        public String arenaMaterial = "minecraft:glass";
+        public int arenaContagemSeg = 5;
+        /** Distância mínima entre duas arenas ao mesmo tempo, em blocos. */
+        public int arenaDistMin = 32;
+        /** Segundos entre o fim do duelo e a volta dos jogadores / limpeza da arena. */
+        public int arenaLimpezaSeg = 3;
         /** Distância do chat local, em blocos (0 = sem limite). */
         public int chatLocalRaio = 100;
         /** Quanto o banco invisível do /sit fica abaixo dos pés, em blocos (maior = senta mais baixo). */
@@ -282,7 +293,7 @@ public class Casa {
         public int id;
         public String uuidA = "", nomeA = "", uuidB = "", nomeB = "";
         public int valor;
-        /** PROPOSTO, ESCOLHENDO (só duelo de itens), ATIVO, RESOLVIDO ou CANCELADO. */
+        /** PROPOSTO, ESCOLHENDO (só duelo de itens), PREPARANDO (construindo a arena), ATIVO, RESOLVIDO ou CANCELADO. */
         public String estado = "PROPOSTO";
         /** true = a aposta são itens escolhidos do inventário do outro, e não diamantes. */
         public boolean itens;
@@ -346,7 +357,7 @@ public class Casa {
     /** Já está em um duelo ativo ou escolhendo itens para um. */
     public boolean ocupado(String uuid) {
         for (Duelo d : duelos) {
-            boolean vivo = d.estado.equals("ATIVO") || d.estado.equals("ESCOLHENDO");
+            boolean vivo = d.estado.equals("ATIVO") || d.estado.equals("ESCOLHENDO") || d.estado.equals("PREPARANDO");
             if (vivo && (d.uuidA.equals(uuid) || d.uuidB.equals(uuid))) return true;
         }
         return false;

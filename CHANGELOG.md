@@ -1,5 +1,8 @@
 # Versões do MelbyBet
 
+## 2.3.0
+- Arena de vidro nos duelos: todo duelo aceito acontece numa jaula de vidro no céu do Overworld, construída só em lugar totalmente vazio, com contagem de 5 s, proteção do vidro, sem pérola/fruta do coro, e limpeza total no fim (inclusive blocos colocados). O corpo do perdedor aparece onde ele estava antes. Recuperação depois de reinício em config/melbybet/arenas.json
+
 ## 2.2.0
 - Botão "Novas trocas" na tela do villager (precisa do mod no cliente): refaz as ofertas, como quebrar e repor a bancada, mas só enquanto o villager não foi usado (nível 1, sem experiência e sem troca feita)
 

@@ -62,14 +62,14 @@ public final class Corpos {
         return ItemStack.OPTIONAL_CODEC.parse(ops, JsonParser.parseString(j)).result().orElse(ItemStack.EMPTY);
     }
 
-    private static String dimDe(ServerLevel nivel) {
+    static String dimDe(ServerLevel nivel) {
         String s = nivel.dimension().toString();
         int a = s.lastIndexOf(':');
         int b = s.lastIndexOf(']');
         return a >= 0 && b > a ? s.substring(a + 1, b) : "overworld";
     }
 
-    private static ServerLevel nivelDe(String dim) {
+    static ServerLevel nivelDe(String dim) {
         for (ServerLevel n : Jogo.server.getAllLevels()) if (dimDe(n).equals(dim)) return n;
         return null;
     }
@@ -151,7 +151,15 @@ public final class Corpos {
 
         String dim = dimDe(nivel);
         double x = p.getX(), y = p.getY(), z = p.getZ();
-        if (fonte.typeHolder().is(DamageTypes.FELL_OUT_OF_WORLD)) {
+        var arena = Arena.origemParaCorpo(p.getUUID());
+        if (arena != null && nivelDe(arena.dim) != null) {
+            // morreu na arena de duelo: o corpo fica onde ele estava antes do duelo
+            dim = arena.dim;
+            x = arena.x;
+            y = arena.y;
+            z = arena.z;
+            nivel = nivelDe(dim);
+        } else if (fonte.typeHolder().is(DamageTypes.FELL_OUT_OF_WORLD)) {
             Seguro s = SEGUROS.get(p.getUUID());
             if (s != null && nivelDe(s.dim()) != null) {
                 dim = s.dim();

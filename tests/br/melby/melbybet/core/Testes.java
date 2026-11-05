@@ -59,6 +59,7 @@ public class Testes {
         igual("#3c44aa", Gradiente.paraHex(0x3C44AA), "hex: formata");
         igual("#00000f", Gradiente.paraHex(0xF), "hex: zeros");
         persistencia();
+        arena();
         System.out.println(falhas == 0 ? "tudo certo (" + total + " checagens)" : falhas + " falhas de " + total);
         if (falhas > 0) System.exit(1);
     }
@@ -75,6 +76,85 @@ public class Testes {
         igual("1.738 itens", StatCat.CRAFTOU.formatar(1738), "itens");
         igual("161 mobs", StatCat.MATOU.formatar(161), "mobs");
         igual("8,90h", StatCat.TEMPO.formatar(8.9), "horas");
+    }
+
+    static void arena() throws Exception {
+        var c = new ArenaGeo.Caixa(100, 300, -50, 15, 15, 10);
+        igual(114, c.x1(), "arena: x1");
+        igual(309, c.y1(), "arena: y1");
+        igual(2250, c.total(), "arena: total de blocos");
+        igual(true, c.contem(100, 300, -50), "arena: canto");
+        igual(false, c.contem(115, 300, -50), "arena: fora em x");
+        igual(true, c.casca(100, 305, -40), "arena: parede");
+        igual(true, c.casca(105, 300, -45), "arena: chao");
+        igual(true, c.casca(105, 309, -45), "arena: teto");
+        igual(true, c.interior(105, 305, -45), "arena: interior");
+        igual(false, c.casca(105, 305, -45), "arena: interior nao e casca");
+        int interior = 0, casca = 0;
+        for (int x = c.x0(); x <= c.x1(); x++) for (int y = c.y0(); y <= c.y1(); y++) for (int z = c.z0(); z <= c.z1(); z++) {
+            if (c.interior(x, y, z)) interior++;
+            if (c.casca(x, y, z)) casca++;
+        }
+        igual(13 * 13 * 8, interior, "arena: interior 13x13x8");
+        igual(2250 - interior, casca, "arena: casca fecha tudo");
+        var m = c.expandida(1);
+        igual(99, m.x0(), "arena: margem x0");
+        igual(17, m.larg(), "arena: margem larg");
+        double[] a = c.posA(), b = c.posB();
+        igual(true, c.dentroLivre(a[0], a[1], a[2]), "arena: A dentro");
+        igual(true, c.dentroLivre(b[0], b[1], b[2]), "arena: B dentro");
+        igual(true, a[2] < b[2] && b[2] - a[2] > 8, "arena: lados opostos");
+        igual(false, c.dentroLivre(a[0], a[1], c.z0() + 0.5), "arena: dentro da parede nao vale");
+        igual(false, c.dentroLivre(a[0], c.y1() + 0.5, a[2]), "arena: acima do teto nao vale");
+        igual(false, c.dentroLivre(c.x1() + 3, a[1], a[2]), "arena: fora");
+        // cruzamento e distancia minima
+        var longe = new ArenaGeo.Caixa(100 + 15 + 40, 300, -50, 15, 15, 10);
+        var colada = new ArenaGeo.Caixa(115, 300, -50, 15, 15, 10);
+        var perto = new ArenaGeo.Caixa(100 + 15 + 20, 300, -50, 15, 15, 10);
+        igual(false, c.cruza(longe, 32), "arena: 40 blocos de vao com folga 32 nao cruza");
+        igual(true, c.cruza(perto, 32), "arena: 20 blocos de vao com folga 32 cruza");
+        igual(false, c.cruza(colada, 0), "arena: encostada sem folga nao se sobrepoe");
+        igual(true, c.cruza(colada, 1), "arena: encostada com folga 1 cruza");
+        var outraAltura = new ArenaGeo.Caixa(100, 100, -50, 15, 15, 10);
+        igual(false, c.cruza(outraAltura, 5), "arena: muito abaixo nao cruza");
+        // altura
+        igual(300, ArenaGeo.alturaBase(100, -64, 319, 10, 200), "altura: terreno baixo 100+200 passa do teto e limita em 308");
+        igual(-1, ArenaGeo.alturaBase(310, -64, 319, 10, 32), "altura: nao cabe acima do terreno");
+        igual(132, ArenaGeo.alturaBase(100, -64, 319, 10, 32), "altura: terreno + 32");
+        igual(-1, ArenaGeo.alturaBase(0, 0, 8, 10, 32), "altura: mundo baixo demais");
+        // candidatos
+        var cand = ArenaGeo.candidatos(0, 0, 48, 2);
+        igual(1 + 8 + 16, cand.size(), "candidatos: 25 pontos em 2 aneis");
+        igual(0, cand.get(0)[0], "candidatos: o primeiro e o centro");
+        var vistos = new java.util.HashSet<String>();
+        for (int[] p : cand) vistos.add(p[0] + "," + p[1]);
+        igual(cand.size(), vistos.size(), "candidatos: sem repeticao");
+        // registro: reserva, sobreposicao, persistencia
+        var reg = new ArenaRegistro();
+        var cx = ArenaGeo.centrada(0, 0, 300, 15, 15, 10);
+        igual(true, reg.livre("minecraft:overworld", cx, 32), "registro: vazio esta livre");
+        var ar = reg.reservar(7, "minecraft:overworld", cx, "minecraft:glass", 1000L);
+        ar.uuidA = "aaa";
+        ar.origemA = new ArenaRegistro.Origem("minecraft:the_nether", 1.5, 64, -3.5, 90f, 10f);
+        igual(false, reg.livre("minecraft:overworld", ArenaGeo.centrada(20, 0, 300, 15, 15, 10), 32), "registro: vizinha proxima recusada");
+        igual(true, reg.livre("minecraft:overworld", ArenaGeo.centrada(200, 0, 300, 15, 15, 10), 32), "registro: vizinha longe aceita");
+        igual(true, reg.livre("minecraft:the_end", ArenaGeo.centrada(0, 0, 300, 15, 15, 10), 32), "registro: outra dimensao aceita");
+        reg.devolver.put("bbb", new ArenaRegistro.Origem("minecraft:overworld", 5, 70, 5, 0f, 0f));
+        Path tmp = Files.createTempFile("arenas", ".json");
+        reg.gravar(tmp);
+        var lido = ArenaRegistro.ler(tmp);
+        igual(1, lido.arenas.size(), "registro: leu 1 arena");
+        igual(7, lido.arenas.get(0).duelo, "registro: duelo");
+        igual("minecraft:the_nether", lido.arenas.get(0).origemA.dim, "registro: origem dim");
+        igual(-3.5, lido.arenas.get(0).origemA.z, "registro: origem z");
+        igual(cx, lido.arenas.get(0).caixa(), "registro: caixa igual");
+        igual(70.0, lido.devolver.get("bbb").y, "registro: devolver");
+        lido.liberar(7);
+        igual(0, lido.arenas.size(), "registro: liberar");
+        igual(true, lido.livre("minecraft:overworld", cx, 32), "registro: depois de liberar, livre de novo");
+        Files.writeString(tmp, "{ isso nao e json");
+        igual(0, ArenaRegistro.ler(tmp).arenas.size(), "registro: arquivo ruim vira vazio");
+        Files.deleteIfExists(tmp);
     }
 
     static void degrade() {

@@ -356,10 +356,29 @@ public final class Duelos {
             cancelar(st.d, st.d.nomeB + " não tem mais todos os itens da aposta.");
             return;
         }
+        if (Arena.ativa()) {
+            String problema = Arena.iniciar(a, b, st.d, () -> ativarItens(st));
+            if (problema != null) semArena(st.d, a, b, problema);
+            return;
+        }
+        ativarItens(st);
+    }
+
+    private static boolean ativarItens(Itens st) {
+        ServerPlayer a = on(st.d.uuidA), b = on(st.d.uuidB);
+        String erro = null;
+        if (a == null || b == null) erro = "alguém saiu.";
+        else if (faltando(a, st.daA)) erro = st.d.nomeA + " não tem mais todos os itens da aposta.";
+        else if (faltando(b, st.daB)) erro = st.d.nomeB + " não tem mais todos os itens da aposta.";
+        if (erro != null) {
+            semArena(st.d, a, b, erro);
+            return false;
+        }
         Jogo.casa.ativarDuelo(st.d, System.currentTimeMillis());
         abrirApostas(st.d);
         Jogo.salvar();
         Jogo.avisar("Duelo de itens valendo! " + st.d.nomeA + " x " + st.d.nomeB + ". Quem matar o outro primeiro leva os itens. Não guarde nem jogue fora os itens da aposta!");
+        return true;
     }
 
     // ---------- itens: conferir e transferir ----------
@@ -467,12 +486,42 @@ public final class Duelos {
             b.sendSystemMessage(Jogo.prefixo("Você só tem " + Jogo.contar(b) + " diamante(s)."));
             return;
         }
+        if (Arena.ativa()) {
+            String problema = Arena.iniciar(a, b, x, () -> ativarDiamantes(x));
+            if (problema != null) semArena(x, a, b, problema);
+            return;
+        }
+        ativarDiamantes(x);
+    }
+
+    /** Não achou lugar para a arena: o duelo não começa e ninguém perde nada. */
+    private static void semArena(Casa.Duelo x, ServerPlayer a, ServerPlayer b, String problema) {
+        Jogo.casa.cancelarDuelo(x, System.currentTimeMillis());
+        ITENS.remove(x.id);
+        for (ServerPlayer p : new ServerPlayer[] {a, b}) {
+            if (p != null) p.sendSystemMessage(Jogo.prefixo("O duelo não começou: " + problema));
+        }
+        Jogo.salvar();
+    }
+
+    /** Confere de novo os dois (a arena demora uns ticks), tira os diamantes e põe o duelo no ar. */
+    private static boolean ativarDiamantes(Casa.Duelo x) {
+        ServerPlayer a = on(x.uuidA), b = on(x.uuidB);
+        String erro = null;
+        if (a == null || b == null) erro = "alguém saiu.";
+        else if (Jogo.contar(a) < x.valor) erro = x.nomeA + " não tem mais " + x.valor + " diamante(s).";
+        else if (Jogo.contar(b) < x.valor) erro = x.nomeB + " não tem mais " + x.valor + " diamante(s).";
+        if (erro != null) {
+            semArena(x, a, b, erro);
+            return false;
+        }
         Jogo.tirar(a, x.valor);
         Jogo.tirar(b, x.valor);
         Jogo.casa.ativarDuelo(x, System.currentTimeMillis());
         abrirApostas(x);
         Jogo.salvar();
         Jogo.avisar("Duelo valendo! " + x.nomeA + " x " + x.nomeB + ", " + x.valor + " diamante(s) cada. Quem matar o outro primeiro leva o pote.");
+        return true;
     }
 
     private static void recusar(ServerPlayer p, int id) {
@@ -520,6 +569,7 @@ public final class Duelos {
             Jogo.webhook("⚔️ **Duelo de itens** — " + nome + " venceu " + perdedorNome + (passou.isEmpty() ? "" : " e levou " + descricao(passou)));
             encerrarApostas(x, nome);
             Jogo.salvar();
+            Arena.fim(x);
             return;
         }
         int premio = Jogo.casa.resolverDuelo(x, uuidVencedor, System.currentTimeMillis());
@@ -528,15 +578,31 @@ public final class Duelos {
         encerrarApostas(x, nome);
         Jogo.entregarTodos();
         Jogo.salvar();
+        Arena.fim(x);
     }
 
     private static void cancelar(Casa.Duelo x, String motivo) {
         ITENS.remove(x.id);
+        boolean devolve = x.estado.equals("ATIVO") && !x.itens;
         Jogo.casa.cancelarDuelo(x, System.currentTimeMillis());
         encerrarApostas(x, null);
-        Jogo.avisar("Duelo " + x.nomeA + " x " + x.nomeB + " cancelado: " + motivo + (x.itens ? "" : " Os diamantes foram devolvidos."));
+        Jogo.avisar("Duelo " + x.nomeA + " x " + x.nomeB + " cancelado: " + motivo + (devolve ? " Os diamantes foram devolvidos." : ""));
         Jogo.entregarTodos();
         Jogo.salvar();
+        Arena.fim(x);
+    }
+
+    /** Chamado pela arena quando algo dá errado depois de o duelo começar (teleporte, erro): cancela e devolve. */
+    static void cancelarPorArena(Casa.Duelo x, String motivo) {
+        cancelar(x, motivo);
+    }
+
+    /** O jogador foi achado fora da jaula: perde o duelo. */
+    static void perderPorFuga(Casa.Duelo x, String uuidPerdedor) {
+        if (!x.estado.equals("ATIVO")) return;
+        String venc = uuidPerdedor.equals(x.uuidA) ? x.uuidB : x.uuidA;
+        String nome = uuidPerdedor.equals(x.uuidA) ? x.nomeA : x.nomeB;
+        vencer(x, venc, nome + " saiu da jaula.");
     }
 
     /** Antes de a morte acontecer (os itens ainda estão no inventário): se foi o outro duelista, já resolve. */
@@ -589,6 +655,8 @@ public final class Duelos {
                     ITENS.remove(x.id);
                     limpar = true;
                 }
+            } else if (x.estado.equals("PREPARANDO")) {
+                if (on(x.uuidA) == null || on(x.uuidB) == null) cancelar(x, "alguém saiu antes de começar.");
             } else if (x.estado.equals("ATIVO")) {
                 ServerPlayer pa = on(x.uuidA);
                 ServerPlayer pb = on(x.uuidB);
@@ -622,6 +690,12 @@ public final class Duelos {
 
     /** Ao ligar o servidor: convites e duelos de itens que estavam no ar somem (nada foi tirado de ninguém). */
     public static void aoLigar() {
+        // arenas que ficaram para trás: desfaz, e cancela (devolvendo os diamantes) os duelos que dependiam delas
+        for (int id : Arena.aoLigar()) {
+            Casa.Duelo d = Jogo.casa.achaDuelo(id);
+            if (d != null && (d.estado.equals("ATIVO") || d.estado.equals("PREPARANDO")) && !d.itens) cancelar(d, "o servidor reiniciou durante o duelo.");
+        }
+        Jogo.casa.duelos.removeIf(x -> x.estado.equals("PREPARANDO"));
         Jogo.casa.duelos.removeIf(x -> x.estado.equals("PROPOSTO") || x.estado.equals("ESCOLHENDO") || (x.itens && x.estado.equals("ATIVO")));
         // bolões de duelos que não existem mais: devolve as apostas
         for (var b : new ArrayList<>(Jogo.casa.bolaos)) {

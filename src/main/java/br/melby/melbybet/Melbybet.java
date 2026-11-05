@@ -39,6 +39,7 @@ public class Melbybet implements ModInitializer {
         });
         Presenca.registrar();
         TrocasVillager.registrar();
+        Arena.registrar();
         Chat.registrar();
         ServerTickEvents.END_SERVER_TICK.register(server -> aCadaTick());
         ServerLivingEntityEvents.AFTER_DEATH.register(Melbybet::aoMorrer);
@@ -50,6 +51,7 @@ public class Melbybet implements ModInitializer {
             }
             return true;
         });
+        ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> Arena.aoEntrar(handler.getPlayer()));
         ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> Duelos.aoSair(handler.getPlayer()));
         ServerLivingEntityEvents.AFTER_DAMAGE.register((entidade, fonte, base, tomado, bloqueado) -> Duelos.aoDano(entidade, fonte));
         ServerMessageDecoratorEvent.EVENT.register(ServerMessageDecoratorEvent.CONTENT_PHASE, Extras::decorar);
@@ -82,6 +84,7 @@ public class Melbybet implements ModInitializer {
             }
             if (mudou) Jogo.salvar();
         }
+        Arena.aCadaTick();
         if (tick % 20 == 0) Extras.aCadaSegundo();
         if (tick % 20 == 0) Capsulas.aCadaSegundo();
         if (tick % 20 == 0) Duelos.aCadaSegundo();
