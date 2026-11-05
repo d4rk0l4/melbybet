@@ -6,7 +6,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.player.PlayerEnderChestContainer;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -167,7 +166,7 @@ public final class Rastro {
                 r.rastro(agora, quem + ": ender chest " + (dEc > 0 ? "+" : "") + dEc + " " + oQue(s));
             }
             if (dInv != 0 && !(dEc != 0 && dInv == -dEc)) {
-                if (aberto && recente && !(menu.getSlot(0).container instanceof PlayerEnderChestContainer)) {
+                if (aberto && recente && menu.getSlot(0).container != p.getEnderChestInventory()) {
                     r.rastro(agora, quem + (dInv < 0 ? " guardou " : " pegou ") + Math.abs(dInv) + " " + oQue(s) + (dInv < 0 ? " em " : " de ")
                         + uso.bloco() + " em " + uso.pos().getX() + " " + uso.pos().getY() + " " + uso.pos().getZ() + " (" + uso.dim() + ")");
                 } else if (dInv < 0) {

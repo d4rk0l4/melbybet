@@ -238,7 +238,7 @@ public final class Comandos {
             .then(literal("rastro").then(argument("id", integer(1)).executes(c -> {
                 var r = DueloLogs.log.achar(IntegerArgumentType.getInteger(c, "id"));
                 if (r == null) return ok(c, "Não achei esse duelo no log.");
-                for (String s : DueloLogs.detalhe(r, true)) c.getSource().sendSystemMessage(Component.literal(s).withStyle(ChatFormatting.GRAY));
+                for (String s : DueloLogs.detalhe(r, true)) c.getSource().sendSystemMessage(Component.literal(s).withStyle(net.minecraft.ChatFormatting.GRAY));
                 return 1;
             }))));
         adm.then(literal("temporada").then(literal("nova").executes(c -> {

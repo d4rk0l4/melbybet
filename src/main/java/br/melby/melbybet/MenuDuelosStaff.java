@@ -41,8 +41,8 @@ final class MenuDuelosStaff {
             Item item = switch (r.estado) {
                 case "RESOLVIDO" -> Items.PAPER;
                 case "ANULADO" -> Items.BARRIER;
-                case "CANCELADO" -> Items.GRAY_DYE;
-                default -> Items.LIME_DYE;
+                case "CANCELADO" -> Items.COAL;
+                default -> Items.SLIME_BALL;
             };
             String quando = DueloLog.data(r.inicio > 0 ? r.inicio : r.criadoEm, DueloLogs.fuso());
             g.setSlot(i, btn(item, "#" + r.id + " " + r.nomeA + " x " + r.nomeB, ChatFormatting.YELLOW,
@@ -108,13 +108,13 @@ final class MenuDuelosStaff {
         SimpleGui g = new SimpleGui(MenuType.GENERIC_9x3, p, false);
         g.setTitle(Component.literal("Anular duelo #" + id + "?").withStyle(ChatFormatting.RED));
         g.setSlot(4, btn(Items.PAPER, "Motivo", ChatFormatting.YELLOW, motivo).build());
-        g.setSlot(11, btn(Items.LIME_CONCRETE, "CONFIRMAR ANULAÇÃO", ChatFormatting.GREEN, "Isso mexe com diamantes e itens e fica registrado com o seu nome")
+        g.setSlot(11, btn(Items.EMERALD_BLOCK, "CONFIRMAR ANULAÇÃO", ChatFormatting.GREEN, "Isso mexe com diamantes e itens e fica registrado com o seu nome")
             .setCallback((i, ty, a, gg) -> {
                 String res = DueloLogs.anular(p.getGameProfile().name(), id, motivo);
                 p.sendSystemMessage(Jogo.prefixo(res));
                 detalhe(p, id, voltar);
             }).build());
-        g.setSlot(15, btn(Items.RED_CONCRETE, "Voltar sem anular", ChatFormatting.RED).setCallback((i, ty, a, gg) -> detalhe(p, id, voltar)).build());
+        g.setSlot(15, btn(Items.REDSTONE_BLOCK, "Voltar sem anular", ChatFormatting.RED).setCallback((i, ty, a, gg) -> detalhe(p, id, voltar)).build());
         g.open();
     }
 }
