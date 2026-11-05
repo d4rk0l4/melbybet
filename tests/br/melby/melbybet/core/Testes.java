@@ -61,6 +61,7 @@ public class Testes {
         persistencia();
         arena();
         dueloLog();
+        marcador();
         System.out.println(falhas == 0 ? "tudo certo (" + total + " checagens)" : falhas + " falhas de " + total);
         if (falhas > 0) System.exit(1);
     }
@@ -750,5 +751,155 @@ public class Testes {
         Files.writeString(tmp.resolve("server.properties"), "level-name=Melby\n");
         igual(tmp.resolve("Melby"), Arquivos.pastaMundo(tmp, ""), "level-name");
         igual(tmp.resolve("outra"), Arquivos.pastaMundo(tmp, "outra"), "pasta configurada");
+    }
+
+    static void marcador() throws Exception {
+        var d = new MarcadorDados();
+        var sel = d.de("u1").atual;
+        igual(false, sel.completa(), "marcador: vazio");
+        igual(null, sel.area(), "marcador: sem área");
+        sel.definir(1, "overworld", 10, 70, -5);
+        igual(false, sel.completa(), "marcador: um canto só");
+        sel.definir(2, "overworld", 4, 60, 3);
+        var a = sel.area();
+        igual(4, a.x0, "marcador: x0 normalizado");
+        igual(10, a.x1, "marcador: x1 normalizado");
+        igual(60, a.y0, "marcador: y0");
+        igual(70, a.y1, "marcador: y1");
+        igual(-5, a.z0, "marcador: z0");
+        igual(3, a.z1, "marcador: z1");
+        igual(7, a.larg(), "marcador: largura inclui os dois cantos");
+        igual(11, a.alt(), "marcador: altura");
+        igual(9, a.comp(), "marcador: comprimento");
+        igual(7L * 11 * 9, a.volume(), "marcador: volume");
+        igual(true, a.contem(4, 60, -5), "marcador: contém canto");
+        igual(true, a.contem(10, 70, 3), "marcador: contém canto oposto");
+        igual(false, a.contem(11, 65, 0), "marcador: fora");
+        igual("x 4..10, y 60..70, z -5..3", a.resumo(), "marcador: resumo");
+        // o volume não estoura int
+        var gigante = new MarcadorDados.Selecao();
+        gigante.definir(1, "overworld", -30000000, -64, -30000000);
+        gigante.definir(2, "overworld", 30000000, 319, 30000000);
+        igual(true, gigante.area().volume() > Integer.MAX_VALUE, "marcador: volume em long");
+        // trocar de dimensão descarta o outro canto
+        sel.definir(1, "the_nether", 1, 1, 1);
+        igual(false, sel.completa(), "marcador: troca de dimensão descarta o outro canto");
+        igual("the_nether", sel.dim, "marcador: dimensão nova");
+        sel.definir(2, "the_nether", 3, 3, 3);
+        igual(true, sel.completa(), "marcador: completa de novo");
+        // expandir e contrair
+        igual(true, sel.ajustar(2, -64, 319), "marcador: expandir");
+        igual(-1, sel.area().x0, "marcador: expandiu x0");
+        igual(5, sel.area().x1, "marcador: expandiu x1");
+        igual(7, sel.area().larg(), "marcador: largura depois de expandir");
+        igual(false, sel.ajustar(-4, -64, 319), "marcador: encolher demais é recusado");
+        igual(7, sel.area().larg(), "marcador: recusado não mexe");
+        igual(true, sel.ajustar(-3, -64, 319), "marcador: encolher até 1 bloco");
+        igual(1, sel.area().larg(), "marcador: sobrou 1");
+        sel.definir(1, "the_nether", 0, 5, 0);
+        sel.definir(2, "the_nether", 2, 6, 2);
+        igual(true, sel.ajustar(10, 0, 8), "marcador: expandir limitado pelo mundo");
+        igual(0, sel.area().y0, "marcador: y não passa do fundo");
+        igual(8, sel.area().y1, "marcador: y não passa do topo");
+        igual(true, sel.altura(-64, 319), "marcador: altura total");
+        igual(-64, sel.area().y0, "marcador: y fundo");
+        igual(319, sel.area().y1, "marcador: y topo");
+        sel.limpar();
+        igual(false, sel.completa(), "marcador: limpar");
+        igual(false, sel.ajustar(1, 0, 10), "marcador: ajustar sem área");
+
+        // nomes
+        igual(null, MarcadorDados.validarNome("Casa_1-b"), "marcador: nome ok");
+        igual(null, MarcadorDados.validarNome("Praça"), "marcador: acento ok");
+        igual(true, MarcadorDados.validarNome("a b") != null, "marcador: espaço recusado");
+        igual(true, MarcadorDados.validarNome("a:b") != null, "marcador: dois-pontos recusado");
+        igual(true, MarcadorDados.validarNome("") != null, "marcador: vazio recusado");
+        igual(true, MarcadorDados.validarNome("x".repeat(25)) != null, "marcador: nome longo recusado");
+        igual(null, MarcadorDados.validarNome("x".repeat(24)), "marcador: 24 letras ok");
+
+        // salvar, achar, compartilhar
+        var s1 = new MarcadorDados.Selecao();
+        s1.definir(1, "overworld", 0, 0, 0);
+        s1.definir(2, "overworld", 9, 4, 9);
+        igual(null, d.salvar("u1", "Davi", "Casa", s1.area(), 1000L), "marcador: salvar");
+        igual("Davi", d.buscar("u1", "casa").donoNome, "marcador: busca sem diferenciar maiúscula");
+        igual("u1", d.buscar("u1", "CASA").dono, "marcador: dono");
+        igual(1000L, d.buscar("u1", "Casa").criadaEm, "marcador: data");
+        igual(true, d.salvar("u1", "Davi", "Casa", null, 1L) != null, "marcador: salvar sem área");
+        igual(true, d.salvar("u1", "Davi", "x y", s1.area(), 1L) != null, "marcador: salvar nome ruim");
+        igual(null, d.buscar("u2", "Casa"), "marcador: outro jogador não vê");
+        igual(0, d.visiveis("u2").size(), "marcador: nada visível para u2");
+        igual(null, d.compartilhar("u1", "casa", "u2"), "marcador: compartilhar");
+        igual(true, d.compartilhar("u1", "casa", "u2") != null, "marcador: já compartilhada");
+        igual(true, d.compartilhar("u1", "casa", "u1") != null, "marcador: não compartilha consigo");
+        igual(true, d.compartilhar("u1", "nada", "u2") != null, "marcador: área inexistente");
+        igual("Casa", d.buscar("u2", "Davi:casa").nome, "marcador: dono:nome");
+        igual("Casa", d.buscar("u2", "casa").nome, "marcador: nome único compartilhado");
+        igual(1, d.visiveis("u2").size(), "marcador: u2 vê uma");
+        igual(null, d.buscar("u2", "Kaue:casa"), "marcador: dono errado");
+        // regravar com o mesmo nome mantém quem já tinha acesso
+        igual(null, d.salvar("u1", "Davi", "casa", s1.area(), 2000L), "marcador: regravar");
+        igual(1, d.buscar("u1", "casa").partilha.size(), "marcador: regravar mantém o compartilhamento");
+        igual(1, d.de("u1").salvas.size(), "marcador: regravar não duplica");
+        // nome igual ao de outro dono: a sua vence, e dono:nome desambigua
+        igual(null, d.salvar("u2", "Kaue", "Casa", s1.area(), 3000L), "marcador: u2 salva com o mesmo nome");
+        igual("Kaue", d.buscar("u2", "casa").donoNome, "marcador: a sua vence");
+        igual("Davi", d.buscar("u2", "Davi:casa").donoNome, "marcador: dono:nome desambigua");
+        // ambíguo entre duas compartilhadas
+        igual(null, d.salvar("u3", "Samuel", "Torre", s1.area(), 1L), "marcador: u3 salva");
+        igual(null, d.salvar("u4", "Hugo", "Torre", s1.area(), 1L), "marcador: u4 salva");
+        d.compartilhar("u3", "torre", "u5");
+        d.compartilhar("u4", "torre", "u5");
+        igual(null, d.buscar("u5", "torre"), "marcador: ambíguo devolve null");
+        igual("Hugo", d.buscar("u5", "Hugo:torre").donoNome, "marcador: ambíguo se resolve com dono:nome");
+        igual(null, d.descompartilhar("u1", "casa", "u2"), "marcador: descompartilhar");
+        igual(true, d.descompartilhar("u1", "casa", "u2") != null, "marcador: já tinha tirado");
+        igual(null, d.buscar("u5", "Davi:casa"), "marcador: nunca compartilhada com u5");
+        igual(true, d.apagar("u1", "CASA"), "marcador: apagar");
+        igual(false, d.apagar("u1", "casa"), "marcador: apagar de novo");
+        // limite de áreas
+        var cheio = new MarcadorDados();
+        for (int i = 0; i < MarcadorDados.MAX_AREAS; i++) igual(null, cheio.salvar("u", "U", "a" + i, s1.area(), 1L), "marcador: limite " + i);
+        igual(true, cheio.salvar("u", "U", "extra", s1.area(), 1L) != null, "marcador: passou do limite");
+        igual(null, cheio.salvar("u", "U", "a0", s1.area(), 1L), "marcador: regravar no limite é permitido");
+
+        // arestas das partículas
+        var cubo = new MarcadorDados.Area();
+        var unit = MarcadorDados.arestas(cubo, 100);
+        igual(8, unit.size(), "marcador: um bloco tem 8 cantos");
+        var media = new MarcadorDados.Area();
+        media.x1 = 4;
+        media.y1 = 4;
+        media.z1 = 4;
+        var pm = MarcadorDados.arestas(media, 1000);
+        igual(true, pm.size() > 8 && pm.size() <= 1000, "marcador: caixa média dentro do limite");
+        var grande = new MarcadorDados.Area();
+        grande.x1 = 999;
+        grande.y1 = 99;
+        grande.z1 = 999;
+        var pg = MarcadorDados.arestas(grande, 500);
+        igual(true, pg.size() <= 600, "marcador: caixa grande é espaçada (" + pg.size() + ")");
+        boolean canto = false;
+        for (double[] q : pg) if (q[0] == 1000 && q[1] == 100 && q[2] == 1000) canto = true;
+        igual(true, canto, "marcador: o canto oposto sempre aparece");
+        var vistos = new java.util.HashSet<String>();
+        boolean repetido = false;
+        for (double[] q : pg) if (!vistos.add(q[0] + "," + q[1] + "," + q[2])) repetido = true;
+        igual(false, repetido, "marcador: sem pontos repetidos");
+
+        // disco
+        Path tmp = Files.createTempDirectory("melbymarc");
+        Path f = tmp.resolve("sub").resolve("marcadores.json");
+        d.gravar(f);
+        var l = MarcadorDados.ler(f);
+        igual(d.de("u2").salvas.size(), l.de("u2").salvas.size(), "marcador: disco guarda áreas");
+        igual("Kaue", l.buscar("u2", "casa").donoNome, "marcador: disco guarda dono");
+        igual(0, MarcadorDados.ler(tmp.resolve("nao.json")).jogadores.size(), "marcador: arquivo ausente começa vazio");
+        Files.writeString(tmp.resolve("ruim.json"), "{ isso nao e json");
+        igual(0, MarcadorDados.ler(tmp.resolve("ruim.json")).jogadores.size(), "marcador: arquivo ilegível começa vazio");
+        Files.writeString(tmp.resolve("parcial.json"), "{\"jogadores\":{\"x\":{}}}");
+        var pj = MarcadorDados.ler(tmp.resolve("parcial.json"));
+        igual(false, pj.de("x").atual.completa(), "marcador: campos faltando viram padrão");
+        igual(0, pj.de("x").salvas.size(), "marcador: salvas faltando viram vazio");
     }
 }

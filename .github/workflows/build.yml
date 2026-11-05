@@ -22,19 +22,6 @@ jobs:
         run: chmod +x ./gradlew
       - name: build
         run: ./gradlew build
-      - name: javap (temporario)
-        run: |
-          MC=$(find ~/.gradle/caches/fabric-loom/26.3 -name 'minecraft-common*.jar' ! -name '*sources*' | head -1)
-          echo "MC=$MC"
-          javap -cp "$MC" net.minecraft.server.level.ServerLevel | grep -n "sendParticles" || true
-          javap -cp "$MC" 'net.minecraft.network.chat.ClickEvent$CopyToClipboard' || true
-          javap -cp "$MC" net.minecraft.core.particles.DustParticleOptions | grep -n "DustParticleOptions(" || true
-          javap -cp "$MC" net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket | grep -n "Packet(" || true
-          FA=$(find ~/.gradle -name 'fabric-events-interaction*.jar' ! -name '*sources*' | head -1)
-          echo "FA=$FA"
-          javap -cp "$FA:$MC" net.fabricmc.fabric.api.event.player.AttackBlockCallback || true
-          javap -cp "$MC" net.minecraft.world.entity.player.Player | grep -n " pick(" || true
-          javap -cp "$MC" net.minecraft.world.item.component.CustomData | grep -n "public" | head -20 || true
       - name: testes da lógica (apostas, pagamento, ranking)
         run: |
           GSON=$(find ~/.gradle -name 'gson-*.jar' ! -name '*sources*' | head -1)

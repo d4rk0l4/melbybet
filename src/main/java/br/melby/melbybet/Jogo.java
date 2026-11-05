@@ -49,6 +49,7 @@ public final class Jogo {
             casa = new Casa();
         }
         DueloLogs.carregar();
+        Marcadores.carregar();
         Prefixos.limparTudo();
         Duelos.aoLigar();
         Presenca.aoLigar();
@@ -56,6 +57,7 @@ public final class Jogo {
     }
 
     public static void salvar() {
+        Marcadores.salvarAgora();
         if (arquivo == null) return;
         try {
             Armazem.salvar(arquivo, casa);

@@ -1,5 +1,8 @@
 # Versões do MelbyBet
 
+## 2.5.0
+- /marcador: escolha uma área com dois cantos (comandos ou Varinha de Marcação), veja os limites em partículas só para você, ajuste (expandir, contrair, altura) e salve áreas com nome, que dá para compartilhar com outros jogadores. Base para os próximos recursos de construção
+
 ## 2.4.0
 - Log de duelos (config/melbybet/duelos-log.jsonl): id, quem duelou, data e hora, aposta, resultado, eventos da arena e origem dos jogadores. /duelo log [id] para a staff
 - Aba Duelos no /melby (staff): lista, detalhes, rastro do prêmio e anulação (só OP anula) com motivo e confirmação; /melbybet duelo anular <id> <motivo>

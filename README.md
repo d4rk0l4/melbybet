@@ -208,6 +208,18 @@ Olhando para um baú, barril ou outro recipiente (a até 6 blocos), `/find <item
 
 Quem colocar o mesmo jar na pasta mods do próprio jogo ganha uma barra de busca acima de baús, barris e shulker boxes. Digite o nome (em português ou inglês, conforme o idioma do jogo): os itens que combinam ficam com borda dourada e os outros escurecem. O botão "Pegar" move todos os que combinam para o inventário, como um shift+clique em cada um. Nada é necessário no servidor além do jar de sempre, e quem não instalar o mod no cliente joga normalmente.
 
+## Marcador de áreas (`/marcador`)
+
+Escolhe uma região (dois cantos) para usar nos recursos de construção. Não precisa de nada no cliente.
+
+- **Varinha:** `/marcador varinha` entrega uma vareta chamada "Varinha de Marcação". Clique esquerdo num bloco marca o canto 1, clique direito marca o canto 2 (não quebra nem abre nada enquanto você segura a varinha).
+- **Comandos:** `/marcador pos1` e `/marcador pos2` marcam o bloco para o qual você olha (ou onde você está). Também aceitam coordenadas: `/marcador pos1 100 64 -20`.
+- **Partículas:** os limites aparecem em verde (os cantos em vermelho e azul), só para você, e só se estiver a até 48 blocos. `/marcador ver` liga ou desliga.
+- **Ajustes:** `/marcador info` (tamanho e volume), `expandir <n>`, `contrair <n>`, `altura` (do fundo ao topo do mundo), `limpar`.
+- **Áreas salvas:** `/marcador salvar <nome>`, `lista`, `carregar <nome>`, `apagar <nome>` (até 30 por jogador). `compartilhar <nome> <jogador>` deixa outra pessoa ver e carregar a área (ela usa `carregar <seudono>:<nome>`); `descompartilhar` tira o acesso.
+
+A seleção e as áreas ficam em `config/melbybet/marcadores.json` e sobrevivem a reinícios. Em outra dimensão a seleção não vale: trocar de dimensão e marcar um canto descarta o outro.
+
 ## Bússola para coordenadas (`/bussola`)
 
 Segurando uma bússola, `/bussola <x> <z>` (também aceita `<x> <y> <z>`, o Y é ignorado, então dá para colar direto o que o `/coords` copia) faz a agulha apontar para aquele ponto. Usa o rastreador de pedra-ímã do próprio jogo: não precisa de nada no cliente e a agulha funciona como a de uma bússola de pedra-ímã comum. Só aponta na dimensão em que o comando foi usado (em outra dimensão a agulha gira). `/bussola reset` devolve a bússola ao normal.
