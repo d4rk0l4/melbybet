@@ -22,6 +22,23 @@ jobs:
         run: chmod +x ./gradlew
       - name: build
         run: ./gradlew build
+      - name: javap (temporario)
+        run: |
+          J=$(find ~/.gradle/caches/fabric-loom -name 'minecraft-common*.jar' | head -1)
+          CP="$J:$(find ~/.gradle -name 'fabric-*.jar' ! -name '*sources*' | tr '\n' ':')"
+          echo "##### ServerPlayer tp"; javap -cp "$CP" -public net.minecraft.server.level.ServerPlayer | grep -i "teleport\|setRespawn"
+          echo "##### Entity tp"; javap -cp "$CP" -public net.minecraft.world.entity.Entity | grep -i "teleport\|setPos\|snapTo\|absSnap\|moveTo"
+          echo "##### Level h"; javap -cp "$CP" -public net.minecraft.world.level.Level | grep -i "getMaxY\|getMinY\|getHeight\|hasChunk\|isLoaded\|getEntities\|getEntitiesOfClass\|setBlock(\|isInWorldBounds\|getChunkAt\|removeBlock"
+          javap -cp "$CP" -public net.minecraft.world.level.LevelReader | grep -i "getMaxY\|getMinY\|getHeight\|hasChunk\|getChunk(" 
+          javap -cp "$CP" -public net.minecraft.world.level.LevelHeightAccessor | head -20
+          echo "##### Relative"; javap -cp "$CP" -public net.minecraft.world.entity.Relative | head -12
+          echo "##### Heightmap"; javap -cp "$CP" -public 'net.minecraft.world.level.levelgen.Heightmap$Types' | head -14
+          echo "##### Title"; javap -cp "$CP" -public net.minecraft.network.protocol.game.ClientboundSetTitleTextPacket net.minecraft.network.protocol.game.ClientboundSetTitlesAnimationPacket net.minecraft.network.protocol.game.ClientboundSetSubtitleTextPacket | grep -i "public net"
+          echo "##### fabric events"; for k in net.fabricmc.fabric.api.event.player.UseBlockCallback net.fabricmc.fabric.api.event.player.UseItemCallback net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents net.fabricmc.fabric.api.event.player.AttackBlockCallback net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents net.fabricmc.fabric.api.entity.event.v1.ServerEntityWorldChangeEvents net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents; do echo "-- $k"; javap -cp "$CP" -public "$k" 2>&1 | head -12; done
+          javap -cp "$CP" -public 'net.fabricmc.fabric.api.event.player.UseBlockCallback' 'net.fabricmc.fabric.api.event.player.UseItemCallback' 'net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents$Before' 'net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents$AllowDamage' | grep -i "abstract"
+          echo "##### Block stuff"; javap -cp "$CP" -public net.minecraft.world.level.block.state.BlockState | grep -i "isAir\|isEmpty"
+          javap -cp "$CP" -public net.minecraft.world.level.block.state.BlockBehaviour\$BlockStateBase | grep -i "isAir"
+          echo "##### InteractionResult"; javap -cp "$CP" -public net.minecraft.world.InteractionResult | grep -i "FAIL\|PASS\|SUCCESS" | head
       - name: testes da lógica (apostas, pagamento, ranking)
         run: |
           GSON=$(find ~/.gradle -name 'gson-*.jar' ! -name '*sources*' | head -1)
