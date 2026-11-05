@@ -40,19 +40,27 @@ public class Melbybet implements ModInitializer {
         Presenca.registrar();
         TrocasVillager.registrar();
         Arena.registrar();
+        Rastro.registrar();
         Chat.registrar();
         ServerTickEvents.END_SERVER_TICK.register(server -> aCadaTick());
         ServerLivingEntityEvents.AFTER_DEATH.register(Melbybet::aoMorrer);
         ServerLivingEntityEvents.ALLOW_DEATH.register((entidade, fonte, dano) -> {
             if (entidade instanceof ServerPlayer p) {
+                Rastro.aoMorrer(p);
                 Duelos.antesDeMorrer(p, fonte);
                 MsgMatar.antes(p, fonte);
                 Corpos.antes(p, fonte);
             }
             return true;
         });
-        ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> Arena.aoEntrar(handler.getPlayer()));
-        ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> Duelos.aoSair(handler.getPlayer()));
+        ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
+            Arena.aoEntrar(handler.getPlayer());
+            Rastro.aoEntrar(handler.getPlayer());
+        });
+        ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> {
+            Rastro.aoSair(handler.getPlayer());
+            Duelos.aoSair(handler.getPlayer());
+        });
         ServerLivingEntityEvents.AFTER_DAMAGE.register((entidade, fonte, base, tomado, bloqueado) -> Duelos.aoDano(entidade, fonte));
         ServerMessageDecoratorEvent.EVENT.register(ServerMessageDecoratorEvent.CONTENT_PHASE, Extras::decorar);
 
@@ -85,9 +93,11 @@ public class Melbybet implements ModInitializer {
             if (mudou) Jogo.salvar();
         }
         Arena.aCadaTick();
+        Rastro.aCadaTick();
         if (tick % 20 == 0) Extras.aCadaSegundo();
         if (tick % 20 == 0) Capsulas.aCadaSegundo();
         if (tick % 20 == 0) Duelos.aCadaSegundo();
+        if (tick % 20 == 0) DueloLogs.aCadaSegundo();
         if (tick % 20 == 0) Reinicios.aCadaSegundo();
         if (tick % 20 == 0) Limpeza.aCadaSegundo();
         if (tick % 20 == 0) Sorteio.aCadaSegundo();

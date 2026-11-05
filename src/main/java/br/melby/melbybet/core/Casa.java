@@ -35,6 +35,8 @@ public class Casa {
         public int arenaDistMin = 32;
         /** Segundos entre o fim do duelo e a volta dos jogadores / limpeza da arena. */
         public int arenaLimpezaSeg = 3;
+        /** Por quantos minutos depois do duelo o mod registra o que o vencedor fez com o prêmio (0 = não registra). */
+        public int rastroMin = 30;
         /** Distância do chat local, em blocos (0 = sem limite). */
         public int chatLocalRaio = 100;
         /** Quanto o banco invisível do /sit fica abaixo dos pés, em blocos (maior = senta mais baixo). */
@@ -300,6 +302,8 @@ public class Casa {
         public long criadoEm;
         public long inicio;
         public String vencedor = "";
+        /** O que foi pago de fato quando resolveu (para poder anular depois). */
+        public int premio, taxa;
     }
 
     /** Um duelo terminado, para o placar. */
@@ -308,6 +312,8 @@ public class Casa {
         public String uuidVenc = "", nomeVenc = "", uuidPerd = "", nomePerd = "";
         public boolean itens;
         public String resumo = "";
+        /** Id do duelo (0 nos registros antigos). */
+        public int id;
     }
 
     public List<DueloReg> placarDuelos = new ArrayList<>();
@@ -322,6 +328,7 @@ public class Casa {
         r.nomePerd = aGanhou ? d.nomeB : d.nomeA;
         r.itens = itens;
         r.resumo = resumo;
+        r.id = d.id;
         placarDuelos.add(r);
         while (placarDuelos.size() > 300) placarDuelos.remove(0);
     }
@@ -413,6 +420,8 @@ public class Casa {
         int pote = d.valor * 2;
         int rake = pote * config.rakePct / 100;
         int premio = pote - rake;
+        d.premio = premio;
+        d.taxa = rake;
         cofre += rake;
         credito(uuidVencedor, premio);
         boolean aGanhou = uuidVencedor.equals(d.uuidA);
@@ -429,6 +438,35 @@ public class Casa {
         historico.add(new Registro(agora, "Duelo: " + (aGanhou ? d.nomeA : d.nomeB) + " venceu " + (aGanhou ? d.nomeB : d.nomeA) + ", levou " + premio + " diamantes"));
         registrarDuelo(d, uuidVencedor, false, premio + " diamantes", agora);
         return premio;
+    }
+
+    /**
+     * Desfaz um duelo resolvido: tira dos números e do placar e, no duelo de diamantes, devolve a aposta (v) a cada um.
+     * O cofre cobre o que não foi recolhido do vencedor: sai do cofre 2v menos o que se recuperou dele.
+     * Quem chama recolhe o prêmio do vencedor antes e diz quanto veio em {@code recuperado}.
+     */
+    public void anularDuelo(int id, String uuidA, String nomeA, String uuidB, String nomeB, String uuidVencedor, int valor, boolean itens, int premio, int recuperado, long agora) {
+        boolean aGanhou = uuidVencedor.equals(uuidA);
+        Jogador ja = jogador(uuidA, nomeA);
+        Jogador jb = jogador(uuidB, nomeB);
+        Jogador venc = aGanhou ? ja : jb, perd = aGanhou ? jb : ja;
+        venc.apostas = Math.max(0, venc.apostas - 1);
+        perd.apostas = Math.max(0, perd.apostas - 1);
+        venc.acertos = Math.max(0, venc.acertos - 1);
+        venc.duelosGanhos = Math.max(0, venc.duelosGanhos - 1);
+        perd.duelosPerdidos = Math.max(0, perd.duelosPerdidos - 1);
+        if (!itens) {
+            venc.gasto = Math.max(0, venc.gasto - valor);
+            perd.gasto = Math.max(0, perd.gasto - valor);
+            venc.ganho = Math.max(0, venc.ganho - premio);
+            credito(uuidA, valor);
+            credito(uuidB, valor);
+            cofre -= (2L * valor - recuperado);
+        }
+        placarDuelos.removeIf(r -> r.id == id && id > 0);
+        Duelo d = achaDuelo(id);
+        if (d != null) d.estado = "ANULADO";
+        historico.add(new Registro(agora, "Duelo #" + id + " " + nomeA + " x " + nomeB + " anulado pela staff"));
     }
 
     /** Duelo de itens: quem perde entrega os itens apostados (feito pela camada do jogo). Sem taxa da casa. */

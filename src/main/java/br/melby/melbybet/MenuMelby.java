@@ -87,6 +87,10 @@ public final class MenuMelby {
             g.setSlot(15, btn(Items.SHIELD, "Moderação", ChatFormatting.RED, "Jogadores e inventários")
                 .setCallback((i, ty, a, gg) -> jogadores(p)).build());
         }
+        if (Comandos.staff(p)) {
+            g.setSlot(14, btn(Items.CROSSBOW, "Duelos", ChatFormatting.GOLD, "Log, rastro do prêmio e anulação")
+                .setCallback((i, ty, a, gg) -> MenuDuelosStaff.lista(p, 0, () -> principal(p))).build());
+        }
         if (Comandos.admin(p)) {
             g.setSlot(16, btn(Items.COMMAND_BLOCK, "Administração", ChatFormatting.LIGHT_PURPLE, "Bolões, mensagens e configurações")
                 .setCallback((i, ty, a, gg) -> admin(p)).build());

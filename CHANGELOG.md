@@ -1,5 +1,11 @@
 # Versões do MelbyBet
 
+## 2.4.0
+- Log de duelos (config/melbybet/duelos-log.jsonl): id, quem duelou, data e hora, aposta, resultado, eventos da arena e origem dos jogadores. /duelo log [id] para a staff
+- Aba Duelos no /melby (staff): lista, detalhes, rastro do prêmio e anulação (só OP anula) com motivo e confirmação; /melbybet duelo anular <id> <motivo>
+- Anulação devolve a aposta; recolhe o prêmio do vencedor quando acha (crédito pendente, inventário, ender chest) e o cofre cobre o resto
+- Rastro do prêmio: por 30 min (rastroMin) o mod registra o que o vencedor faz com o que ganhou (baús, ender chest, drops)
+
 ## 2.3.0
 - Arena de vidro nos duelos: todo duelo aceito acontece numa jaula de vidro no céu do Overworld, construída só em lugar totalmente vazio, com contagem de 5 s, proteção do vidro, sem pérola/fruta do coro, e limpeza total no fim (inclusive blocos colocados). O corpo do perdedor aparece onde ele estava antes. Recuperação depois de reinício em config/melbybet/arenas.json
 

@@ -126,6 +126,24 @@ public final class Duelos {
                         placar(c.getSource().getPlayerOrException(), com.mojang.brigadier.arguments.StringArgumentType.getString(c, "nick"));
                         return 1;
                     })))
+            .then(literal("log")
+                .requires(src -> src.getPlayer() == null || Comandos.staff(src.getPlayer()))
+                .executes(c -> {
+                    var l = DueloLogs.log.recentes(10);
+                    c.getSource().sendSystemMessage(Jogo.prefixo("Últimos duelos:"));
+                    if (l.isEmpty()) c.getSource().sendSystemMessage(Component.literal("  (nenhum)").withStyle(ChatFormatting.GRAY));
+                    for (var r : l) c.getSource().sendSystemMessage(Component.literal("  " + DueloLogs.linha(r)).withStyle(ChatFormatting.GRAY));
+                    return 1;
+                })
+                .then(argument("id", integer(1)).executes(c -> {
+                    var r = DueloLogs.log.achar(IntegerArgumentType.getInteger(c, "id"));
+                    if (r == null) {
+                        c.getSource().sendSystemMessage(Jogo.prefixo("Não achei esse duelo no log."));
+                        return 0;
+                    }
+                    for (String s : DueloLogs.detalhe(r, true)) c.getSource().sendSystemMessage(Component.literal(s).withStyle(ChatFormatting.GRAY));
+                    return 1;
+                })))
             .then(literal("desistir").executes(c -> {
                 ServerPlayer p = c.getSource().getPlayerOrException();
                 Casa.Duelo x = Jogo.casa.duelAtivoDe(p.getUUID().toString());
@@ -375,6 +393,7 @@ public final class Duelos {
             return false;
         }
         Jogo.casa.ativarDuelo(st.d, System.currentTimeMillis());
+        DueloLogs.inicio(st.d, st.daA, st.daB);
         abrirApostas(st.d);
         Jogo.salvar();
         Jogo.avisar("Duelo de itens valendo! " + st.d.nomeA + " x " + st.d.nomeB + ". Quem matar o outro primeiro leva os itens. Não guarde nem jogue fora os itens da aposta!");
@@ -497,6 +516,7 @@ public final class Duelos {
     /** Não achou lugar para a arena: o duelo não começa e ninguém perde nada. */
     private static void semArena(Casa.Duelo x, ServerPlayer a, ServerPlayer b, String problema) {
         Jogo.casa.cancelarDuelo(x, System.currentTimeMillis());
+        DueloLogs.fimCancelado(x, problema);
         ITENS.remove(x.id);
         for (ServerPlayer p : new ServerPlayer[] {a, b}) {
             if (p != null) p.sendSystemMessage(Jogo.prefixo("O duelo não começou: " + problema));
@@ -518,6 +538,7 @@ public final class Duelos {
         Jogo.tirar(a, x.valor);
         Jogo.tirar(b, x.valor);
         Jogo.casa.ativarDuelo(x, System.currentTimeMillis());
+        DueloLogs.inicio(x, null, null);
         abrirApostas(x);
         Jogo.salvar();
         Jogo.avisar("Duelo valendo! " + x.nomeA + " x " + x.nomeB + ", " + x.valor + " diamante(s) cada. Quem matar o outro primeiro leva o pote.");
@@ -567,6 +588,7 @@ public final class Duelos {
             Jogo.casa.resolverDueloItens(x, uuidVencedor, System.currentTimeMillis(), passou.isEmpty() ? "nada" : descricao(passou));
             Jogo.avisar("Fim do duelo! " + motivo + " " + nome + " leva: " + (passou.isEmpty() ? "nada (os itens não estavam mais lá)" : descricao(passou)) + ".");
             Jogo.webhook("⚔️ **Duelo de itens** — " + nome + " venceu " + perdedorNome + (passou.isEmpty() ? "" : " e levou " + descricao(passou)));
+            DueloLogs.fimVitoria(x, uuidVencedor, motivo, 0, 0, passou.isEmpty() ? "nenhum item passou" : "levou " + descricao(passou), passou);
             encerrarApostas(x, nome);
             Jogo.salvar();
             Arena.fim(x);
@@ -575,6 +597,7 @@ public final class Duelos {
         int premio = Jogo.casa.resolverDuelo(x, uuidVencedor, System.currentTimeMillis());
         Jogo.avisar("Fim do duelo! " + motivo + " " + nome + " leva " + premio + " diamante(s).");
         Jogo.webhook("⚔️ **Duelo** — " + nome + " venceu " + perdedorNome + " e levou **" + premio + "** 💎");
+        DueloLogs.fimVitoria(x, uuidVencedor, motivo, premio, x.taxa, "levou " + premio + " diamante(s)", null);
         encerrarApostas(x, nome);
         Jogo.entregarTodos();
         Jogo.salvar();
@@ -585,6 +608,7 @@ public final class Duelos {
         ITENS.remove(x.id);
         boolean devolve = x.estado.equals("ATIVO") && !x.itens;
         Jogo.casa.cancelarDuelo(x, System.currentTimeMillis());
+        DueloLogs.fimCancelado(x, motivo + (devolve ? " Diamantes devolvidos." : ""));
         encerrarApostas(x, null);
         Jogo.avisar("Duelo " + x.nomeA + " x " + x.nomeB + " cancelado: " + motivo + (devolve ? " Os diamantes foram devolvidos." : ""));
         Jogo.entregarTodos();

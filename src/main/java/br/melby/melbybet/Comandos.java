@@ -230,6 +230,17 @@ public final class Comandos {
             Jogo.salvar();
             return ok(c, "Roster: " + String.join(", ", n));
         })));
+        adm.then(literal("duelo")
+            .then(literal("anular").then(argument("id", integer(1)).then(argument("motivo", com.mojang.brigadier.arguments.StringArgumentType.greedyString()).executes(c -> {
+                String res = DueloLogs.anular(c.getSource().getTextName(), IntegerArgumentType.getInteger(c, "id"), com.mojang.brigadier.arguments.StringArgumentType.getString(c, "motivo").trim());
+                return ok(c, res);
+            }))))
+            .then(literal("rastro").then(argument("id", integer(1)).executes(c -> {
+                var r = DueloLogs.log.achar(IntegerArgumentType.getInteger(c, "id"));
+                if (r == null) return ok(c, "Não achei esse duelo no log.");
+                for (String s : DueloLogs.detalhe(r, true)) c.getSource().sendSystemMessage(Component.literal(s).withStyle(ChatFormatting.GRAY));
+                return 1;
+            }))));
         adm.then(literal("temporada").then(literal("nova").executes(c -> {
             Jogo.casa.novaTemporada(System.currentTimeMillis());
             Jogo.salvar();

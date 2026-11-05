@@ -48,6 +48,7 @@ public final class Jogo {
             Backup.guardarCorrompido();
             casa = new Casa();
         }
+        DueloLogs.carregar();
         Prefixos.limparTudo();
         Duelos.aoLigar();
         Presenca.aoLigar();

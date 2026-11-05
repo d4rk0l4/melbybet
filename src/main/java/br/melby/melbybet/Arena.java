@@ -93,6 +93,11 @@ public final class Arena {
         return Jogo.casa.config.arenaAtiva;
     }
 
+    /** A reserva da arena do duelo (local, tamanho, origens), ou null. */
+    static ArenaRegistro.Arena registroDe(int duelo) {
+        return reg.achar(duelo);
+    }
+
     // ---------- registro e ciclo de vida ----------
 
     private static void salvar() {
@@ -222,6 +227,7 @@ public final class Arena {
         x.estado = "PREPARANDO";
         Jogo.salvar();
         Melbybet.LOGGER.info("[arena] duelo {}: arena reservada em {} {} {}", x.id, escolhida.x0(), escolhida.y0(), escolhida.z0());
+        DueloLogs.evento(x, "Arena reservada em " + escolhida.x0() + " " + escolhida.y0() + " " + escolhida.z0() + " (" + dim + ")");
         return null;
     }
 
@@ -330,6 +336,7 @@ public final class Arena {
         s.contagem = Math.max(1, Jogo.casa.config.arenaContagemSeg) * 20;
         salvar();
         Melbybet.LOGGER.info("[arena] duelo {}: jogadores dentro, contagem iniciada", s.x.id);
+        DueloLogs.evento(s.x, "Jogadores teleportados para a arena; contagem iniciada");
     }
 
     private static boolean entrar(ServerPlayer p, Sessao s, double[] pos) {
@@ -355,6 +362,7 @@ public final class Arena {
         s.x.inicio = System.currentTimeMillis();
         salvar();
         Jogo.salvar();
+        DueloLogs.evento(s.x, "Combate liberado");
     }
 
     private static void lutar(Sessao s) {
@@ -414,9 +422,11 @@ public final class Arena {
     /** Quando não dá para seguir (erro, teleporte, saldo): desfaz o duelo sem cobrar nada ou devolvendo o que foi cobrado. */
     private static void falhar(Sessao s, String motivo) {
         Melbybet.LOGGER.warn("[arena] duelo {} falhou: {}", s.x.id, motivo);
+        DueloLogs.evento(s.x, "Falha na arena: " + motivo);
         if (s.x.estado.equals("ATIVO")) Duelos.cancelarPorArena(s.x, motivo);
         else {
             Jogo.casa.cancelarDuelo(s.x, System.currentTimeMillis());
+            DueloLogs.fimCancelado(s.x, motivo);
             Jogo.avisar("Duelo " + s.x.nomeA + " x " + s.x.nomeB + " cancelado: " + motivo);
             Jogo.salvar();
         }
@@ -427,6 +437,7 @@ public final class Arena {
     private static void limpar(Sessao s) {
         if (agoraTick < s.limpezaEm) return;
         if (!s.retornou) {
+            DueloLogs.evento(s.x, "Devolvendo os jogadores ao lugar de antes");
             devolverJogadores(s);
             s.retornou = true;
         }
@@ -440,6 +451,7 @@ public final class Arena {
         reg.liberar(s.x.id);
         salvar();
         Melbybet.LOGGER.info("[arena] duelo {}: arena removida", s.x.id);
+        DueloLogs.evento(s.x, "Arena removida e jogadores devolvidos");
     }
 
     /** Sem jeito de limpar: registra e solta a reserva para não travar o sistema (o aviso fica no log). */

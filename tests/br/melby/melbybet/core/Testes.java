@@ -60,6 +60,7 @@ public class Testes {
         igual("#00000f", Gradiente.paraHex(0xF), "hex: zeros");
         persistencia();
         arena();
+        dueloLog();
         System.out.println(falhas == 0 ? "tudo certo (" + total + " checagens)" : falhas + " falhas de " + total);
         if (falhas > 0) System.exit(1);
     }
@@ -155,6 +156,60 @@ public class Testes {
         Files.writeString(tmp, "{ isso nao e json");
         igual(0, ArenaRegistro.ler(tmp).arenas.size(), "registro: arquivo ruim vira vazio");
         Files.deleteIfExists(tmp);
+    }
+
+    static void dueloLog() throws Exception {
+        var l = new DueloLog();
+        var r = l.obter(5);
+        r.nomeA = "Davi";
+        r.nomeB = "Kaue";
+        r.itensA.add("{\"id\":\"minecraft:diamond\"}");
+        r.criadoEm = 1_700_000_000_000L;
+        r.evento(r.criadoEm, "comecou");
+        r.rastro(r.criadoEm + 5, "abriu bau em 1 2 3");
+        r.estado = "RESOLVIDO";
+        igual(r, l.obter(5), "log: obter devolve o mesmo");
+        l.obter(6).nomeA = "Edu";
+        igual(6, l.recentes(5).get(0).id, "log: mais novo primeiro");
+        igual(1, l.recentes(1).size(), "log: limite");
+        Path tmp = Files.createTempFile("duelos", ".jsonl");
+        l.gravar(tmp);
+        igual(2, Files.readAllLines(tmp).size(), "log: uma linha por duelo");
+        Files.writeString(tmp, Files.readString(tmp) + "isto nao e json\n");
+        var lido = DueloLog.ler(tmp);
+        igual(2, lido.regs.size(), "log: linha ruim e ignorada");
+        igual("Davi", lido.achar(5).nomeA, "log: nome");
+        igual("abriu bau em 1 2 3", lido.achar(5).rastro.get(0).texto, "log: rastro");
+        igual("RESOLVIDO", lido.achar(5).estado, "log: estado");
+        for (int i = 0; i < 400; i++) r.rastro(i, "x" + i);
+        igual(300, r.rastro.size(), "log: rastro limitado a 300");
+        igual("14/11/2023 19:13:20", DueloLog.data(1_700_000_000_000L, "America/Sao_Paulo"), "log: data no fuso de SP");
+        igual("-", DueloLog.data(0, "x"), "log: data vazia");
+        Files.deleteIfExists(tmp);
+
+        // anulacao de duelo de diamantes: devolve a aposta, tira do placar, cofre cobre o que nao foi recolhido
+        var c = casa();
+        c.config.rakePct = 10;
+        var d = c.proporDuelo("A", "Davi", "B", "Kaue", 10, 1L);
+        c.ativarDuelo(d, 2L);
+        int prem = c.resolverDuelo(d, "A", 3L);
+        igual(18, prem, "anular: premio com taxa de 10%");
+        igual(2L, c.cofre, "anular: cofre ficou com a taxa");
+        igual(18, c.creditoDe("A"), "anular: vencedor recebeu o premio");
+        igual(1, c.placarDuelos.size(), "anular: placar tem o duelo");
+        igual(d.id, c.placarDuelos.get(0).id, "anular: placar guarda o id");
+        igual(18, d.premio, "anular: duelo guarda o premio");
+        c.baixarCredito("A", 18); // o vencedor ja pegou
+        c.anularDuelo(d.id, "A", "Davi", "B", "Kaue", "A", 10, false, d.premio, 8, 4L);
+        igual("ANULADO", d.estado, "anular: estado");
+        igual(10, c.creditoDe("A"), "anular: A recebeu a aposta de volta");
+        igual(10, c.creditoDe("B"), "anular: B recebeu a aposta de volta");
+        igual(0, c.placarDuelos.size(), "anular: saiu do placar");
+        igual((long) (2 - (20 - 8)), c.cofre, "anular: cofre cobre o que nao foi recuperado");
+        igual(0, c.jogador("A", "Davi").duelosGanhos, "anular: vitoria desfeita");
+        igual(0, c.jogador("B", "Kaue").duelosPerdidos, "anular: derrota desfeita");
+        igual(0L, c.jogador("A", "Davi").gasto, "anular: gasto desfeito");
+        igual(0L, c.jogador("A", "Davi").ganho, "anular: ganho desfeito");
     }
 
     static void degrade() {
