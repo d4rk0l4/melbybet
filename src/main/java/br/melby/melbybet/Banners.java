@@ -186,7 +186,7 @@ public final class Banners {
         int n = 1;
         for (Camada c : r.camadas) prev.addLoreLine(Component.literal(n++ + ". " + BannerReceita.PADROES.get(c.padrao) + " " + BannerReceita.CORES.get(c.cor).toLowerCase()).withStyle(ChatFormatting.WHITE));
         g.setSlot(4, prev.build());
-        g.setSlot(10, btn(Items.WHITE_WOOL, "Cor da base", ChatFormatting.AQUA, "Atual: " + BannerReceita.CORES.get(r.base)).setCallback((i, ty, a, gg) -> escolherCor(p, "Cor da base", c -> {
+        g.setSlot(10, btn(Items.DYE.pick(cor(r.base)), "Cor da base", ChatFormatting.AQUA, "Atual: " + BannerReceita.CORES.get(r.base)).setCallback((i, ty, a, gg) -> escolherCor(p, "Cor da base", c -> {
             r.base = c;
             construtor(p);
         }, () -> construtor(p))).build());
