@@ -212,6 +212,10 @@ Quem colocar o mesmo jar na pasta mods do próprio jogo ganha uma barra de busca
 
 Olhando para uma placa, `/placa copiar` mostra as 4 linhas no formato de códigos (`&c`, `&#ff8a24`, degradês `<#ff0000-#0000ff>texto</>`). Clicar na linha copia o comando pronto (`/placa 1 ...`) para a área de transferência, e clicar no código cinza copia só o texto. As 4 linhas também ficam guardadas: olhe para outra placa e use `/placa colar`. Não precisa de nada no cliente. Placas encerradas não recebem colagem.
 
+## Histórico de placas (`/placa historico`, `/placa restaurar <id>`)
+
+Toda edição de placa (escrevendo na placa ou pelos comandos `/placa`) é registrada: quem, quando e como ficou o texto. Olhando para a placa, `/placa historico` mostra as 10 últimas versões (de até 20 guardadas), cada uma com o botão **[restaurar]**. `/placa restaurar <id>` devolve o texto daquela versão, olhando para a mesma placa (e o mesmo lado). **OP** restaura qualquer versão, inclusive a original (de antes do registro começar); **jogador comum** só restaura versões que ele mesmo escreveu. A restauração também entra no histórico. Quebrar a placa apaga o histórico dela. Só vale para edições feitas depois desta versão. Dados em `config/melbybet/placas-historico.json`.
+
 ## Marcador de áreas (`/marcador`)
 
 Escolhe uma região (dois cantos) para usar nos recursos de construção. Não precisa de nada no cliente.

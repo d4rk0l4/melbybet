@@ -64,6 +64,7 @@ public class Testes {
         marcador();
         catalogo();
         placaCopiar();
+        placaHistorico();
         System.out.println(falhas == 0 ? "tudo certo (" + total + " checagens)" : falhas + " falhas de " + total);
         if (falhas > 0) System.exit(1);
     }
@@ -992,5 +993,67 @@ public class Testes {
         sg.texto = "oi";
         sg.cor = 0x123456;
         igual("&#123456oi", TextoPlaca.paraCodigos(java.util.List.of(sg)), "placa copiar: segmento solto");
+    }
+
+    static void placaHistorico() throws Exception {
+        var h = new PlacaHistorico();
+        String k = PlacaHistorico.chave("overworld", 1, 64, 2, "FRONT");
+        String[] vazio = {"", "", "", ""};
+        String[] a = {"&cLoja", "do Davi", "", ""};
+        String[] b = {"&cLoja", "do Kaue", "", ""};
+        igual(null, h.registrar(k, vazio, vazio, "u1", "Davi", 1L), "placa hist: sem mudança não registra");
+        igual(0, h.placas.size(), "placa hist: sem mudança não cria entrada");
+        var v1 = h.registrar(k, vazio, a, "u1", "Davi", 10L);
+        igual(1, v1.id, "placa hist: primeiro id");
+        igual(1, h.lista(k).size(), "placa hist: placa nova em branco não tem versão original");
+        var v2 = h.registrar(k, a, b, "u2", "Kaue", 20L);
+        igual(2, v2.id, "placa hist: segundo id");
+        igual(null, h.registrar(k, b, b.clone(), "u2", "Kaue", 21L), "placa hist: igual não registra");
+        igual("Kaue", h.lista(k).get(0).nome, "placa hist: mais nova primeiro");
+        igual("Davi", h.lista(k).get(1).nome, "placa hist: mais antiga por último");
+        igual(k, h.chaveDe(1), "placa hist: chave da versão");
+        igual(null, h.chaveDe(99), "placa hist: id inexistente");
+        igual("do Davi", h.achar(1).linhas[1], "placa hist: achar versão");
+        // placa que já tinha texto antes do histórico: guarda o original
+        String k2 = PlacaHistorico.chave("overworld", 5, 70, 5, "BACK");
+        var v3 = h.registrar(k2, a, b, "u1", "Davi", 30L);
+        igual(2, h.lista(k2).size(), "placa hist: original + edição");
+        igual("(original)", h.lista(k2).get(1).nome, "placa hist: original marcado");
+        igual("", h.lista(k2).get(1).uuid, "placa hist: original sem autor");
+        igual(true, v3.id > v2.id, "placa hist: ids sempre crescem");
+        // permissões de restaurar
+        igual(null, PlacaHistorico.podeRestaurar(v1, "u1", false), "placa hist: autor restaura a sua");
+        igual(true, PlacaHistorico.podeRestaurar(v1, "u2", false) != null, "placa hist: outro jogador não restaura");
+        igual(null, PlacaHistorico.podeRestaurar(v1, "u2", true), "placa hist: OP restaura qualquer uma");
+        igual(true, PlacaHistorico.podeRestaurar(h.lista(k2).get(1), "u1", false) != null, "placa hist: original só OP");
+        igual(null, PlacaHistorico.podeRestaurar(h.lista(k2).get(1), "u1", true), "placa hist: OP restaura original");
+        // limite de versões
+        String k3 = PlacaHistorico.chave("overworld", 9, 9, 9, "FRONT");
+        for (int i = 0; i < PlacaHistorico.MAX_VERSOES + 5; i++) h.registrar(k3, new String[] {"v" + i, "", "", ""}, new String[] {"v" + (i + 1), "", "", ""}, "u1", "Davi", i);
+        igual(PlacaHistorico.MAX_VERSOES, h.lista(k3).size(), "placa hist: limite de versões por placa");
+        igual("v" + (PlacaHistorico.MAX_VERSOES + 5), h.lista(k3).get(0).linhas[0], "placa hist: fica a mais nova");
+        // quebrar a placa esquece os dois lados
+        h.registrar(PlacaHistorico.chave("overworld", 1, 64, 2, "BACK"), vazio, a, "u1", "Davi", 40L);
+        h.remover("overworld", 1, 64, 2);
+        igual(0, h.lista(k).size(), "placa hist: quebrar esquece a frente");
+        igual(0, h.lista(PlacaHistorico.chave("overworld", 1, 64, 2, "BACK")).size(), "placa hist: quebrar esquece o verso");
+        igual(true, h.lista(k2).size() > 0, "placa hist: outras placas ficam");
+        // limite de placas
+        var g = new PlacaHistorico();
+        for (int i = 0; i < PlacaHistorico.MAX_PLACAS + 10; i++) g.registrar(PlacaHistorico.chave("overworld", i, 0, 0, "FRONT"), vazio, a, "u", "U", i);
+        igual(PlacaHistorico.MAX_PLACAS, g.placas.size(), "placa hist: limite de placas");
+        igual(0, g.lista(PlacaHistorico.chave("overworld", 0, 0, 0, "FRONT")).size(), "placa hist: sai a mais antiga");
+        // disco
+        Path tmp = Files.createTempDirectory("melbyplh");
+        Path f = tmp.resolve("ph.json");
+        h.gravar(f);
+        var l = PlacaHistorico.ler(f);
+        igual(h.proximoId, l.proximoId, "placa hist: disco guarda o próximo id");
+        igual("do Kaue", l.lista(k2).get(0).linhas[1], "placa hist: disco guarda as linhas");
+        igual(0, PlacaHistorico.ler(tmp.resolve("x.json")).placas.size(), "placa hist: arquivo ausente");
+        Files.writeString(tmp.resolve("p.json"), "{\"placas\":{\"k\":[{\"id\":3}]}}");
+        var pj = PlacaHistorico.ler(tmp.resolve("p.json"));
+        igual(4, pj.placas.get("k").get(0).linhas.length, "placa hist: linhas faltando viram 4 vazias");
+        igual("", pj.placas.get("k").get(0).uuid, "placa hist: uuid faltando vira vazio");
     }
 }

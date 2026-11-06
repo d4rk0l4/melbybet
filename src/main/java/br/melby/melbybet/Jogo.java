@@ -51,6 +51,7 @@ public final class Jogo {
         DueloLogs.carregar();
         Marcadores.carregar();
         Catalogo.carregar();
+        HistoricoPlacas.carregar();
         Prefixos.limparTudo();
         Duelos.aoLigar();
         Presenca.aoLigar();
@@ -60,6 +61,7 @@ public final class Jogo {
     public static void salvar() {
         Marcadores.salvarAgora();
         Catalogo.salvarAgora();
+        HistoricoPlacas.salvarAgora();
         if (arquivo == null) return;
         try {
             Armazem.salvar(arquivo, casa);

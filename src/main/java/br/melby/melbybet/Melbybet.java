@@ -42,6 +42,7 @@ public class Melbybet implements ModInitializer {
         Arena.registrar();
         Rastro.registrar();
         Marcadores.registrarEventos();
+        HistoricoPlacas.registrarEventos();
         Chat.registrar();
         ServerTickEvents.END_SERVER_TICK.register(server -> aCadaTick());
         ServerLivingEntityEvents.AFTER_DEATH.register(Melbybet::aoMorrer);
@@ -111,6 +112,7 @@ public class Melbybet implements ModInitializer {
         if (tick % 20 == 0) Backup.aCadaSegundo();
         if (tick % 20 == 0) Marcadores.aCadaSegundo();
         if (tick % 20 == 0) Catalogo.aCadaSegundo();
+        if (tick % 20 == 0) HistoricoPlacas.aCadaSegundo();
         if (tick % 6000 == 3000) MarcosOnline.conferir();
         if (tick % 600 == 0) Jogo.conferirConquistas();
         if (tick % 6000 == 0) Jogo.salvar();

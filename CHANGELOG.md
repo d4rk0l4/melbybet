@@ -1,5 +1,8 @@
 # Versões do MelbyBet
 
+## 2.8.0
+- /placa historico: lista as últimas versões da placa para a qual você olha (quem escreveu, quando e o texto), com botão [restaurar]. /placa restaurar <id> volta a placa a uma versão: OP restaura qualquer uma, jogador só as que ele mesmo escreveu. Guarda até 20 versões por placa (config/melbybet/placas-historico.json); quebrar a placa apaga o histórico. /placa limpar agora respeita placa encerada e proteção
+
 ## 2.7.0
 - /placa copiar: mostra o texto da placa para a qual você olha como código (&c, &#hex, degradê), com clique para copiar para a área de transferência (a linha inteira como comando /placa N ... ou só o texto). /placa colar passa as 4 linhas copiadas para outra placa
 

@@ -58,12 +58,29 @@ public final class Placas {
     public static void registrar(CommandDispatcher<CommandSourceStack> d) {
         d.register(literal("placa")
             .then(literal("copiar").executes(c -> copiar(c.getSource().getPlayerOrException())))
+            .then(literal("historico").executes(c -> {
+                ServerPlayer p = c.getSource().getPlayerOrException();
+                SignBlockEntity s = placaOlhada(p);
+                if (s == null) return avisoErro(p, "Olhe para uma placa (a até 5 blocos).");
+                return HistoricoPlacas.historico(p, s);
+            }))
+            .then(literal("restaurar").then(argument("id", IntegerArgumentType.integer(1)).executes(c -> {
+                ServerPlayer p = c.getSource().getPlayerOrException();
+                SignBlockEntity s = placaOlhada(p);
+                if (s == null) return avisoErro(p, "Olhe para a placa (a até 5 blocos).");
+                return HistoricoPlacas.restaurar(p, s, IntegerArgumentType.getInteger(c, "id"));
+            })))
             .then(literal("colar").executes(c -> colar(c.getSource().getPlayerOrException())))
             .then(literal("limpar").executes(c -> {
                 ServerPlayer p = c.getSource().getPlayerOrException();
                 SignBlockEntity s = placaOlhada(p);
                 if (s == null) return erro(c, "Olhe para uma placa (a até 5 blocos).");
+                if (s.isWaxed()) return erro(c, "Essa placa está encerada, não dá para mudar.");
+                if (!p.level().mayInteract(p, s.getBlockPos())) return erro(c, "Você não pode mexer nessa placa.");
+                var lado = s.getSlotPlayerIsFacing(p);
+                HistoricoPlacas.antes(s, lado);
                 for (int i = 0; i < 4; i++) editar(s, p, i, "");
+                HistoricoPlacas.depois(p, s, lado);
                 return ok(c, "Placa limpa.");
             }))
             .then(argument("linha", IntegerArgumentType.integer(1, 4))
@@ -75,7 +92,10 @@ public final class Placas {
                     if (!p.level().mayInteract(p, s.getBlockPos())) return erro(c, "Você não pode mexer nessa placa.");
                     String texto = StringArgumentType.getString(c, "texto");
                     if (TextoPlaca.semCodigos(texto).length() > 40) return erro(c, "Linha grande demais.");
+                    var lado = s.getSlotPlayerIsFacing(p);
+                    HistoricoPlacas.antes(s, lado);
                     editar(s, p, IntegerArgumentType.getInteger(c, "linha") - 1, texto);
+                    HistoricoPlacas.depois(p, s, lado);
                     return ok(c, "Linha " + IntegerArgumentType.getInteger(c, "linha") + " atualizada.");
                 }))));
     }
@@ -83,7 +103,7 @@ public final class Placas {
     /** Linhas copiadas por jogador (com códigos), para colar em outra placa. */
     private static final java.util.Map<java.util.UUID, String[]> COPIADAS = new java.util.HashMap<>();
 
-    private static String[] lerLinhas(SignBlockEntity s, SignTextSlot lado) {
+    static String[] lerLinhas(SignBlockEntity s, SignTextSlot lado) {
         String[] r = new String[4];
         s.updateText(st -> {
             for (int i = 0; i < 4; i++) {
@@ -136,12 +156,15 @@ public final class Placas {
         if (s == null) return avisoErro(p, "Olhe para a placa de destino (a até 5 blocos).");
         if (s.isWaxed()) return avisoErro(p, "Essa placa está encerada, não dá para mudar.");
         if (!p.level().mayInteract(p, s.getBlockPos())) return avisoErro(p, "Você não pode mexer nessa placa.");
+        var lado = s.getSlotPlayerIsFacing(p);
+        HistoricoPlacas.antes(s, lado);
         for (int i = 0; i < 4; i++) editar(s, p, i, l[i]);
+        HistoricoPlacas.depois(p, s, lado);
         p.sendSystemMessage(Component.literal("Texto colado na placa.").withStyle(ChatFormatting.GREEN), true);
         return 1;
     }
 
-    private static int avisoErro(ServerPlayer p, String m) {
+    static int avisoErro(ServerPlayer p, String m) {
         p.sendSystemMessage(Component.literal(m).withStyle(ChatFormatting.RED), true);
         return 0;
     }
@@ -150,12 +173,12 @@ public final class Placas {
         COPIADAS.remove(p.getUUID());
     }
 
-    private static void editar(SignBlockEntity s, ServerPlayer p, int linha, String texto) {
+    static void editar(SignBlockEntity s, ServerPlayer p, int linha, String texto) {
         SignTextSlot frente = s.getSlotPlayerIsFacing(p);
         s.updateText(st -> st.asMutable().setLine(linha, componente(texto)).asImmutable(), frente);
     }
 
-    private static SignBlockEntity placaOlhada(ServerPlayer p) {
+    static SignBlockEntity placaOlhada(ServerPlayer p) {
         HitResult h = p.pick(5.0, 1.0F, false);
         if (!(h instanceof BlockHitResult bh)) return null;
         return p.level().getBlockEntity(bh.getBlockPos()) instanceof SignBlockEntity s ? s : null;
