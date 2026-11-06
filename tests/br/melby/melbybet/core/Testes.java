@@ -2,6 +2,7 @@ package br.melby.melbybet.core;
 
 import com.google.gson.JsonObject;
 
+import java.awt.image.BufferedImage;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.LinkedHashMap;
@@ -69,6 +70,7 @@ public class Testes {
         mapArt();
         banner();
         armorStand();
+        fotoMoldura();
         System.out.println(falhas == 0 ? "tudo certo (" + total + " checagens)" : falhas + " falhas de " + total);
         if (falhas > 0) System.exit(1);
     }
@@ -1374,5 +1376,202 @@ public class Testes {
         igual(true, l.obter("u1", "saudacao").bracos, "pose: disco guarda");
         igual(99f, l.obter("u1", "saudacao").angulos[0][0], "pose: disco guarda ângulos");
         igual(0, PosePreset.ler(tmp.resolve("x.json")).jogadores.size(), "pose: arquivo ausente");
+    }
+
+    static BufferedImage cor(int w, int h, int rgb) {
+        var img = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+        for (int y = 0; y < h; y++) for (int x = 0; x < w; x++) img.setRGB(x, y, 0xFF000000 | rgb);
+        return img;
+    }
+
+    static void fotoMoldura() throws Exception {
+        // URLs
+        igual(null, UrlSegura.validar("https://i.imgur.com/abc.png"), "url: https normal");
+        igual(null, UrlSegura.validar("https://cdn.discordapp.com/attachments/1/2/foto.jpg?ex=1&hm=2"), "url: com parâmetros");
+        igual(null, UrlSegura.validar("https://exemplo.com:443/a.png"), "url: porta 443");
+        igual(true, UrlSegura.validar("http://i.imgur.com/abc.png") != null, "url: http recusado");
+        igual(true, UrlSegura.validar("ftp://x.com/a.png") != null, "url: ftp recusado");
+        igual(true, UrlSegura.validar("file:///etc/passwd") != null, "url: file recusado");
+        igual(true, UrlSegura.validar("https://usuario:senha@x.com/a.png") != null, "url: usuário e senha");
+        igual(true, UrlSegura.validar("https://x.com:8443/a.png") != null, "url: porta estranha");
+        igual(true, UrlSegura.validar("https://localhost/a.png") != null, "url: localhost");
+        igual(true, UrlSegura.validar("https://foo.localhost/a.png") != null, "url: subdomínio de localhost");
+        igual(true, UrlSegura.validar("https://servidor.local/a.png") != null, "url: .local");
+        igual(true, UrlSegura.validar("https://api.internal/a.png") != null, "url: .internal");
+        igual(true, UrlSegura.validar("https://127.0.0.1/a.png") != null, "url: loopback");
+        igual(true, UrlSegura.validar("https://10.0.0.5/a.png") != null, "url: rede 10");
+        igual(true, UrlSegura.validar("https://192.168.1.1/a.png") != null, "url: rede 192.168");
+        igual(true, UrlSegura.validar("https://172.16.0.1/a.png") != null, "url: rede 172.16");
+        igual(true, UrlSegura.validar("https://169.254.169.254/latest/meta-data") != null, "url: metadados de nuvem");
+        igual(true, UrlSegura.validar("https://100.64.0.1/a.png") != null, "url: CGNAT");
+        igual(true, UrlSegura.validar("https://0.0.0.0/a.png") != null, "url: 0.0.0.0");
+        igual(true, UrlSegura.validar("https://[::1]/a.png") != null, "url: IPv6 loopback");
+        igual(true, UrlSegura.validar("https://[fd00::1]/a.png") != null, "url: IPv6 único local");
+        igual(true, UrlSegura.validar("https://[fe80::1]/a.png") != null, "url: IPv6 link-local");
+        igual(null, UrlSegura.validar("https://8.8.8.8/a.png"), "url: IP público passa na checagem de texto");
+        igual(true, UrlSegura.validar("https://intranet/a.png") != null, "url: nome sem ponto");
+        igual(true, UrlSegura.validar("") != null, "url: vazia");
+        igual(true, UrlSegura.validar(null) != null, "url: nula");
+        igual(true, UrlSegura.validar("https://x.com/" + "a".repeat(600)) != null, "url: grande demais");
+        igual(true, UrlSegura.validar("não é url") != null, "url: texto solto");
+        igual(true, UrlSegura.ipPermitido(java.net.InetAddress.getByAddress(new byte[] {8, 8, 8, 8})), "ip: público");
+        igual(false, UrlSegura.ipPermitido(java.net.InetAddress.getByAddress(new byte[] {10, 1, 2, 3})), "ip: privado");
+        igual(false, UrlSegura.ipPermitido(java.net.InetAddress.getByAddress(new byte[] {(byte) 192, (byte) 168, 0, 1})), "ip: 192.168");
+        igual(false, UrlSegura.ipPermitido(java.net.InetAddress.getByAddress(new byte[] {(byte) 172, 31, 0, 1})), "ip: 172.31");
+        igual(true, UrlSegura.ipPermitido(java.net.InetAddress.getByAddress(new byte[] {(byte) 172, 32, 0, 1})), "ip: 172.32 é público");
+        igual(false, UrlSegura.ipPermitido(java.net.InetAddress.getByAddress(new byte[] {100, 100, 0, 1})), "ip: CGNAT");
+        igual(true, UrlSegura.ipPermitido(java.net.InetAddress.getByAddress(new byte[] {100, (byte) 128, 0, 1})), "ip: fora do CGNAT");
+        igual(false, UrlSegura.ipPermitido(java.net.InetAddress.getByAddress(new byte[] {(byte) 224, 0, 0, 1})), "ip: multicast");
+        igual(false, UrlSegura.ipPermitido(java.net.InetAddress.getByName("::1")), "ip: ::1");
+        igual(false, UrlSegura.ipPermitido(java.net.InetAddress.getByName("fc00::1")), "ip: fc00::");
+        igual(true, UrlSegura.ipPermitido(java.net.InetAddress.getByName("2606:4700:4700::1111")), "ip: IPv6 público");
+        igual("https://cdn.x.com/b/c.png", UrlSegura.redirecionar("https://cdn.x.com/a/x.png", "/b/c.png"), "url: redireção relativa");
+        igual("https://outro.com/z.png", UrlSegura.redirecionar("https://cdn.x.com/a", "https://outro.com/z.png"), "url: redireção absoluta");
+        igual(null, UrlSegura.redirecionar("https://cdn.x.com/a", "http://outro.com/z.png"), "url: redireção para http");
+        igual(null, UrlSegura.redirecionar("https://cdn.x.com/a", "https://127.0.0.1/z.png"), "url: redireção para a rede interna");
+        // paleta
+        igual(248, PaletaMapa.paleta(PaletaMapa.BASE_RGB).length, "paleta: 248 posições");
+        igual(62, PaletaMapa.BASE_RGB.length, "paleta: 62 cores-base");
+        igual(0x7FB238, PaletaMapa.rgb(6, PaletaMapa.BASE_RGB), "paleta: grama, tom normal");
+        igual(0x7FB238 * 0 + (0x7F * 180 / 255 << 16 | 0xB2 * 180 / 255 << 8 | 0x38 * 180 / 255), PaletaMapa.rgb(4, PaletaMapa.BASE_RGB), "paleta: grama, tom escuro");
+        igual(0xFFFFFF, PaletaMapa.rgb(8 * 4 + 2, PaletaMapa.BASE_RGB), "paleta: neve branca");
+        int[] verde = {0xFF000000 | 0x7FB238};
+        igual(6, PaletaMapa.converter(verde, 1, 1, false)[0] & 0xFF, "paleta: cor exata da grama vira o id 6");
+        igual(8 * 4 + 2, PaletaMapa.converter(new int[] {0xFFFFFFFF}, 1, 1, false)[0] & 0xFF, "paleta: branco vira neve");
+        int preto = PaletaMapa.converter(new int[] {0xFF000000}, 1, 1, false)[0] & 0xFF;
+        igual(true, preto >= 4 && PaletaMapa.rgb(preto, PaletaMapa.BASE_RGB) < 0x202020, "paleta: preto vira algo bem escuro");
+        igual(0, PaletaMapa.converter(new int[] {0x00FFFFFF}, 1, 1, false)[0] & 0xFF, "paleta: transparente vira 0");
+        igual(0, PaletaMapa.converter(new int[] {0x7FFFFFFF}, 1, 1, true)[0] & 0xFF, "paleta: quase transparente vira 0");
+        boolean todosValidos = true;
+        int[] varios = new int[64 * 64];
+        for (int i = 0; i < varios.length; i++) varios[i] = 0xFF000000 | (i * 997 & 0xFFFFFF);
+        for (boolean dif : new boolean[] {false, true}) for (byte b : PaletaMapa.converter(varios, 64, 64, dif)) if ((b & 0xFF) < 4 || (b & 0xFF) > 247) todosValidos = false;
+        igual(true, todosValidos, "paleta: todo id gerado é uma cor de mapa válida");
+        // a difusão mistura duas cores perto de um meio-termo
+        int[] cinza = new int[32 * 32];
+        java.util.Arrays.fill(cinza, 0xFF000000 | 0x808080);
+        var dif = PaletaMapa.converter(cinza, 32, 32, true);
+        var distintos = new java.util.HashSet<Integer>();
+        for (byte b : dif) distintos.add(b & 0xFF);
+        var seco = PaletaMapa.converter(cinza, 32, 32, false);
+        var distintos2 = new java.util.HashSet<Integer>();
+        for (byte b : seco) distintos2.add(b & 0xFF);
+        igual(1, distintos2.size(), "paleta: sem difusão, cor lisa dá um id só");
+        igual(true, distintos.size() >= 1, "paleta: com difusão funciona em cor lisa");
+        // imagem -> mapas
+        var vermelho = cor(100, 100, 0xFF0000);
+        var mapas = ImagemMapa.preparar(vermelho, 2, 3, ImagemMapa.ESTICAR, false);
+        igual(6, mapas.length, "imagem: 2x3 dá 6 mapas");
+        igual(16384, mapas[0].length, "imagem: cada mapa tem 128x128");
+        int idv = PaletaMapa.converter(new int[] {0xFFFF0000}, 1, 1, false)[0] & 0xFF;
+        boolean tudoVermelho = true;
+        for (byte[] m : mapas) for (byte b : m) if ((b & 0xFF) != idv) tudoVermelho = false;
+        igual(true, tudoVermelho, "imagem: cor lisa dá o mesmo id em todos os mapas");
+        // ordem: metade esquerda azul, metade direita vermelha, 2 mapas lado a lado
+        var duas = new BufferedImage(256, 128, BufferedImage.TYPE_INT_ARGB);
+        for (int y = 0; y < 128; y++) for (int x = 0; x < 256; x++) duas.setRGB(x, y, x < 128 ? 0xFF0000FF : 0xFFFF0000);
+        var m2 = ImagemMapa.preparar(duas, 2, 1, ImagemMapa.ESTICAR, false);
+        int idAzul = PaletaMapa.converter(new int[] {0xFF0000FF}, 1, 1, false)[0] & 0xFF;
+        igual(idAzul, m2[0][5000] & 0xFF, "imagem: mapa da esquerda é a parte esquerda");
+        igual(idv, m2[1][5000] & 0xFF, "imagem: mapa da direita é a parte direita");
+        // cima e baixo
+        var cb = new BufferedImage(128, 256, BufferedImage.TYPE_INT_ARGB);
+        for (int y = 0; y < 256; y++) for (int x = 0; x < 128; x++) cb.setRGB(x, y, y < 128 ? 0xFF0000FF : 0xFFFF0000);
+        var m3 = ImagemMapa.preparar(cb, 1, 2, ImagemMapa.ESTICAR, false);
+        igual(idAzul, m3[0][100] & 0xFF, "imagem: o primeiro mapa é o de cima");
+        igual(idv, m3[1][100] & 0xFF, "imagem: o segundo mapa é o de baixo");
+        // modos: imagem larga num quadrado
+        var larga = new BufferedImage(400, 100, BufferedImage.TYPE_INT_ARGB);
+        for (int y = 0; y < 100; y++) for (int x = 0; x < 400; x++) larga.setRGB(x, y, x < 150 ? 0xFF0000FF : x < 250 ? 0xFF00FF00 : 0xFFFF0000);
+        var cortada = ImagemMapa.preparar(larga, 1, 1, ImagemMapa.CORTAR, false);
+        int idVerde = PaletaMapa.converter(new int[] {0xFF00FF00}, 1, 1, false)[0] & 0xFF;
+        igual(idVerde, cortada[0][64 * 128 + 10] & 0xFF, "imagem: cortar pega o centro (esquerda do meio)");
+        igual(idVerde, cortada[0][64 * 128 + 117] & 0xFF, "imagem: cortar pega o centro (direita do meio)");
+        var ajustada = ImagemMapa.preparar(larga, 1, 1, ImagemMapa.AJUSTAR, false);
+        int idPreto = PaletaMapa.converter(new int[] {0xFF000000}, 1, 1, false)[0] & 0xFF;
+        igual(idPreto, ajustada[0][2 * 128 + 64] & 0xFF, "imagem: ajustar deixa faixa preta em cima");
+        igual(idPreto, ajustada[0][125 * 128 + 64] & 0xFF, "imagem: ajustar deixa faixa preta embaixo");
+        igual(true, (ajustada[0][64 * 128 + 5] & 0xFF) != idPreto, "imagem: ajustar mostra a imagem no meio");
+        // transparência: o buraco vira cor 0
+        var furo = new BufferedImage(128, 128, BufferedImage.TYPE_INT_ARGB);
+        for (int y = 0; y < 128; y++) for (int x = 0; x < 128; x++) furo.setRGB(x, y, x < 64 ? 0x00000000 : 0xFF00FF00);
+        var mf = ImagemMapa.preparar(furo, 1, 1, ImagemMapa.ESTICAR, false);
+        igual(0, mf[0][10] & 0xFF, "imagem: parte transparente vira sem cor");
+        igual(idVerde, mf[0][100] & 0xFF, "imagem: parte opaca fica");
+        // decodificação
+        var buf = new java.io.ByteArrayOutputStream();
+        javax.imageio.ImageIO.write(cor(30, 20, 0x336699), "png", buf);
+        var lida = ImagemMapa.ler(buf.toByteArray());
+        igual(30, lida.getWidth(), "ler: largura do PNG");
+        igual(20, lida.getHeight(), "ler: altura do PNG");
+        var jpg = new java.io.ByteArrayOutputStream();
+        var rgb = new BufferedImage(40, 40, BufferedImage.TYPE_INT_RGB);
+        javax.imageio.ImageIO.write(rgb, "jpg", jpg);
+        igual(40, ImagemMapa.ler(jpg.toByteArray()).getWidth(), "ler: JPG");
+        boolean erro1 = false, erro2 = false, erro3 = false;
+        try { ImagemMapa.ler("isto não é imagem".getBytes()); } catch (IllegalArgumentException e) { erro1 = true; }
+        try { ImagemMapa.ler(new byte[0]); } catch (IllegalArgumentException e) { erro2 = true; }
+        var enorme = new java.io.ByteArrayOutputStream();
+        javax.imageio.ImageIO.write(new BufferedImage(6000, 6000, BufferedImage.TYPE_BYTE_BINARY), "png", enorme);
+        try { ImagemMapa.ler(enorme.toByteArray()); } catch (IllegalArgumentException e) { erro3 = e.getMessage().contains("grande demais"); }
+        igual(true, erro1, "ler: lixo é recusado");
+        igual(true, erro2, "ler: vazio é recusado");
+        igual(true, erro3, "ler: 36 milhões de pixels é recusado antes de abrir");
+        // tamanho e geometria
+        igual(3, FotoDados.tamanho("3x2")[0], "foto: tamanho 3x2");
+        igual(2, FotoDados.tamanho("3X2")[1], "foto: maiúscula");
+        igual(6, FotoDados.tamanho("6x6")[0], "foto: 6x6");
+        igual(null, FotoDados.tamanho("7x1"), "foto: 7 é demais");
+        igual(null, FotoDados.tamanho("0x3"), "foto: zero");
+        igual(null, FotoDados.tamanho("3"), "foto: sem x");
+        igual(null, FotoDados.tamanho("ax2"), "foto: letra");
+        igual(null, FotoDados.tamanho(null), "foto: nulo");
+        igual(-1, FotoDados.direita(0, -1)[0], "foto: parede para o norte, a direita de quem olha é o oeste");
+        igual(1, FotoDados.direita(0, 1)[0], "foto: parede para o sul, a direita é o leste");
+        igual(1, FotoDados.direita(1, 0)[1] * -1, "foto: parede para o leste, a direita é o norte (z-)");
+        igual(1, FotoDados.direita(-1, 0)[1], "foto: parede para o oeste, a direita é o sul (z+)");
+        var c0 = FotoDados.celula(10, 64, 20, 0, -1, 3, 0, 0);
+        igual(66, c0[1], "foto: linha de cima fica 2 acima da base");
+        igual(10, c0[0], "foto: coluna 0 no x da base");
+        var c1 = FotoDados.celula(10, 64, 20, 0, -1, 3, 2, 2);
+        igual(64, c1[1], "foto: linha de baixo na base");
+        igual(8, c1[0], "foto: coluna 2 vai para o oeste");
+        igual(20, c1[2], "foto: z não muda na parede norte");
+        // murais
+        var d = new FotoDados();
+        var g = new FotoDados.Grupo();
+        g.dono = "u1";
+        g.donoNome = "Davi";
+        g.larg = 3;
+        g.alt = 2;
+        g.mapas = new java.util.ArrayList<>(java.util.List.of(1, 2, 3, 4, 5, 6));
+        g.molduras = new java.util.ArrayList<>(java.util.List.of("a", "b"));
+        d.adicionar(g, 9L);
+        igual(1, g.id, "foto: primeiro id");
+        igual(6, d.totalMapas(), "foto: total de mapas");
+        igual(g, d.acharPorMoldura("b"), "foto: achar pela moldura");
+        igual(null, d.acharPorMoldura("z"), "foto: moldura desconhecida");
+        igual(g, d.achar(1), "foto: achar por id");
+        igual(null, FotoDados.pode(g, "u1", false), "foto: dono mexe");
+        igual(true, FotoDados.pode(g, "u2", false) != null, "foto: outro não mexe");
+        igual(null, FotoDados.pode(g, "u2", true), "foto: OP mexe");
+        for (int i = 1; i < FotoDados.MAX_POR_JOGADOR; i++) {
+            var x = new FotoDados.Grupo();
+            x.dono = "u1";
+            d.adicionar(x, 1L);
+        }
+        igual(true, d.podeCriar("u1", false, 4) != null, "foto: limite por jogador");
+        igual(null, d.podeCriar("u1", true, 4), "foto: OP sem limite por jogador");
+        igual(null, d.podeCriar("u2", false, 4), "foto: outro jogador pode");
+        igual(true, d.podeCriar("u2", false, FotoDados.MAX_MAPAS_TOTAL) != null, "foto: limite de mapas do servidor");
+        igual(true, d.remover(1), "foto: remover");
+        igual(false, d.remover(1), "foto: remover de novo");
+        d.adicionar(g, 9L);
+        Path tmp = Files.createTempDirectory("melbyft");
+        d.gravar(tmp.resolve("f.json"));
+        var l = FotoDados.ler(tmp.resolve("f.json"));
+        igual(d.grupos.size(), l.grupos.size(), "foto: disco guarda os murais");
+        igual(l.proximoId, d.proximoId, "foto: disco guarda o próximo id");
+        igual(0, FotoDados.ler(tmp.resolve("x.json")).grupos.size(), "foto: arquivo ausente");
     }
 }

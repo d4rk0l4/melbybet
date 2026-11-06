@@ -254,6 +254,19 @@ Olhando para um armor stand (a até 6 blocos), `/armorstand` abre o editor:
 - Não muda o tamanho (pequeno) nem o modo marcador: o jogo não deixa mexer nisso fora do comando `/summon`.
 - Dados em `config/melbybet/donos.json` e `armorstand-poses.json`.
 
+## Fotos em molduras (`/fotomoldura`)
+
+Transforma uma imagem da internet num mural de mapas do jogo. Os jogadores veem sem instalar nada.
+
+- `/fotomoldura <LxA> <endereço> [modo]`: **LxA** é o tamanho em molduras (1 a 6 de cada lado, por exemplo `3x2`). Olhe para o lado de um bloco da parede: ele será o canto **inferior esquerdo** da foto, que cresce para a direita e para cima, na frente da parede. O espaço precisa estar livre e a parede inteira atrás.
+- **Endereço:** `https://` direto para o arquivo da imagem (PNG, JPG, GIF ou BMP, até 8 MB e 25 milhões de pixels). WebP não funciona. Links de página (como o do Google Imagens) não servem: use o "copiar endereço da imagem". Endereços da rede interna, `localhost` e portas diferentes de 443 são recusados, inclusive em redireções.
+- **Modo:** `cortar` (padrão: preenche tudo e corta as bordas), `ajustar` (mostra a imagem inteira, com faixas pretas) ou `esticar`.
+- A imagem é convertida para a paleta de 248 cores dos mapas com difusão de erro (dithering), por isso as cores mudam um pouco. Quanto maior o mural, mais detalhe.
+- **Limites:** 5 fotos por jogador (OP sem limite), 1500 mapas de fotos no servidor. O servidor precisa poder acessar a internet (HTTPS de saída).
+- `/fotomoldura lista`, `info` (olhando para uma moldura), `reparar` (desgira molduras que alguém girou) e `apagar [id]`. As molduras são invisíveis e invulneráveis: só o dono (ou OP) remove, pelo comando. Os arquivos dos mapas continuam no mundo depois de apagar (o jogo não apaga mapas por conta própria).
+- Os mapas são criados bem longe do centro do mundo, então ninguém os "repinta" com o terreno ao carregá-los.
+- Dados em `config/melbybet/fotomolduras.json`.
+
 ## Marcador de áreas (`/marcador`)
 
 Escolhe uma região (dois cantos) para usar nos recursos de construção. Não precisa de nada no cliente.

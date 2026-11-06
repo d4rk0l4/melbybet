@@ -1,5 +1,9 @@
 # Versões do MelbyBet
 
+## 2.13.0
+- /fotomoldura <LxA> <endereço> [modo]: coloca uma foto da internet na parede, feita de mapas do jogo em molduras invisíveis (até 6x6 molduras), então quem entra no servidor vê sem instalar nada. Só HTTPS, bloqueia endereços da rede interna, aceita PNG, JPG, GIF (primeiro quadro) e BMP até 8 MB. Modos: cortar, ajustar (faixas pretas) ou esticar. As cores são convertidas para a paleta dos mapas com difusão de erro. O download e a conversão rodam fora da thread principal
+- Até 5 fotos por jogador (OP sem limite) e 1500 mapas no servidor. /fotomoldura lista, info, reparar (desgira molduras) e apagar. As molduras são invulneráveis: só o dono ou OP remove, pelo comando
+
 ## 2.12.0
 - /armorstand: editor de armor stand num menu. Escolhe a parte (cabeça, corpo, braços, pernas) e ajusta X, Y e Z em passos de 1, 5, 15 ou 45 graus; mostrar braços, base, invisível, girar o stand e mover com ajuste fino (1/16 de bloco). Copiar e colar a pose entre stands (shift cola espelhada) e poses guardadas por jogador (até 20)
 - Dono: quem coloca um armor stand passa a ser o dono, e só ele (ou OP) edita. Stands de antes do mod não têm dono: só OP edita, ou qualquer jogador com /armorstand reivindicar se o stand estiver vazio. /armorstand dono e transferir <jogador>

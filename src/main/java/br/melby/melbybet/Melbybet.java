@@ -121,6 +121,7 @@ public class Melbybet implements ModInitializer {
         if (tick % 20 == 0) MapArt.aCadaSegundo();
         if (tick % 20 == 0) Banners.aCadaSegundo();
         if (tick % 20 == 0) ArmorStands.aCadaSegundo();
+        if (tick % 20 == 0) FotoMoldura.aCadaSegundo();
         if (tick % 6000 == 3000) MarcosOnline.conferir();
         if (tick % 600 == 0) Jogo.conferirConquistas();
         if (tick % 6000 == 0) Jogo.salvar();

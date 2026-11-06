@@ -56,6 +56,7 @@ public final class Jogo {
         MapArt.carregar();
         Banners.carregar();
         ArmorStands.carregar();
+        FotoMoldura.carregar();
         Prefixos.limparTudo();
         Duelos.aoLigar();
         Presenca.aoLigar();
@@ -70,6 +71,7 @@ public final class Jogo {
         MapArt.salvarAgora();
         Banners.salvarAgora();
         ArmorStands.salvarAgora();
+        FotoMoldura.salvarAgora();
         if (arquivo == null) return;
         try {
             Armazem.salvar(arquivo, casa);
