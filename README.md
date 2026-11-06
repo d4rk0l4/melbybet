@@ -243,6 +243,17 @@ Ferramentas para planejar um mural feito de mapas. O mod não desenha a imagem: 
 - `/banner receita <nome>` manda a receita de um do catálogo ou dos seus favoritos. As combinações do catálogo ficam em `melbybet/banners.json` dentro do mod; os favoritos em `config/melbybet/banners-favoritos.json`.
 - Só usa padrões reais do jogo. Se o jogo não conhecer algum, ele some da pré-visualização sem quebrar o menu.
 
+## Editor de armor stand (`/armorstand`)
+
+Olhando para um armor stand (a até 6 blocos), `/armorstand` abre o editor:
+
+- **Partes:** cabeça, corpo, braços e pernas. Para a parte escolhida, os botões +/- ajustam X (frente e trás), Y (giro) e Z (lados) em passos de 1, 5, 15 ou 45 graus (botão do relógio). Zerar a parte volta ao padrão.
+- **Gerais:** mostrar ou esconder os braços, ter ou não a base, ficar invisível, girar o stand e mover com ajuste fino (1/16 de bloco por clique, shift: 1/4).
+- **Copiar e colar:** copia a pose inteira de um stand e cola em outro (shift ao colar espelha esquerda e direita). **Poses guardadas:** até 20 por jogador, para aplicar de novo (esquerdo), aplicar espelhada (shift) ou apagar (direito).
+- **Dono:** quem coloca um armor stand depois desta versão é o dono, e só ele (ou OP) edita. Os que já existiam não têm dono: só OP edita, ou qualquer jogador depois de `/armorstand reivindicar` se o stand estiver **vazio**. `/armorstand dono` mostra o dono; `/armorstand transferir <jogador>` passa a posse (dono ou OP). Stands colocados por dispenser ficam sem dono.
+- Não muda o tamanho (pequeno) nem o modo marcador: o jogo não deixa mexer nisso fora do comando `/summon`.
+- Dados em `config/melbybet/donos.json` e `armorstand-poses.json`.
+
 ## Marcador de áreas (`/marcador`)
 
 Escolhe uma região (dois cantos) para usar nos recursos de construção. Não precisa de nada no cliente.

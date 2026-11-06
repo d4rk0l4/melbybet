@@ -1,5 +1,9 @@
 # Versões do MelbyBet
 
+## 2.12.0
+- /armorstand: editor de armor stand num menu. Escolhe a parte (cabeça, corpo, braços, pernas) e ajusta X, Y e Z em passos de 1, 5, 15 ou 45 graus; mostrar braços, base, invisível, girar o stand e mover com ajuste fino (1/16 de bloco). Copiar e colar a pose entre stands (shift cola espelhada) e poses guardadas por jogador (até 20)
+- Dono: quem coloca um armor stand passa a ser o dono, e só ele (ou OP) edita. Stands de antes do mod não têm dono: só OP edita, ou qualquer jogador com /armorstand reivindicar se o stand estiver vazio. /armorstand dono e transferir <jogador>
+
 ## 2.11.0
 - /banner: catálogo com 30 estandartes (bandeiras e símbolos), cada um com pré-visualização e a receita passo a passo (base, camadas do tear, corantes e itens de padrão). Construtor para montar o seu camada por camada, com favoritos por jogador. Os estandartes do menu são só para ver: não dá para pegar
 

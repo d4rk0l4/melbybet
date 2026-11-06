@@ -68,6 +68,7 @@ public class Testes {
         etiquetaBau();
         mapArt();
         banner();
+        armorStand();
         System.out.println(falhas == 0 ? "tudo certo (" + total + " checagens)" : falhas + " falhas de " + total);
         if (falhas > 0) System.exit(1);
     }
@@ -1290,5 +1291,88 @@ public class Testes {
         igual(2, l.de("u1").get(0).camadas.size(), "banner: disco guarda favoritos");
         igual("border", l.de("u1").get(0).camadas.get(0).padrao, "banner: disco guarda camadas");
         igual(0, BannerReceita.Favoritos.ler(tmp.resolve("x.json")).jogadores.size(), "banner: arquivo ausente");
+    }
+
+    static void armorStand() throws Exception {
+        // donos
+        var d = new Donos();
+        igual(true, d.reivindicar("stand:a", "u1", "Davi", 1L), "dono: reivindicar");
+        igual(false, d.reivindicar("stand:a", "u2", "Kaue", 2L), "dono: já tem dono");
+        igual("Davi", d.de("stand:a").nome, "dono: primeiro fica");
+        igual(null, d.pode("stand:a", "u1", false), "dono: o dono mexe");
+        igual(true, d.pode("stand:a", "u2", false) != null, "dono: outro não mexe");
+        igual(null, d.pode("stand:a", "u2", true), "dono: OP mexe");
+        igual(true, d.pode("stand:b", "u1", false) != null, "dono: sem dono, jogador não mexe");
+        igual(null, d.pode("stand:b", "u1", true), "dono: sem dono, OP mexe");
+        igual(true, d.transferir("stand:a", "u2", false, "u2", "Kaue", 3L) != null, "dono: outro não transfere");
+        igual(null, d.transferir("stand:a", "u1", false, "u2", "Kaue", 3L), "dono: dono transfere");
+        igual("Kaue", d.de("stand:a").nome, "dono: novo dono");
+        igual(null, d.transferir("stand:a", "u9", true, "u3", "Hugo", 4L), "dono: OP transfere");
+        igual(true, d.transferir("stand:zz", "u1", false, "u1", "Davi", 4L) != null, "dono: sem dono, jogador não transfere");
+        igual(null, d.transferir("stand:zz", "u1", true, "u1", "Davi", 4L), "dono: sem dono, OP define");
+        igual(1, d.contar("u3"), "dono: contar");
+        d.remover("stand:a");
+        igual(null, d.de("stand:a"), "dono: remover");
+        var muitos = new Donos();
+        for (int i = 0; i < Donos.MAX + 5; i++) muitos.reivindicar("k" + i, "u", "U", i);
+        igual(Donos.MAX, muitos.donos.size(), "dono: limite total");
+        igual(null, muitos.de("k0"), "dono: sai o mais antigo");
+        Path tmp = Files.createTempDirectory("melbydn");
+        d.gravar(tmp.resolve("d.json"));
+        igual("Davi", Donos.ler(tmp.resolve("d.json")).de("stand:zz").nome, "dono: disco");
+        igual(0, Donos.ler(tmp.resolve("x.json")).donos.size(), "dono: arquivo ausente");
+        // ângulos
+        igual(10f, PosePreset.girar(0, 10), "pose: girar");
+        igual(-170f, PosePreset.girar(170, 20), "pose: dá a volta no 180");
+        igual(170f, PosePreset.girar(-170, -20), "pose: dá a volta no -180");
+        igual(0f, PosePreset.girar(350, 10), "pose: 360 vira 0");
+        igual(180f, PosePreset.girar(179, 1), "pose: 180 fica 180");
+        igual(5, PosePreset.proximoPasso(1), "pose: passo 1 -> 5");
+        igual(15, PosePreset.proximoPasso(5), "pose: passo 5 -> 15");
+        igual(45, PosePreset.proximoPasso(15), "pose: passo 15 -> 45");
+        igual(1, PosePreset.proximoPasso(45), "pose: passo 45 -> 1");
+        igual(1, PosePreset.proximoPasso(7), "pose: passo desconhecido volta ao 1");
+        // poses
+        var pp = new PosePreset();
+        var pose = new PosePreset.Pose();
+        pose.angulos[0] = new float[] {10, 20, 30};
+        pose.angulos[2] = new float[] {-90, 0, 15};
+        pose.angulos[3] = new float[] {0, 45, -20};
+        pose.bracos = true;
+        pose.base = false;
+        igual(null, pp.salvar("u1", "Saudacao", pose, 5L), "pose: salvar");
+        igual(true, pp.salvar("u1", "a b", pose, 5L) != null, "pose: nome ruim");
+        pose.angulos[0][0] = 99;
+        igual(10f, pp.obter("u1", "saudacao").angulos[0][0], "pose: o preset é cópia");
+        igual(true, pp.obter("u1", "saudacao").bracos, "pose: guarda braços");
+        igual(false, pp.obter("u1", "saudacao").base, "pose: guarda base");
+        igual(null, pp.obter("u2", "saudacao"), "pose: outro jogador não vê");
+        igual(null, pp.salvar("u1", "SAUDACAO", pose, 6L), "pose: mesmo nome substitui");
+        igual(1, pp.de("u1").size(), "pose: sem duplicar");
+        igual(99f, pp.obter("u1", "saudacao").angulos[0][0], "pose: substituiu");
+        for (int i = 0; i < PosePreset.MAX_PRESETS; i++) pp.salvar("u2", "p" + i, pose, 1L);
+        igual(true, pp.salvar("u2", "extra", pose, 1L) != null, "pose: limite");
+        igual(true, pp.apagar("u2", "P0"), "pose: apagar");
+        igual(false, pp.apagar("u2", "p0"), "pose: apagar de novo");
+        // espelho: esquerda <-> direita e eixos Y e Z invertidos
+        var e = PosePreset.espelhar(pose);
+        igual(0f, e.angulos[2][0], "pose: espelho, x do braço esquerdo");
+        igual(-45f, e.angulos[2][1], "pose: espelho, y do braço esquerdo vem do direito, invertido");
+        igual(20f, e.angulos[2][2], "pose: espelho, z do braço esquerdo");
+        igual(-90f, e.angulos[3][0], "pose: espelho, x do braço direito vem do esquerdo");
+        igual(0f, e.angulos[3][1], "pose: espelho, y zero continua zero");
+        igual(-15f, e.angulos[3][2], "pose: espelho, z do braço direito");
+        igual(-20f, e.angulos[0][1], "pose: espelho da cabeça inverte y");
+        igual(-30f, e.angulos[0][2], "pose: espelho da cabeça inverte z");
+        var ee = PosePreset.espelhar(e);
+        boolean igualOriginal = true;
+        for (int i = 0; i < PosePreset.PARTES; i++) for (int k = 0; k < 3; k++) if (Math.abs(ee.angulos[i][k] - pose.angulos[i][k]) > 0.001f) igualOriginal = false;
+        igual(true, igualOriginal, "pose: espelhar duas vezes volta ao original");
+        Path f = tmp.resolve("poses.json");
+        pp.gravar(f);
+        var l = PosePreset.ler(f);
+        igual(true, l.obter("u1", "saudacao").bracos, "pose: disco guarda");
+        igual(99f, l.obter("u1", "saudacao").angulos[0][0], "pose: disco guarda ângulos");
+        igual(0, PosePreset.ler(tmp.resolve("x.json")).jogadores.size(), "pose: arquivo ausente");
     }
 }
