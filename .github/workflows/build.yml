@@ -20,6 +20,18 @@ jobs:
           distribution: 'microsoft'
       - name: make gradle wrapper executable
         run: chmod +x ./gradlew
+      - name: TEMP javap cliente
+        continue-on-error: true
+        run: |
+          ./gradlew build -x test --no-daemon -q || true
+          MC=$(find ~/.gradle .gradle -name '*.jar' 2>/dev/null | grep -i 'minecraft' | grep -iv 'sources\|fabric-loader\|mixin' | head -20)
+          echo "$MC"
+          FAPI=$(find ~/.gradle -name 'fabric-*.jar' ! -name '*sources*' | head -200)
+          CP=$(find ~/.gradle .gradle -name '*.jar' 2>/dev/null | tr '\n' ':')
+          echo "=== FABRIC jars"; echo "$FAPI" | xargs -n1 basename | sort | grep -i 'key\|render\|hud\|screen\|networking\|client'
+          for J in $(echo "$FAPI" | grep -i 'key-binding\|rendering\|screen\|client-networking\|networking-api'); do echo "=== $J"; unzip -l "$J" | awk '{print $4}' | grep '\.class$' | grep -v mixin | grep -i 'KeyBinding\|Hud\|LevelRender\|WorldRender\|ClientPlayNetworking\|Screens\|ClientTick' ; done
+          for C in net.minecraft.client.KeyMapping 'net.minecraft.client.KeyMapping$Category' net.minecraft.client.gui.screens.Screen net.minecraft.client.gui.GuiGraphics net.minecraft.client.Minecraft net.minecraft.client.renderer.RenderPipelines net.minecraft.client.gui.components.EditBox net.minecraft.client.gui.components.Button net.minecraft.client.gui.components.Button\$Builder; do echo "=== $C"; javap -cp "$CP" -public "$C" 2>&1 | head -150; done
+          for C in net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper net.fabricmc.fabric.api.client.rendering.v1.HudElementRegistry net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry net.fabricmc.fabric.api.client.rendering.v1.hud.HudElement net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderEvents net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking; do echo "=== $C"; javap -cp "$CP" -public "$C" 2>&1 | head -60; done
       - name: build
         run: ./gradlew build
       - name: testes da lógica (apostas, pagamento, ranking)
