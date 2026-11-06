@@ -218,7 +218,7 @@ public final class Catalogo {
         return 1;
     }
 
-    private static Component nomeBloco(String id) {
+    private static net.minecraft.network.chat.MutableComponent nomeBloco(String id) {
         return Component.translatable("block.minecraft." + id);
     }
 
