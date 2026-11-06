@@ -220,6 +220,15 @@ Escolhe uma região (dois cantos) para usar nos recursos de construção. Não p
 
 A seleção e as áreas ficam em `config/melbybet/marcadores.json` e sobrevivem a reinícios. Em outra dimensão a seleção não vale: trocar de dimensão e marcar um canto descarta o outro.
 
+## Catálogo de blocos (`/catalogo`)
+
+Conta os blocos da área marcada com `/marcador`. Não precisa de nada no cliente.
+
+- `/catalogo` conta tudo que não é ar nem fluido; `/catalogo tudo` inclui ar e fluidos. Portas, plantas altas e camas contam como um só, laje dupla conta dois.
+- Mostra, por tipo, a quantidade, a porcentagem e quantas pilhas ou shulkers dá. Os nomes saem no idioma do seu jogo. `/catalogo pagina <n>` passa as páginas.
+- A leitura é feita aos poucos, sem travar o servidor, e só dos chunks carregados. Se algum pedaço estava descarregado, o aviso diz quantas posições ficaram de fora: chegue perto e repita. Máximo de 2 milhões de blocos. `/catalogo cancelar` interrompe.
+- `/catalogo salvar <nome>`, `lista`, `ver <nome>`, `apagar <nome>` guardam resultados (até 20 por jogador) em `config/melbybet/catalogo.json`.
+
 ## Bússola para coordenadas (`/bussola`)
 
 Segurando uma bússola, `/bussola <x> <z>` (também aceita `<x> <y> <z>`, o Y é ignorado, então dá para colar direto o que o `/coords` copia) faz a agulha apontar para aquele ponto. Usa o rastreador de pedra-ímã do próprio jogo: não precisa de nada no cliente e a agulha funciona como a de uma bússola de pedra-ímã comum. Só aponta na dimensão em que o comando foi usado (em outra dimensão a agulha gira). `/bussola reset` devolve a bússola ao normal.

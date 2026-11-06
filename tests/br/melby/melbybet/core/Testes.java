@@ -62,6 +62,7 @@ public class Testes {
         arena();
         dueloLog();
         marcador();
+        catalogo();
         System.out.println(falhas == 0 ? "tudo certo (" + total + " checagens)" : falhas + " falhas de " + total);
         if (falhas > 0) System.exit(1);
     }
@@ -901,5 +902,62 @@ public class Testes {
         var pj = MarcadorDados.ler(tmp.resolve("parcial.json"));
         igual(false, pj.de("x").atual.completa(), "marcador: campos faltando viram padrão");
         igual(0, pj.de("x").salvas.size(), "marcador: salvas faltando viram vazio");
+    }
+
+    static void catalogo() throws Exception {
+        var c = new ContagemBlocos.Contagem();
+        c.somar("stone", 100);
+        c.somar("oak_planks", 50);
+        c.somar("stone", 20);
+        c.somar("glass", 50);
+        c.somar("dirt", 0);
+        c.somar("dirt", -3);
+        igual(220L, c.total, "catalogo: total");
+        igual(3, c.blocos.size(), "catalogo: zero e negativo ignorados");
+        var o = c.ordenado();
+        igual("stone", o.get(0).getKey(), "catalogo: mais numeroso primeiro");
+        igual(120L, o.get(0).getValue(), "catalogo: soma do mesmo tipo");
+        igual("glass", o.get(1).getKey(), "catalogo: empate em ordem alfabética");
+        igual("oak_planks", o.get(2).getKey(), "catalogo: empate, segundo");
+        igual("54,5%", ContagemBlocos.percentual(120, 220), "catalogo: percentual");
+        igual("0%", ContagemBlocos.percentual(1, 0), "catalogo: percentual sem total");
+        igual("10", ContagemBlocos.pilhas(10, 64), "catalogo: menos de uma pilha");
+        igual("1 pilha", ContagemBlocos.pilhas(64, 64), "catalogo: uma pilha");
+        igual("2 pilhas + 5", ContagemBlocos.pilhas(133, 64), "catalogo: pilhas e resto");
+        igual("1 shulker", ContagemBlocos.pilhas(27 * 64, 64), "catalogo: um shulker");
+        igual("2 shulkers + 1 pilha + 3", ContagemBlocos.pilhas(2 * 27 * 64 + 67, 64), "catalogo: shulkers, pilha e resto");
+        
+        igual("1 pilha + 4", ContagemBlocos.pilhas(20, 16), "catalogo: pilha de 16") ;
+        igual("5", ContagemBlocos.pilhas(5, 1), "catalogo: itens que não empilham");
+        var gr = new ContagemBlocos.Contagem();
+        for (int i = 0; i < 30; i++) gr.somar("b" + (i < 10 ? "0" : "") + i, 30 - i);
+        igual(3, gr.paginas(), "catalogo: 30 tipos = 3 páginas");
+        igual(12, gr.pagina(1).size(), "catalogo: página cheia");
+        igual(6, gr.pagina(3).size(), "catalogo: última página");
+        igual(0, gr.pagina(4).size(), "catalogo: página inexistente");
+        igual(0, gr.pagina(0).size(), "catalogo: página zero");
+        igual(1, new ContagemBlocos.Contagem().paginas(), "catalogo: vazio tem 1 página");
+        var d = new ContagemBlocos();
+        var p = new ContagemBlocos.Projeto();
+        p.contagem = c;
+        p.larg = 3;
+        igual(null, d.salvar("u1", "Torre", p, 5L), "catalogo: salvar projeto");
+        igual(true, d.salvar("u1", "T o", p, 5L) != null, "catalogo: nome ruim");
+        igual(220L, d.obter("u1", "torre").contagem.total, "catalogo: obter sem diferenciar maiúscula");
+        igual(null, d.obter("u2", "torre"), "catalogo: outro jogador não vê");
+        igual(1, d.lista("u1").size(), "catalogo: lista");
+        for (int i = 0; i < ContagemBlocos.MAX_PROJETOS - 1; i++) d.salvar("u1", "p" + i, p, 1L);
+        igual(true, d.salvar("u1", "extra", p, 1L) != null, "catalogo: limite de projetos");
+        igual(null, d.salvar("u1", "torre", p, 9L), "catalogo: regravar no limite");
+        igual(9L, d.obter("u1", "torre").criadoEm, "catalogo: regravar atualiza");
+        Path tmp = Files.createTempDirectory("melbycat");
+        Path f = tmp.resolve("catalogo.json");
+        d.gravar(f);
+        var l = ContagemBlocos.ler(f);
+        igual(220L, l.obter("u1", "torre").contagem.total, "catalogo: disco guarda o total");
+        igual(120L, l.obter("u1", "torre").contagem.blocos.get("stone"), "catalogo: disco guarda os tipos");
+        igual(true, l.apagar("u1", "torre"), "catalogo: apagar");
+        igual(false, l.apagar("u1", "torre"), "catalogo: apagar de novo");
+        igual(0, ContagemBlocos.ler(tmp.resolve("x.json")).projetos.size(), "catalogo: arquivo ausente");
     }
 }

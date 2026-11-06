@@ -1,5 +1,8 @@
 # Versões do MelbyBet
 
+## 2.6.0
+- /catalogo: conta os blocos da área marcada com /marcador, tipo por tipo, com porcentagem e pilhas/shulkers. Lê aos poucos (sem travar o servidor), só chunks carregados, até 2 milhões de blocos. Salvar, listar, ver e apagar projetos
+
 ## 2.5.0
 - /marcador: escolha uma área com dois cantos (comandos ou Varinha de Marcação), veja os limites em partículas só para você, ajuste (expandir, contrair, altura) e salve áreas com nome, que dá para compartilhar com outros jogadores. Base para os próximos recursos de construção
 

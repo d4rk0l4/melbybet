@@ -61,6 +61,7 @@ public class Melbybet implements ModInitializer {
         ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> {
             Rastro.aoSair(handler.getPlayer());
             Duelos.aoSair(handler.getPlayer());
+            Catalogo.aoSair(handler.getPlayer());
         });
         ServerLivingEntityEvents.AFTER_DAMAGE.register((entidade, fonte, base, tomado, bloqueado) -> Duelos.aoDano(entidade, fonte));
         ServerMessageDecoratorEvent.EVENT.register(ServerMessageDecoratorEvent.CONTENT_PHASE, Extras::decorar);
@@ -96,6 +97,7 @@ public class Melbybet implements ModInitializer {
         Arena.aCadaTick();
         Rastro.aCadaTick();
         Marcadores.aCadaTick(tick);
+        Catalogo.aCadaTick();
         if (tick % 20 == 0) Extras.aCadaSegundo();
         if (tick % 20 == 0) Capsulas.aCadaSegundo();
         if (tick % 20 == 0) Duelos.aCadaSegundo();
@@ -107,6 +109,7 @@ public class Melbybet implements ModInitializer {
         if (tick % 20 == 0) Durabilidade.aCadaSegundo();
         if (tick % 20 == 0) Backup.aCadaSegundo();
         if (tick % 20 == 0) Marcadores.aCadaSegundo();
+        if (tick % 20 == 0) Catalogo.aCadaSegundo();
         if (tick % 6000 == 3000) MarcosOnline.conferir();
         if (tick % 600 == 0) Jogo.conferirConquistas();
         if (tick % 6000 == 0) Jogo.salvar();
