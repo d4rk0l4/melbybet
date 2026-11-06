@@ -1,5 +1,8 @@
 # Versões do MelbyBet
 
+## 2.11.0
+- /banner: catálogo com 30 estandartes (bandeiras e símbolos), cada um com pré-visualização e a receita passo a passo (base, camadas do tear, corantes e itens de padrão). Construtor para montar o seu camada por camada, com favoritos por jogador. Os estandartes do menu são só para ver: não dá para pegar
+
 ## 2.10.0
 - /mapart: planejamento de mapas-arte. calc <largura> <altura> [escala] (mapas, blocos, pilhas e shulkers, plano ou com relevo), grade (onde começa e termina o mapa em que você está), marcar (marca esse mapa com o /marcador), info (lê o mapa que você segura) e projetos salvos (projeto, lista, ver, apagar) a partir da grade do jogo
 

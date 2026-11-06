@@ -65,6 +65,7 @@ public class Melbybet implements ModInitializer {
             Duelos.aoSair(handler.getPlayer());
             Catalogo.aoSair(handler.getPlayer());
             Placas.aoSair(handler.getPlayer());
+            Banners.aoSair(handler.getPlayer());
         });
         ServerLivingEntityEvents.AFTER_DAMAGE.register((entidade, fonte, base, tomado, bloqueado) -> Duelos.aoDano(entidade, fonte));
         ServerMessageDecoratorEvent.EVENT.register(ServerMessageDecoratorEvent.CONTENT_PHASE, Extras::decorar);
@@ -116,6 +117,7 @@ public class Melbybet implements ModInitializer {
         if (tick % 20 == 0) HistoricoPlacas.aCadaSegundo();
         if (tick % 20 == 0) Baus.aCadaSegundo();
         if (tick % 20 == 0) MapArt.aCadaSegundo();
+        if (tick % 20 == 0) Banners.aCadaSegundo();
         if (tick % 6000 == 3000) MarcosOnline.conferir();
         if (tick % 600 == 0) Jogo.conferirConquistas();
         if (tick % 6000 == 0) Jogo.salvar();

@@ -67,6 +67,7 @@ public class Testes {
         placaHistorico();
         etiquetaBau();
         mapArt();
+        banner();
         System.out.println(falhas == 0 ? "tudo certo (" + total + " checagens)" : falhas + " falhas de " + total);
         if (falhas > 0) System.exit(1);
     }
@@ -1223,5 +1224,71 @@ public class Testes {
         igual(true, l.apagar("u1", "mural"), "mapart: apagar");
         igual(false, l.apagar("u1", "mural"), "mapart: apagar de novo");
         igual(0, MapArtGeo.ler(tmp.resolve("x.json")).projetos.size(), "mapart: arquivo ausente");
+    }
+
+    static void banner() throws Exception {
+        igual(16, BannerReceita.CORES.size(), "banner: 16 cores");
+        igual("Azul-claro", BannerReceita.CORES.get("light_blue"), "banner: nome da cor");
+        igual(true, BannerReceita.PADROES.size() >= 40, "banner: padrões conhecidos");
+        for (String id : BannerReceita.ITEM_DO_PADRAO.keySet()) igual(true, BannerReceita.PADROES.containsKey(id), "banner: item de padrão existe como padrão: " + id);
+        var r = new BannerReceita("T", "white", new java.util.ArrayList<>());
+        igual(null, r.validar(), "banner: sem camadas é válido (só a base)");
+        r.camadas.add(new BannerReceita.Camada("creeper", "black"));
+        r.camadas.add(new BannerReceita.Camada("border", "red"));
+        r.camadas.add(new BannerReceita.Camada("creeper", "green"));
+        igual(null, r.validar(), "banner: receita válida");
+        igual(3, r.corantes().size(), "banner: três cores diferentes");
+        igual(1, r.itensDePadrao().size(), "banner: item de padrão sem repetir");
+        igual("creeper", r.itensDePadrao().get(0), "banner: item de padrão certo");
+        igual(4, r.passos().size(), "banner: passos = base + camadas");
+        igual(true, r.passos().get(1).contains("Creeper") && r.passos().get(1).contains("preto"), "banner: passo cita padrão e cor");
+        igual(true, r.passos().get(1).contains("cabeça de creeper"), "banner: passo cita o item");
+        igual(true, r.resumoMateriais().contains("3 corante") || r.resumoMateriais().contains("1 corante"), "banner: materiais citam corantes");
+        igual(true, new BannerReceita("x", "azul", new java.util.ArrayList<>()).validar() != null, "banner: base inválida");
+        var ruim = new BannerReceita("x", "red", new java.util.ArrayList<>(java.util.List.of(new BannerReceita.Camada("inexistente", "red"))));
+        igual(true, ruim.validar() != null, "banner: padrão inválido");
+        var ruim2 = new BannerReceita("x", "red", new java.util.ArrayList<>(java.util.List.of(new BannerReceita.Camada("border", "roxo"))));
+        igual(true, ruim2.validar() != null, "banner: cor inválida");
+        var sete = new BannerReceita("x", "red", new java.util.ArrayList<>());
+        for (int i = 0; i < 7; i++) sete.camadas.add(new BannerReceita.Camada("border", "black"));
+        igual(true, sete.validar() != null, "banner: mais de 6 camadas");
+        sete.camadas.remove(0);
+        igual(null, sete.validar(), "banner: 6 camadas");
+        igual(6, sete.corantes().get("black"), "banner: corantes somam");
+        // catálogo embutido
+        String json = Files.readString(Path.of("src/main/resources/melbybet/banners.json"));
+        var cat = BannerReceita.lerCatalogo(json);
+        igual(true, cat.size() >= 25, "banner: catálogo tem receitas (" + cat.size() + ")");
+        int quantas = new com.google.gson.Gson().fromJson(json, com.google.gson.JsonArray.class).size();
+        igual(quantas, cat.size(), "banner: nenhuma receita do catálogo é inválida");
+        var nomes = new java.util.HashSet<String>();
+        boolean repetido = false;
+        for (var b : cat) if (!nomes.add(b.nome)) repetido = true;
+        igual(false, repetido, "banner: nomes do catálogo não repetem");
+        igual(0, BannerReceita.lerCatalogo("isto não é json").size(), "banner: JSON ruim = catálogo vazio");
+        igual(0, BannerReceita.lerCatalogo("null").size(), "banner: JSON nulo");
+        igual(1, BannerReceita.lerCatalogo("[{\"nome\":\"a\",\"base\":\"red\",\"camadas\":[[\"border\",\"black\"]]},{\"nome\":\"b\",\"base\":\"x\",\"camadas\":[]}]").size(), "banner: descarta a inválida");
+        // favoritos
+        var f = new BannerReceita.Favoritos();
+        igual(null, f.salvar("u1", "Meu", r), "banner: favoritar");
+        igual("Meu", f.de("u1").get(0).nome, "banner: nome guardado");
+        igual(true, f.salvar("u1", "a b", r) != null, "banner: nome ruim");
+        igual(true, f.salvar("u1", "Vazio", new BannerReceita("x", "red", new java.util.ArrayList<>())) != null, "banner: sem camadas não favorita");
+        r.camadas.remove(0);
+        igual(null, f.salvar("u1", "meu", r), "banner: mesmo nome substitui");
+        igual(1, f.de("u1").size(), "banner: não duplica");
+        igual(2, f.de("u1").get(0).camadas.size(), "banner: substituiu o conteúdo");
+        igual(2, r.camadas.size(), "banner: o favorito é uma cópia");
+        for (int i = 0; i < BannerReceita.MAX_FAVORITOS; i++) f.salvar("u2", "f" + i, r);
+        igual(true, f.salvar("u2", "extra", r) != null, "banner: limite de favoritos");
+        igual(true, f.apagar("u2", "F0"), "banner: apagar sem diferenciar maiúscula");
+        igual(false, f.apagar("u2", "f0"), "banner: apagar de novo");
+        Path tmp = Files.createTempDirectory("melbybn");
+        Path arq = tmp.resolve("f.json");
+        f.gravar(arq);
+        var l = BannerReceita.Favoritos.ler(arq);
+        igual(2, l.de("u1").get(0).camadas.size(), "banner: disco guarda favoritos");
+        igual("border", l.de("u1").get(0).camadas.get(0).padrao, "banner: disco guarda camadas");
+        igual(0, BannerReceita.Favoritos.ler(tmp.resolve("x.json")).jogadores.size(), "banner: arquivo ausente");
     }
 }

@@ -22,12 +22,6 @@ jobs:
         run: chmod +x ./gradlew
       - name: build
         run: ./gradlew build
-      - name: javap (temporario)
-        run: |
-          MC=$(find ~/.gradle/caches/fabric-loom/26.3 -name 'minecraft-common*.jar' ! -name '*sources*' | head -1)
-          for c in net.minecraft.world.level.block.entity.BannerPatterns 'net.minecraft.world.level.block.entity.BannerPatternLayers$Layer' net.minecraft.core.RegistryAccess net.minecraft.core.HolderLookup 'net.minecraft.core.HolderLookup$Provider' net.minecraft.core.Registry net.minecraft.world.item.DyeColor net.minecraft.world.item.DyeItem net.minecraft.world.level.block.BannerBlock net.minecraft.world.item.BannerItem net.minecraft.world.item.BannerPatternItem; do echo "=== $c"; javap -cp "$MC" "$c" | grep -v "^  private" | head -70 || true; done
-          javap -cp "$MC" net.minecraft.world.item.Items | grep -i "banner" | head -30 || true
-          javap -cp "$MC" net.minecraft.world.item.Items | grep -E " DYE| BANNER|BANNERS" | head || true
       - name: testes da lógica (apostas, pagamento, ranking)
         run: |
           GSON=$(find ~/.gradle -name 'gson-*.jar' ! -name '*sources*' | head -1)

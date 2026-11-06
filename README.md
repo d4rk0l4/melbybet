@@ -236,6 +236,13 @@ Ferramentas para planejar um mural feito de mapas. O mod não desenha a imagem: 
 - `/mapart info`: com um mapa preenchido na mão, mostra escala, centro, área coberta, dimensão e se está travado.
 - `/mapart projeto <nome> <largura> <altura> [escala]`: guarda um mural a partir do mapa em que você está (vai para leste e sul), marca a área e lista o centro de cada mapa. `lista`, `ver <nome>` e `apagar <nome>` (até 10 projetos). Dados em `config/melbybet/mapart.json`.
 
+## Estandartes (`/banner`)
+
+- `/banner` abre o catálogo com 30 combinações (bandeiras de países e símbolos como creeper e caveira). Clicar em uma manda no chat a receita: cor da base, cada camada do tear (padrão e cor), corantes e itens de padrão que o tear pede. Os estandartes do menu são só para olhar, não saem do menu.
+- **Construtor** (`/banner construir`): escolha a cor da base, adicione camadas (padrão e cor, até 6, o limite do tear) com a pré-visualização ao vivo, veja a receita e salve nos **favoritos** (até 20). Nos favoritos: clique esquerdo mostra a receita, direito apaga, shift abre no construtor.
+- `/banner receita <nome>` manda a receita de um do catálogo ou dos seus favoritos. As combinações do catálogo ficam em `melbybet/banners.json` dentro do mod; os favoritos em `config/melbybet/banners-favoritos.json`.
+- Só usa padrões reais do jogo. Se o jogo não conhecer algum, ele some da pré-visualização sem quebrar o menu.
+
 ## Marcador de áreas (`/marcador`)
 
 Escolhe uma região (dois cantos) para usar nos recursos de construção. Não precisa de nada no cliente.

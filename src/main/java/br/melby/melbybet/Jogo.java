@@ -54,6 +54,7 @@ public final class Jogo {
         HistoricoPlacas.carregar();
         Baus.carregar();
         MapArt.carregar();
+        Banners.carregar();
         Prefixos.limparTudo();
         Duelos.aoLigar();
         Presenca.aoLigar();
@@ -66,6 +67,7 @@ public final class Jogo {
         HistoricoPlacas.salvarAgora();
         Baus.salvarAgora();
         MapArt.salvarAgora();
+        Banners.salvarAgora();
         if (arquivo == null) return;
         try {
             Armazem.salvar(arquivo, casa);
