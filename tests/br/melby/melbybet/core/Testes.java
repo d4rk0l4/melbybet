@@ -66,6 +66,7 @@ public class Testes {
         placaCopiar();
         placaHistorico();
         etiquetaBau();
+        mapArt();
         System.out.println(falhas == 0 ? "tudo certo (" + total + " checagens)" : falhas + " falhas de " + total);
         if (falhas > 0) System.exit(1);
     }
@@ -1125,5 +1126,102 @@ public class Testes {
         igual(d.baus.size(), l.baus.size(), "bau: disco guarda");
         igual("Pepitas de ouro", l.baus.get(EtiquetaBau.chave("nether", 6, 6, 6)).nome, "bau: disco guarda o nome");
         igual(0, EtiquetaBau.ler(tmp.resolve("x.json")).baus.size(), "bau: arquivo ausente");
+    }
+
+    static void mapArt() throws Exception {
+        igual(128, MapArtGeo.lado(0), "mapart: lado escala 0");
+        igual(256, MapArtGeo.lado(1), "mapart: lado escala 1");
+        igual(2048, MapArtGeo.lado(4), "mapart: lado escala 4");
+        // a grade do jogo: o mapa 0,0 em escala 0 vai de -64 a 63 e tem centro 0
+        igual(0, MapArtGeo.celula(0, 0), "mapart: origem na célula 0");
+        igual(0, MapArtGeo.celula(63.9, 0), "mapart: 63 ainda é a célula 0");
+        igual(1, MapArtGeo.celula(64, 0), "mapart: 64 começa a célula 1");
+        igual(-1, MapArtGeo.celula(-65, 0), "mapart: -65 é a célula -1");
+        igual(0, MapArtGeo.celula(-64, 0), "mapart: -64 é a célula 0");
+        igual(-64, MapArtGeo.inicio(0, 0), "mapart: início da célula 0");
+        igual(63, MapArtGeo.fim(0, 0), "mapart: fim da célula 0");
+        igual(64, MapArtGeo.inicio(1, 0), "mapart: início da célula 1");
+        igual(0, MapArtGeo.centro(0, 0), "mapart: centro da célula 0");
+        igual(128, MapArtGeo.centro(1, 0), "mapart: centro da célula 1");
+        igual(-128, MapArtGeo.centro(-1, 0), "mapart: centro da célula -1");
+        igual(64, MapArtGeo.centro(0, 1), "mapart: centro em escala 1 (célula 0 vai de -64 a 191)");
+        igual(0, MapArtGeo.celula(191, 1), "mapart: escala 1, 191 na célula 0");
+        igual(1, MapArtGeo.celula(192, 1), "mapart: escala 1, 192 na célula 1");
+        // todo ponto cai dentro dos limites da sua célula
+        boolean ok = true;
+        for (int e = 0; e <= 4; e++) for (int x = -3000; x <= 3000; x += 37) {
+            int i = MapArtGeo.celula(x, e);
+            if (x < MapArtGeo.inicio(i, e) || x > MapArtGeo.fim(i, e)) ok = false;
+        }
+        igual(true, ok, "mapart: todo ponto cai nos limites da sua célula");
+        // validação
+        igual(null, MapArtGeo.validar(1, 1, 0), "mapart: 1x1 ok");
+        igual(null, MapArtGeo.validar(8, 8, 4), "mapart: 8x8 ok");
+        igual(true, MapArtGeo.validar(0, 1, 0) != null, "mapart: largura 0");
+        igual(true, MapArtGeo.validar(1, 1, 5) != null, "mapart: escala 5");
+        igual(true, MapArtGeo.validar(1, 1, -1) != null, "mapart: escala negativa");
+        igual(true, MapArtGeo.validar(17, 1, 0) != null, "mapart: lado grande demais");
+        igual(true, MapArtGeo.validar(9, 8, 0) != null, "mapart: mapas demais");
+        // contas
+        var c = MapArtGeo.calcular(2, 3, 0);
+        igual(6, c.mapas, "mapart: mapas");
+        igual(256, c.largBlocos, "mapart: largura em blocos");
+        igual(384, c.altBlocos, "mapart: altura em blocos");
+        igual(6L * 16384, c.pixels, "mapart: pixels");
+        igual(256L * 384, c.areaBlocos, "mapart: área");
+        igual(6L * 16384, c.blocosPlano, "mapart: blocos sem relevo");
+        igual(2L * 128 * (3 * 128 + 1), c.blocosRelevo, "mapart: blocos com relevo");
+        igual(true, c.blocosRelevo > c.blocosPlano, "mapart: relevo pede mais");
+        var c2 = MapArtGeo.calcular(1, 1, 2);
+        igual(512, c2.largBlocos, "mapart: escala 2 cobre 512");
+        igual(16384L, c2.pixels, "mapart: pixels não mudam com a escala");
+        igual(512L * 512, c2.areaBlocos, "mapart: área cresce com a escala");
+        // projetos
+        var d = new MapArtGeo();
+        var p = new MapArtGeo.Projeto();
+        p.nome = "Mural";
+        p.dim = "overworld";
+        p.escala = 0;
+        p.gx = 2;
+        p.gz = -1;
+        p.largM = 3;
+        p.altM = 2;
+        igual(null, d.salvar("u1", p, 7L), "mapart: salvar projeto");
+        igual(192, p.x0(), "mapart: x0 do projeto");
+        igual(-192, p.z0(), "mapart: z0 do projeto");
+        igual(575, p.x1(), "mapart: x1 cobre 3 mapas");
+        igual(63, p.z1(), "mapart: z1 cobre 2 mapas");
+        igual(7L, d.obter("u1", "mural").criadoEm, "mapart: obter sem diferenciar maiúscula");
+        igual(null, d.obter("u2", "mural"), "mapart: outro jogador não vê");
+        var ruim = new MapArtGeo.Projeto();
+        ruim.nome = "a b";
+        ruim.largM = 1;
+        ruim.altM = 1;
+        igual(true, d.salvar("u1", ruim, 1L) != null, "mapart: nome ruim");
+        var grande = new MapArtGeo.Projeto();
+        grande.nome = "Grande";
+        grande.largM = 20;
+        grande.altM = 1;
+        igual(true, d.salvar("u1", grande, 1L) != null, "mapart: tamanho ruim");
+        for (int i = 0; i < MapArtGeo.MAX_PROJETOS - 1; i++) {
+            var q = new MapArtGeo.Projeto();
+            q.nome = "p" + i;
+            q.largM = 1;
+            q.altM = 1;
+            d.salvar("u1", q, 1L);
+        }
+        var extra = new MapArtGeo.Projeto();
+        extra.nome = "extra";
+        extra.largM = 1;
+        extra.altM = 1;
+        igual(true, d.salvar("u1", extra, 1L) != null, "mapart: limite de projetos");
+        Path tmp = Files.createTempDirectory("melbymap");
+        Path f = tmp.resolve("mapart.json");
+        d.gravar(f);
+        var l = MapArtGeo.ler(f);
+        igual(575, l.obter("u1", "Mural").x1(), "mapart: disco guarda o projeto");
+        igual(true, l.apagar("u1", "mural"), "mapart: apagar");
+        igual(false, l.apagar("u1", "mural"), "mapart: apagar de novo");
+        igual(0, MapArtGeo.ler(tmp.resolve("x.json")).projetos.size(), "mapart: arquivo ausente");
     }
 }

@@ -22,10 +22,6 @@ jobs:
         run: chmod +x ./gradlew
       - name: build
         run: ./gradlew build
-      - name: javap (temporario)
-        run: |
-          MC=$(find ~/.gradle/caches/fabric-loom/26.3 -name 'minecraft-common*.jar' ! -name '*sources*' | head -1)
-          for c in net.minecraft.world.item.MapItem net.minecraft.world.level.saveddata.maps.MapItemSavedData net.minecraft.world.level.saveddata.maps.MapId net.minecraft.world.level.saveddata.maps.MapDecoration net.minecraft.world.level.block.entity.BannerPatternLayers net.minecraft.world.level.block.entity.BannerPattern net.minecraft.world.entity.decoration.ArmorStand net.minecraft.core.Rotations net.minecraft.world.entity.decoration.ItemFrame net.minecraft.world.entity.decoration.HangingEntity net.minecraft.world.entity.player.Player; do echo "=== $c"; javap -cp "$MC" "$c" | grep -v "^  private" | head -80 || true; done
       - name: testes da lógica (apostas, pagamento, ranking)
         run: |
           GSON=$(find ~/.gradle -name 'gson-*.jar' ! -name '*sources*' | head -1)

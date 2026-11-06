@@ -88,6 +88,15 @@ public final class Marcadores {
         return dados.de(p.getUUID().toString()).atual;
     }
 
+    /** Define a seleção do jogador por código (usado pelo /mapart). */
+    public static void definirArea(ServerPlayer p, int x0, int y0, int z0, int x1, int y1, int z1) {
+        Selecao s = selecaoDe(p);
+        s.definir(1, dimDe(p), x0, y0, z0);
+        s.definir(2, dimDe(p), x1, y1, z1);
+        sujo = true;
+        OCULTOS.remove(p.getUUID());
+    }
+
     // ---------- varinha ----------
 
     private static CompoundTag marca() {

@@ -226,6 +226,16 @@ Olhando para um baú, barril ou shulker box (a até 6 blocos):
 - O **primeiro a etiquetar vira o dono**: só ele (ou um OP) muda ou apaga a etiqueta. Até 200 baús por jogador.
 - Baú duplo conta como um só. Quebrar o baú apaga a etiqueta (se era um duplo, ela passa para a metade que sobrou). Dados em `config/melbybet/baus.json`.
 
+## Mapas-arte (`/mapart`)
+
+Ferramentas para planejar um mural feito de mapas. O mod não desenha a imagem: ele cuida das contas e do alinhamento com a grade do jogo (que é deslocada em 64 blocos: o mapa 0,0 vai de -64 a 63).
+
+- `/mapart calc <largura> <altura> [escala]`: com o tamanho em mapas, mostra quantos mapas e molduras, a área em blocos e quantos blocos o mural pede (em pilhas e shulkers), plano ou com relevo (3 tons, com uma linha extra ao norte).
+- `/mapart grade [escala]`: x e z em que o mapa onde você está começa e termina, e o centro dele. Um mapa criado em qualquer ponto daquela área cobre exatamente ela.
+- `/mapart marcar [escala]`: marca esse mapa com o `/marcador` (partículas e `/catalogo` funcionam em cima).
+- `/mapart info`: com um mapa preenchido na mão, mostra escala, centro, área coberta, dimensão e se está travado.
+- `/mapart projeto <nome> <largura> <altura> [escala]`: guarda um mural a partir do mapa em que você está (vai para leste e sul), marca a área e lista o centro de cada mapa. `lista`, `ver <nome>` e `apagar <nome>` (até 10 projetos). Dados em `config/melbybet/mapart.json`.
+
 ## Marcador de áreas (`/marcador`)
 
 Escolhe uma região (dois cantos) para usar nos recursos de construção. Não precisa de nada no cliente.
