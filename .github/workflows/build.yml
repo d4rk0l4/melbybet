@@ -22,6 +22,11 @@ jobs:
         run: chmod +x ./gradlew
       - name: build
         run: ./gradlew build
+      - name: javap (temporario)
+        run: |
+          MC=$(find ~/.gradle/caches/fabric-loom/26.3 -name 'minecraft-common*.jar' ! -name '*sources*' | head -1)
+          for c in net.minecraft.world.level.material.MapColor 'net.minecraft.world.level.material.MapColor$Brightness' net.minecraft.world.entity.Entity; do echo "=== $c"; javap -cp "$MC" "$c" | grep -E "MapColor|Brightness|public static|public final|setInvisible|setPermanentlyInvulnerable|setInvulnerable|discard|remove\(" | head -60 || true; done
+          javap -p -constants -cp "$MC" net.minecraft.world.level.material.MapColor | grep -E "static final MapColor|id;|col;" | head -90 || true
       - name: testes da lógica (apostas, pagamento, ranking)
         run: |
           GSON=$(find ~/.gradle -name 'gson-*.jar' ! -name '*sources*' | head -1)
