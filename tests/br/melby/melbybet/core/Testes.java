@@ -675,6 +675,26 @@ public class Testes {
     }
 
     static void corpos() {
+        {
+            var cs = new Casa();
+            var k = cs.novoCorpo("u", "Ana", "overworld", 0, 0, 0, java.util.List.of("a", "b", "c"), java.util.List.of(0, 39, 40), 1L);
+            igual(0, k.slotDe(0), "corpo slots: hotbar");
+            igual(39, k.slotDe(1), "corpo slots: armadura");
+            igual(-1, k.slotDe(9), "corpo slots: fora do intervalo");
+            k.removerItem(0);
+            igual(39, k.slotDe(0), "corpo slots: remover desloca junto");
+            igual(2, k.itens.size(), "corpo slots: itens após remover");
+            var velho = cs.novoCorpo("u", "Ana", "overworld", 0, 0, 0, java.util.List.of("a"), 2L);
+            igual(-1, velho.slotDe(0), "corpo slots: corpo antigo sem slot");
+            velho.slots = null;
+            igual(-1, velho.slotDe(0), "corpo slots: lista nula");
+            velho.removerItem(0);
+            igual(0, velho.itens.size(), "corpo slots: remover com lista nula");
+            igual(5, Casa.Corpo.destino(5, 41, n -> true), "corpo destino: livre");
+            igual(-1, Casa.Corpo.destino(5, 41, n -> false), "corpo destino: ocupado");
+            igual(-1, Casa.Corpo.destino(-1, 41, n -> true), "corpo destino: desconhecido");
+            igual(-1, Casa.Corpo.destino(41, 41, n -> true), "corpo destino: além do tamanho");
+        }
         Casa casa = new Casa();
         var c = casa.novoCorpo("u1", "Ana", "overworld", 1, 64, 2, java.util.List.of("a", "b"), 10L);
         c.boneco = "stand-1";

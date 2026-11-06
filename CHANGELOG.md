@@ -1,5 +1,8 @@
 # Versões do MelbyBet
 
+## 2.13.1
+- Corpo: quando o dono pega os itens do próprio corpo (um a um ou em "Pegar tudo"), cada item volta para o slot onde estava: hotbar no mesmo lugar, armadura já equipada e item da mão secundária. Se o slot já estiver ocupado, o item vai para o primeiro espaço livre. Outros jogadores que pegam itens do corpo continuam recebendo no primeiro espaço livre, sem bagunçar a hotbar deles. Corpos criados antes desta versão não guardam o slot e se comportam como antes
+
 ## 2.13.0
 - /fotomoldura <LxA> <endereço> [modo]: coloca uma foto da internet na parede, feita de mapas do jogo em molduras invisíveis (até 6x6 molduras), então quem entra no servidor vê sem instalar nada. Só HTTPS, bloqueia endereços da rede interna, aceita PNG, JPG, GIF (primeiro quadro) e BMP até 8 MB. Modos: cortar, ajustar (faixas pretas) ou esticar. As cores são convertidas para a paleta dos mapas com difusão de erro. O download e a conversão rodam fora da thread principal
 - Até 5 fotos por jogador (OP sem limite) e 1500 mapas no servidor. /fotomoldura lista, info, reparar (desgira molduras) e apagar. As molduras são invulneráveis: só o dono ou OP remove, pelo comando

@@ -141,10 +141,12 @@ public final class Corpos {
         if (nivel.getGameRules().get(GameRules.KEEP_INVENTORY)) return;
         Inventory inv = p.getInventory();
         List<String> itens = new ArrayList<>();
+        List<Integer> slots = new ArrayList<>();
         for (int i = 0; i < inv.getContainerSize(); i++) {
             ItemStack st = inv.getItem(i);
             if (st.isEmpty()) continue;
             itens.add(paraJson(st));
+            slots.add(i);
             inv.setItem(i, ItemStack.EMPTY);
         }
         if (itens.isEmpty()) return;
@@ -171,7 +173,7 @@ public final class Corpos {
                 y = Math.max(y, nivel.getMinY() + 2);
             }
         }
-        Casa.Corpo c = Jogo.casa.novoCorpo(p.getUUID().toString(), p.getGameProfile().name(), dim, x, y, z, itens, System.currentTimeMillis());
+        Casa.Corpo c = Jogo.casa.novoCorpo(p.getUUID().toString(), p.getGameProfile().name(), dim, x, y, z, itens, slots, System.currentTimeMillis());
         ArmorStand boneco = new ArmorStand(nivel, x, y, z);
         boneco.addTag(TAG);
         boneco.setInvisible(true);
@@ -189,16 +191,27 @@ public final class Corpos {
 
     // ---------- pegar itens ----------
 
-    /** Pega um item do corpo para o inventário de quem abriu. */
+    /**
+     * Pega um item do corpo. Se quem pega é o dono, o item volta para o slot onde estava (hotbar, armadura, mão
+     * secundária) quando esse slot está livre; senão, ou para outros jogadores, vai para o primeiro espaço livre.
+     */
     public static void pegar(ServerPlayer p, Casa.Corpo c, int indice) {
         if (indice < 0 || indice >= c.itens.size()) return;
         ItemStack st = deJson(c.itens.get(indice));
         if (st.isEmpty()) {
-            c.itens.remove(indice);
+            c.removerItem(indice);
         } else {
-            p.getInventory().add(st);
+            if (p.getUUID().toString().equals(c.uuid)) {
+                Inventory inv = p.getInventory();
+                int alvo = Casa.Corpo.destino(c.slotDe(indice), inv.getContainerSize(), n -> inv.getItem(n).isEmpty());
+                if (alvo >= 0) {
+                    inv.setItem(alvo, st);
+                    st = ItemStack.EMPTY;
+                }
+            }
+            if (!st.isEmpty()) p.getInventory().add(st);
             if (st.isEmpty()) {
-                c.itens.remove(indice);
+                c.removerItem(indice);
             } else {
                 c.itens.set(indice, paraJson(st));
                 p.sendSystemMessage(Jogo.prefixo("Inventário cheio: o resto ficou no corpo."));
@@ -211,11 +224,15 @@ public final class Corpos {
     }
 
     public static void pegarTudo(ServerPlayer p, Casa.Corpo c) {
-        for (int i = c.itens.size() - 1; i >= 0; i--) {
-            int antes = c.itens.size();
-            pegar(p, c, i);
-            if (Jogo.casa.corpo(c.id) == null) return;
-            if (c.itens.size() == antes) break; // não coube mais nada
+        // primeiro os itens com slot de origem (para ninguém ocupar o lugar deles), depois o resto
+        for (int passo = 0; passo < 2; passo++) {
+            for (int i = c.itens.size() - 1; i >= 0; i--) {
+                if (passo == 0 && c.slotDe(i) < 0) continue;
+                int antes = c.itens.size();
+                pegar(p, c, i);
+                if (Jogo.casa.corpo(c.id) == null) return;
+                if (c.itens.size() == antes) return; // não coube mais nada
+            }
         }
     }
 

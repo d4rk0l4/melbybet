@@ -175,6 +175,22 @@ public class Casa {
         public List<String> itens = new ArrayList<>();
         /** UUID do boneco (armor stand) que marca o corpo no mundo. */
         public String boneco = "";
+        /** Posição de cada item no inventário de quem morreu (paralela a itens; -1 = não sei). Corpos antigos não têm. */
+        public List<Integer> slots = new ArrayList<>();
+
+        public int slotDe(int i) {
+            return slots != null && i >= 0 && i < slots.size() && slots.get(i) != null ? slots.get(i) : -1;
+        }
+
+        public void removerItem(int i) {
+            itens.remove(i);
+            if (slots != null && i < slots.size()) slots.remove(i);
+        }
+
+        /** O slot de origem serve se existir no inventário (0..tamanho-1) e estiver livre; senão -1 (usa o primeiro livre). */
+        public static int destino(int slot, int tamanho, java.util.function.IntPredicate livre) {
+            return slot >= 0 && slot < tamanho && livre.test(slot) ? slot : -1;
+        }
     }
 
     /** Último marco de horas online já anunciado, por UUID. */
@@ -228,7 +244,12 @@ public class Casa {
     public int proximoCorpo = 1;
 
     public Corpo novoCorpo(String uuid, String nome, String dim, double x, double y, double z, List<String> itens, long agora) {
+        return novoCorpo(uuid, nome, dim, x, y, z, itens, null, agora);
+    }
+
+    public Corpo novoCorpo(String uuid, String nome, String dim, double x, double y, double z, List<String> itens, List<Integer> slots, long agora) {
         Corpo c = new Corpo();
+        if (slots != null) c.slots.addAll(slots);
         c.id = proximoCorpo++;
         c.uuid = uuid;
         c.nome = nome;
