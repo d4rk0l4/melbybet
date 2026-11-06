@@ -12,6 +12,8 @@ import java.util.Map;
 public class Casa {
     public static class Config {
         /** Parte do pote que a casa fica, em %. */
+        /** Waypoints do cliente liberados neste servidor (o OP pode desligar). */
+        public boolean waypoints = true;
         public int rakePct = 5;
         public int apostaMin = 1;
         /** Máximo que cada jogador pode pôr num mesmo bolão. */

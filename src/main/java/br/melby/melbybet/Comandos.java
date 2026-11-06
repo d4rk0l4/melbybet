@@ -98,6 +98,7 @@ public final class Comandos {
         Sorteio.registrar(d);
         MsgMatar.registrar(d);
         Corpos.registrar(d);
+        WaypointsServidor.registrar(d);
         Durabilidade.registrar(d);
         Backup.registrar(d);
         Find.registrar(d);

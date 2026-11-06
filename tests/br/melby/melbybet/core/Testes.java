@@ -54,6 +54,7 @@ public class Testes {
         placas();
         loteria();
         corpos();
+        waypoints();
         msgMatar();
         backups();
         busca();
@@ -672,6 +673,112 @@ public class Testes {
         l.comprar("b", "Beto", 2);
         igual(true, l.cancelar(casa, 1L), "loteria: cancela");
         igual(false, l.cancelar(casa, 1L), "loteria: nada a cancelar");
+    }
+
+    static void waypoints() {
+        var w = new Waypoints();
+        var a = new Waypoints.Ponto();
+        a.nome = "Base";
+        a.x = 100;
+        a.z = 0;
+        a.y = 64;
+        igual(null, w.adicionar(a), "wp: adiciona");
+        igual("B", a.letra(), "wp: inicial automática");
+        a.inicial = "ç";
+        igual("Ç", a.letra(), "wp: inicial própria em maiúscula");
+        igual("?", Waypoints.inicialDe("  "), "wp: inicial vazia");
+        igual("Dê um nome ao waypoint.", w.adicionar(new Waypoints.Ponto()), "wp: nome vazio");
+        var longo = new Waypoints.Ponto();
+        longo.nome = "x".repeat(33);
+        igual(true, w.adicionar(longo) != null, "wp: nome longo");
+        igual(1, w.pontos.size(), "wp: só o válido entrou");
+        igual("Ponto 1", w.nomeNovo(), "wp: nome novo");
+        var b = new Waypoints.Ponto();
+        b.nome = "Ponto 1";
+        w.adicionar(b);
+        igual("Ponto 2", w.nomeNovo(), "wp: nome novo pula usados");
+        // distância e rumo
+        var d = new Waypoints.Ponto();
+        d.x = 3;
+        d.z = 4;
+        d.y = 0;
+        igual(5.0, Waypoints.distanciaHorizontal(d, 0.5, 0.5), "wp: distância horizontal");
+        igual("850 m", Waypoints.formatarDistancia(850.4), "wp: metros");
+        igual("1,2 km", Waypoints.formatarDistancia(1234), "wp: km");
+        var sul = new Waypoints.Ponto();
+        sul.x = 0;
+        sul.z = 10;
+        igual(0.0, Math.round(Waypoints.rumo(sul, 0.5, 0.5) * 1000) / 1000.0, "wp: sul = 0");
+        var oeste = new Waypoints.Ponto();
+        oeste.x = -10;
+        oeste.z = 0;
+        igual(90.0, Math.round(Waypoints.rumo(oeste, 0.5, 0.5) * 1000) / 1000.0, "wp: oeste = 90");
+        igual(-170.0, Waypoints.diferenca(-170 + 360, 0), "wp: diferença normaliza");
+        igual(20.0, Waypoints.diferenca(-170, 170), "wp: diferença atravessa o 180");
+        igual(true, Double.isNaN(Waypoints.fracaoBussola(120, 90)), "wp: fora da bússola");
+        igual(0.5, Waypoints.fracaoBussola(-45, 90), "wp: à direita é positivo");
+        igual(-1.0, Waypoints.fracaoBussola(90, 90), "wp: borda esquerda");
+        // ordenação: dimensão atual por distância, outras depois
+        var w2 = new Waypoints();
+        String[][] dados = {{"longe", "overworld", "500"}, {"perto", "overworld", "10"}, {"nether", "the_nether", "1"}};
+        for (String[] r : dados) {
+            var p = new Waypoints.Ponto();
+            p.nome = r[0];
+            p.dim = r[1];
+            p.x = Integer.parseInt(r[2]);
+            w2.adicionar(p);
+        }
+        var ord = w2.ordenados("overworld", 0, 64, 0);
+        igual("perto", ord.get(0).nome, "wp: ordena perto primeiro");
+        igual("longe", ord.get(1).nome, "wp: ordena longe depois");
+        igual("nether", ord.get(2).nome, "wp: outra dimensão no fim");
+        // temporários
+        var w3 = new Waypoints();
+        var t1 = new Waypoints.Ponto();
+        t1.nome = "chegar";
+        t1.tipo = Waypoints.TEMP;
+        t1.x = 10;
+        t1.raio = 5;
+        var t2 = new Waypoints.Ponto();
+        t2.nome = "prazo";
+        t2.tipo = Waypoints.TEMP;
+        t2.x = 1000;
+        t2.expiraEm = 100;
+        var t3 = new Waypoints.Ponto();
+        t3.nome = "fica";
+        t3.tipo = Waypoints.TEMP;
+        t3.x = 1000;
+        t3.raio = 5;
+        var fixo = new Waypoints.Ponto();
+        fixo.nome = "fixo";
+        fixo.x = 10;
+        fixo.raio = 5;
+        for (var p : List.of(t1, t2, t3, fixo)) w3.adicionar(p);
+        igual(0, w3.limparTemporarios(50, "overworld", 0, 64, 0).size(), "wp temp: longe e antes do prazo");
+        var saiu = w3.limparTemporarios(150, "overworld", 8, 0, 0);
+        igual(2, saiu.size(), "wp temp: chegou e venceu");
+        igual(2, w3.pontos.size(), "wp temp: sobram o que fica e o fixo");
+        igual(0, w3.limparTemporarios(150, "the_nether", 1000, 64, 0).size(), "wp temp: outra dimensão não conta chegada");
+        // corpo vindo do servidor
+        var w4 = new Waypoints();
+        w4.upsertDoServidor("corpo-1", "Corpo", "overworld", 1, 2, 3, Waypoints.CORPO, 0xFF5555, 5L);
+        w4.upsertDoServidor("corpo-1", "Corpo", "overworld", 9, 2, 3, Waypoints.CORPO, 0xFF5555, 6L);
+        igual(1, w4.pontos.size(), "wp corpo: upsert não duplica");
+        igual(9, w4.porId("corpo-1").x, "wp corpo: atualiza");
+        igual(0, w4.manuais(), "wp corpo: não conta no limite");
+        igual(true, w4.remover("corpo-1"), "wp corpo: remove");
+        igual(Waypoints.PALETA[1], Waypoints.proximaCor(Waypoints.PALETA[0]), "wp: próxima cor");
+        igual(Waypoints.PALETA[0], Waypoints.proximaCor(Waypoints.PALETA[Waypoints.PALETA.length - 1]), "wp: cor volta ao início");
+        // limite
+        var w5 = new Waypoints();
+        for (int i = 0; i < Waypoints.MAX_PONTOS; i++) {
+            var p = new Waypoints.Ponto();
+            p.nome = "p" + i;
+            w5.adicionar(p);
+        }
+        var extra = new Waypoints.Ponto();
+        extra.nome = "extra";
+        igual(true, w5.adicionar(extra) != null, "wp: passa do limite");
     }
 
     static void corpos() {

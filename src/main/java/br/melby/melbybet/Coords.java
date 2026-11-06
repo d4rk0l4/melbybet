@@ -62,7 +62,9 @@ public final class Coords {
             .append(Component.literal(texto(l) + " ").withStyle(ChatFormatting.WHITE))
             .append(botao("Copiar", ChatFormatting.AQUA, new ClickEvent.CopyToClipboard(xyz), "Copia " + xyz))
             .append(Component.literal(" "))
-            .append(botao("Enviar", ChatFormatting.GREEN, new ClickEvent.RunCommand("/coords enviar " + l.dim + " " + xyz), "Manda no chat para todos"));
+            .append(botao("Enviar", ChatFormatting.GREEN, new ClickEvent.RunCommand("/coords enviar " + l.dim + " " + xyz), "Manda no chat para todos"))
+            .append(Component.literal(" "))
+            .append(WaypointsServidor.botaoAdicionar(titulo, l.dim, l.x, l.y, l.z));
         if (apagar != null) {
             m.append(Component.literal(" ")).append(botao("Apagar", ChatFormatting.RED, new ClickEvent.RunCommand("/coords apagar " + apagar), "Remove da lista"));
         }
@@ -172,7 +174,9 @@ public final class Coords {
                 }
                 String xyz = l.x + " " + l.y + " " + l.z;
                 Component msg = Component.literal("Minhas coordenadas: " + texto(l) + " ")
-                    .append(botao("Copiar", ChatFormatting.AQUA, new ClickEvent.CopyToClipboard(xyz), "Copia " + xyz));
+                    .append(botao("Copiar", ChatFormatting.AQUA, new ClickEvent.CopyToClipboard(xyz), "Copia " + xyz))
+                    .append(Component.literal(" "))
+                    .append(WaypointsServidor.botaoAdicionar(p.getGameProfile().name(), l.dim, l.x, l.y, l.z));
                 Chat.globalComponente(p, msg);
                 return 1;
             }))));

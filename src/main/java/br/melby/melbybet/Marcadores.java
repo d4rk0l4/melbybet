@@ -385,7 +385,34 @@ public final class Marcadores {
         if (sujo) salvarAgora();
     }
 
+    private static final java.util.Map<UUID, WaypointRede.AreaPayload> ULTIMA_AREA = new java.util.HashMap<>();
+
+    public static void aoSair(ServerPlayer p) {
+        ULTIMA_AREA.remove(p.getUUID());
+    }
+
+    /**
+     * Quem tem o jar de cliente recebe a seleção por pacote e desenha as linhas sozinho (através das paredes, sem
+     * partículas). Devolve true se o cliente cuida do desenho.
+     */
+    private static boolean desenhoNoCliente(ServerPlayer p) {
+        if (!net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.canSend(p, WaypointRede.AreaPayload.TYPE)) return false;
+        WaypointRede.AreaPayload novo = WaypointRede.AreaPayload.vazia();
+        var j = dados.jogadores.get(p.getUUID().toString());
+        if (j != null && !OCULTOS.contains(p.getUUID()) && (j.atual.p1 != null || j.atual.p2 != null)) {
+            Selecao s = j.atual;
+            int[] a = s.p1 != null ? s.p1 : new int[3], b = s.p2 != null ? s.p2 : new int[3];
+            novo = new WaypointRede.AreaPayload(s.dim, s.p1 != null, a[0], a[1], a[2], s.p2 != null, b[0], b[1], b[2]);
+        }
+        if (!novo.equals(ULTIMA_AREA.get(p.getUUID()))) {
+            net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.send(p, novo);
+            ULTIMA_AREA.put(p.getUUID(), novo);
+        }
+        return true;
+    }
+
     private static void desenhar(ServerPlayer p) {
+        if (desenhoNoCliente(p)) return;
         if (OCULTOS.contains(p.getUUID())) return;
         var j = dados.jogadores.get(p.getUUID().toString());
         if (j == null) return;

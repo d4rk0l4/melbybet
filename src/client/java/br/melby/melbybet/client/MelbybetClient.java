@@ -1,10 +1,102 @@
 package br.melby.melbybet.client;
 
+import br.melby.melbybet.WaypointRede;
+import br.melby.melbybet.core.Waypoints;
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
+import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderEvents;
+import net.minecraft.client.KeyMapping;
+import net.minecraft.client.Minecraft;
+import net.minecraft.resources.Identifier;
+import org.lwjgl.glfw.GLFW;
 
 public class MelbybetClient implements ClientModInitializer {
+	private static KeyMapping teclaLista, teclaCriar, teclaTemp, teclaLigar;
+	private static int tick;
+
 	@Override
 	public void onInitializeClient() {
-		// This entrypoint is suitable for setting up client-specific logic, such as rendering.
+		KeyMapping.Category categoria = KeyMapping.Category.register(Identifier.fromNamespaceAndPath("melbybet", "waypoints"));
+		teclaLista = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.melbybet.waypoint_lista", GLFW.GLFW_KEY_B, categoria));
+		teclaCriar = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.melbybet.waypoint_criar", GLFW.GLFW_KEY_N, categoria));
+		teclaTemp = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.melbybet.waypoint_temp", GLFW.GLFW_KEY_J, categoria));
+		teclaLigar = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.melbybet.waypoint_ligar", GLFW.GLFW_KEY_H, categoria));
+
+		ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> WaypointStore.carregar(client));
+		ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> WaypointStore.descarregar());
+
+		ClientPlayNetworking.registerGlobalReceiver(WaypointRede.ConfigPayload.TYPE, (payload, ctx) -> WaypointStore.liberado = payload.waypoints());
+		ClientPlayNetworking.registerGlobalReceiver(WaypointRede.AreaPayload.TYPE, (payload, ctx) ->
+			WaypointStore.area = payload.tem1() || payload.tem2() ? payload : null);
+		ClientPlayNetworking.registerGlobalReceiver(WaypointRede.PontoPayload.TYPE, (payload, ctx) -> {
+			if (payload.remover()) {
+				WaypointStore.dados.remover(payload.chave());
+			} else {
+				WaypointStore.dados.upsertDoServidor(payload.chave(), payload.nome(), payload.dim(), payload.x(), payload.y(), payload.z(),
+					payload.tipo(), payload.cor(), System.currentTimeMillis());
+				if (Waypoints.CORPO.equals(payload.tipo())) WaypointStore.aviso("Waypoint do seu corpo criado.");
+			}
+			WaypointStore.salvar();
+		});
+
+		HudElementRegistry.addLast(Identifier.fromNamespaceAndPath("melbybet", "bussola"), (g, tracker) -> WaypointHud.desenhar(g));
+		LevelRenderEvents.BEFORE_GIZMOS.register(ctx -> WaypointMundo.desenhar());
+		ClientTickEvents.END_CLIENT_TICK.register(MelbybetClient::aCadaTick);
+	}
+
+	private static void aCadaTick(Minecraft mc) {
+		if (mc.player == null || mc.level == null) return;
+		boolean livre = mc.screen == null;
+		while (teclaLista.consumeClick()) {
+			if (livre && WaypointStore.ativo()) mc.setScreenAndShow(new WaypointTela(0));
+			else if (livre) WaypointStore.aviso("Waypoints desligados neste servidor.");
+		}
+		while (teclaCriar.consumeClick()) if (livre) criarAqui(mc, false);
+		while (teclaTemp.consumeClick()) if (livre) criarAqui(mc, true);
+		while (teclaLigar.consumeClick()) {
+			if (!livre || !WaypointStore.ativo()) continue;
+			WaypointStore.dados.tudoVisivel = !WaypointStore.dados.tudoVisivel;
+			WaypointStore.salvar();
+			WaypointStore.aviso("Waypoints " + (WaypointStore.dados.tudoVisivel ? "ligados" : "desligados"));
+		}
+		if (++tick % 10 == 0 && WaypointStore.ativo()) {
+			var saiu = WaypointStore.dados.limparTemporarios(System.currentTimeMillis(), WaypointStore.dimAtual(mc), mc.player.getX(), mc.player.getY(), mc.player.getZ());
+			if (!saiu.isEmpty()) {
+				WaypointStore.salvar();
+				WaypointStore.aviso("Waypoint temporário \"" + saiu.get(0).nome + "\" removido.");
+			}
+		}
+	}
+
+	private static void criarAqui(Minecraft mc, boolean temporario) {
+		if (!WaypointStore.ativo()) {
+			WaypointStore.aviso("Waypoints desligados neste servidor.");
+			return;
+		}
+		Waypoints w = WaypointStore.dados;
+		Waypoints.Ponto p = new Waypoints.Ponto();
+		p.nome = temporario ? "Temporário" : w.nomeNovo();
+		p.dim = WaypointStore.dimAtual(mc);
+		p.x = mc.player.blockPosition().getX();
+		p.y = mc.player.blockPosition().getY();
+		p.z = mc.player.blockPosition().getZ();
+		p.cor = Waypoints.corDoIndice(w.pontos.size());
+		p.criadoEm = System.currentTimeMillis();
+		if (temporario) {
+			p.tipo = Waypoints.TEMP;
+			p.raio = w.raioPadrao;
+			p.expiraEm = w.minutosTemp > 0 ? p.criadoEm + w.minutosTemp * 60_000L : 0;
+		}
+		String erro = w.adicionar(p);
+		if (erro != null) {
+			WaypointStore.aviso(erro);
+			return;
+		}
+		WaypointStore.salvar();
+		WaypointStore.aviso("Waypoint \"" + p.nome + "\" criado. Aperte B para editar.");
 	}
 }

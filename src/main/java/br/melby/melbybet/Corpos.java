@@ -184,6 +184,7 @@ public final class Corpos {
         boneco.setItemSlot(EquipmentSlot.HEAD, new GuiElementBuilder(Items.PLAYER_HEAD).setProfile(p.getGameProfile().name()).asStack());
         nivel.addFreshEntity(boneco);
         c.boneco = boneco.getUUID().toString();
+        WaypointsServidor.corpoCriado(p, c);
         Jogo.salvar();
         p.sendSystemMessage(Component.literal("Seus itens ficaram no seu corpo em " + dim + " " + Math.round(x) + " " + Math.round(y) + " " + Math.round(z)
             + ". Qualquer jogador pode abrir com o botão direito. Use /corpo para ver depois.").withStyle(ChatFormatting.YELLOW));
@@ -246,6 +247,7 @@ public final class Corpos {
         if (!c.itens.isEmpty()) return;
         Entity e = bonecoDe(c);
         if (e != null) e.discard();
+        WaypointsServidor.corpoRemovido(c);
         Jogo.casa.removerCorpo(c.id);
     }
 
