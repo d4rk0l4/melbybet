@@ -104,6 +104,7 @@ public final class Comandos {
         Bussola.registrar(d);
         Marcadores.registrar(d);
         Catalogo.registrar(d);
+        Baus.registrar(d);
         chatEMais(d);
 
         LiteralArgumentBuilder<CommandSourceStack> adm = literal("melbybet")

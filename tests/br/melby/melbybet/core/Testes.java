@@ -65,6 +65,7 @@ public class Testes {
         catalogo();
         placaCopiar();
         placaHistorico();
+        etiquetaBau();
         System.out.println(falhas == 0 ? "tudo certo (" + total + " checagens)" : falhas + " falhas de " + total);
         if (falhas > 0) System.exit(1);
     }
@@ -1055,5 +1056,74 @@ public class Testes {
         var pj = PlacaHistorico.ler(tmp.resolve("p.json"));
         igual(4, pj.placas.get("k").get(0).linhas.length, "placa hist: linhas faltando viram 4 vazias");
         igual("", pj.placas.get("k").get(0).uuid, "placa hist: uuid faltando vira vazio");
+    }
+
+    static void etiquetaBau() throws Exception {
+        var d = new EtiquetaBau();
+        String k = EtiquetaBau.chave("overworld", 10, 64, 10);
+        igual(null, d.definir(k, "overworld", 10, 64, 10, EtiquetaBau.Campo.NOME, "  Minérios   raros ", "u1", "Davi", false, 1L), "bau: etiquetar");
+        igual("Minérios raros", d.baus.get(k).nome, "bau: espaços arrumados");
+        igual("u1", d.baus.get(k).dono, "bau: primeiro vira dono");
+        igual(null, d.definir(k, "overworld", 10, 64, 10, EtiquetaBau.Campo.CATEGORIA, "Minas", "u1", "Davi", false, 2L), "bau: categoria");
+        igual(null, d.definir(k, "overworld", 10, 64, 10, EtiquetaBau.Campo.DESCRICAO, "ferro, ouro e diamante", "u1", "Davi", false, 3L), "bau: descrição");
+        igual(true, d.definir(k, "overworld", 10, 64, 10, EtiquetaBau.Campo.NOME, "roubado", "u2", "Kaue", false, 4L) != null, "bau: outro jogador não muda");
+        igual("Minérios raros", d.baus.get(k).nome, "bau: tentativa não altera");
+        igual(null, d.definir(k, "overworld", 10, 64, 10, EtiquetaBau.Campo.NOME, "Minérios", "u2", "Kaue", true, 5L), "bau: OP muda de qualquer um");
+        igual("u1", d.baus.get(k).dono, "bau: OP não rouba a posse");
+        igual(true, d.definir(k, "overworld", 10, 64, 10, EtiquetaBau.Campo.NOME, "x".repeat(33), "u1", "Davi", false, 6L) != null, "bau: nome longo");
+        igual(true, d.definir(k, "overworld", 10, 64, 10, EtiquetaBau.Campo.NOME, "a§cb", "u1", "Davi", false, 6L) != null, "bau: sem §");
+        igual(true, d.definir("outro", "overworld", 1, 1, 1, EtiquetaBau.Campo.NOME, "", "u1", "Davi", false, 6L) != null, "bau: apagar o que não existe");
+        // esvaziar todos os campos remove a etiqueta
+        igual(null, d.definir(k, "overworld", 10, 64, 10, EtiquetaBau.Campo.NOME, "", "u1", "Davi", false, 7L), "bau: apagar nome");
+        igual(null, d.definir(k, "overworld", 10, 64, 10, EtiquetaBau.Campo.CATEGORIA, "", "u1", "Davi", false, 8L), "bau: apagar categoria");
+        igual(true, d.baus.containsKey(k), "bau: ainda tem descrição");
+        igual(null, d.definir(k, "overworld", 10, 64, 10, EtiquetaBau.Campo.DESCRICAO, "", "u1", "Davi", false, 9L), "bau: apagar descrição");
+        igual(false, d.baus.containsKey(k), "bau: sem campos some");
+        // limpar e posse
+        d.definir(k, "overworld", 10, 64, 10, EtiquetaBau.Campo.NOME, "Comida", "u1", "Davi", false, 10L);
+        igual(true, d.remover(k, "u2", false) != null, "bau: outro não limpa");
+        igual(null, d.remover(k, "u1", false), "bau: dono limpa");
+        igual(true, d.remover(k, "u1", false) != null, "bau: limpar de novo");
+        // baú duplo: metade canônica
+        igual(10, EtiquetaBau.canonico(10, 64, 10, 11, 64, 10)[0], "bau: duplo, menor x");
+        igual(10, EtiquetaBau.canonico(11, 64, 10, 10, 64, 10)[0], "bau: duplo, ordem tanto faz");
+        igual(9, EtiquetaBau.canonico(5, 64, 10, 5, 64, 9)[2], "bau: duplo no eixo z");
+        igual(63, EtiquetaBau.canonico(5, 64, 5, 5, 63, 5)[1], "bau: empilhado, menor y");
+        // quebrar metade: etiqueta passa para a outra
+        d.definir(EtiquetaBau.chave("overworld", 1, 1, 1), "overworld", 1, 1, 1, EtiquetaBau.Campo.NOME, "Duplo", "u1", "Davi", false, 11L);
+        d.mover(EtiquetaBau.chave("overworld", 1, 1, 1), EtiquetaBau.chave("overworld", 2, 1, 1), "overworld", 2, 1, 1);
+        igual(false, d.baus.containsKey(EtiquetaBau.chave("overworld", 1, 1, 1)), "bau: saiu do lugar antigo");
+        igual(2, d.baus.get(EtiquetaBau.chave("overworld", 2, 1, 1)).x, "bau: coordenada atualizada");
+        d.mover("nada", "qualquer", "overworld", 0, 0, 0);
+        igual(false, d.baus.containsKey("qualquer"), "bau: mover o que não existe");
+        // busca e lista
+        d.definir(EtiquetaBau.chave("overworld", 5, 5, 5), "overworld", 5, 5, 5, EtiquetaBau.Campo.NOME, "Ferramentas", "u1", "Davi", false, 12L);
+        d.definir(EtiquetaBau.chave("overworld", 5, 5, 5), "overworld", 5, 5, 5, EtiquetaBau.Campo.CATEGORIA, "Oficina", "u1", "Davi", false, 12L);
+        d.definir(EtiquetaBau.chave("nether", 6, 6, 6), "nether", 6, 6, 6, EtiquetaBau.Campo.NOME, "Pepitas de ouro", "u2", "Kaue", false, 13L);
+        igual(1, d.buscar("FERRAMENTA").size(), "bau: busca sem diferenciar maiúscula");
+        igual(1, d.buscar("oficina").size(), "bau: busca na categoria");
+        igual(1, d.buscar("pepita").size(), "bau: busca de outro jogador");
+        d.definir(EtiquetaBau.chave("overworld", 7, 7, 7), "overworld", 7, 7, 7, EtiquetaBau.Campo.NOME, "Mineração", "u3", "Hugo", false, 13L);
+        igual(1, d.buscar("mineracao").size(), "bau: busca sem acento acha com acento");
+        igual(1, d.buscar("duplo").size(), "bau: busca acha o duplo");
+        igual(0, d.buscar("diamante").size(), "bau: busca sem resultado");
+        igual(2, d.doJogador("u1", "").size(), "bau: lista do jogador");
+        igual(1, d.doJogador("u1", "oficina").size(), "bau: lista por categoria");
+        igual(0, d.doJogador("u1", "nada").size(), "bau: categoria inexistente");
+        igual("Ferramentas", d.doJogador("u1", "").get(1).nome, "bau: ordenado por categoria e nome");
+        // limite por jogador
+        var g = new EtiquetaBau();
+        for (int i = 0; i < EtiquetaBau.MAX_POR_JOGADOR; i++) g.definir("k" + i, "o", i, 0, 0, EtiquetaBau.Campo.NOME, "b" + i, "u", "U", false, 1L);
+        igual(true, g.definir("extra", "o", 0, 0, 0, EtiquetaBau.Campo.NOME, "b", "u", "U", false, 1L) != null, "bau: limite por jogador");
+        igual(null, g.definir("extra", "o", 0, 0, 0, EtiquetaBau.Campo.NOME, "b", "u", "U", true, 1L), "bau: OP não tem limite");
+        igual(null, g.definir("k0", "o", 0, 0, 0, EtiquetaBau.Campo.NOME, "novo", "u", "U", false, 1L), "bau: editar no limite");
+        // disco
+        Path tmp = Files.createTempDirectory("melbybau");
+        Path f = tmp.resolve("baus.json");
+        d.gravar(f);
+        var l = EtiquetaBau.ler(f);
+        igual(d.baus.size(), l.baus.size(), "bau: disco guarda");
+        igual("Pepitas de ouro", l.baus.get(EtiquetaBau.chave("nether", 6, 6, 6)).nome, "bau: disco guarda o nome");
+        igual(0, EtiquetaBau.ler(tmp.resolve("x.json")).baus.size(), "bau: arquivo ausente");
     }
 }

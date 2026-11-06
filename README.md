@@ -216,6 +216,16 @@ Olhando para uma placa, `/placa copiar` mostra as 4 linhas no formato de código
 
 Toda edição de placa (escrevendo na placa ou pelos comandos `/placa`) é registrada: quem, quando e como ficou o texto. Olhando para a placa, `/placa historico` mostra as 10 últimas versões (de até 20 guardadas), cada uma com o botão **[restaurar]**. `/placa restaurar <id>` devolve o texto daquela versão, olhando para a mesma placa (e o mesmo lado). **OP** restaura qualquer versão, inclusive a original (de antes do registro começar); **jogador comum** só restaura versões que ele mesmo escreveu. A restauração também entra no histórico. Quebrar a placa apaga o histórico dela. Só vale para edições feitas depois desta versão. Dados em `config/melbybet/placas-historico.json`.
 
+## Etiquetas de baú (`/bau`)
+
+Olhando para um baú, barril ou shulker box (a até 6 blocos):
+
+- `/bau nome <texto>`, `/bau descricao <texto>`, `/bau categoria <texto>` etiquetam (texto vazio não existe: use `/bau limpar` para apagar tudo). Limites: nome 32, descrição 100, categoria 20 letras.
+- Ao abrir um baú etiquetado, a etiqueta aparece na barra de ação. O Minecraft não deixa mostrar nada ao passar o mouse sobre o bloco, então é só ao abrir, ou com `/bau info`.
+- `/bau lista [categoria]` mostra os seus baús etiquetados, com coordenadas que copiam ao clicar. `/bau buscar <texto>` procura por nome, descrição ou categoria em todos os baús etiquetados, de qualquer jogador (sem diferenciar acento).
+- O **primeiro a etiquetar vira o dono**: só ele (ou um OP) muda ou apaga a etiqueta. Até 200 baús por jogador.
+- Baú duplo conta como um só. Quebrar o baú apaga a etiqueta (se era um duplo, ela passa para a metade que sobrou). Dados em `config/melbybet/baus.json`.
+
 ## Marcador de áreas (`/marcador`)
 
 Escolhe uma região (dois cantos) para usar nos recursos de construção. Não precisa de nada no cliente.

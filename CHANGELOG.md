@@ -1,5 +1,8 @@
 # Versões do MelbyBet
 
+## 2.9.0
+- /bau: etiquetas para baús, barris e shulkers (nome, descrição, categoria). Ao abrir um baú etiquetado a etiqueta aparece na barra de ação. /bau info, limpar, lista [categoria] e buscar <texto> (acha baús de qualquer jogador, com coordenadas clicáveis). O primeiro a etiquetar vira dono; OP muda qualquer um. Baú duplo conta como um só; quebrar o baú apaga a etiqueta
+
 ## 2.8.0
 - /placa historico: lista as últimas versões da placa para a qual você olha (quem escreveu, quando e o texto), com botão [restaurar]. /placa restaurar <id> volta a placa a uma versão: OP restaura qualquer uma, jogador só as que ele mesmo escreveu. Guarda até 20 versões por placa (config/melbybet/placas-historico.json); quebrar a placa apaga o histórico. /placa limpar agora respeita placa encerada e proteção
 
