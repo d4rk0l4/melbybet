@@ -208,6 +208,10 @@ Olhando para um baú, barril ou outro recipiente (a até 6 blocos), `/find <item
 
 Quem colocar o mesmo jar na pasta mods do próprio jogo ganha uma barra de busca acima de baús, barris e shulker boxes. Digite o nome (em português ou inglês, conforme o idioma do jogo): os itens que combinam ficam com borda dourada e os outros escurecem. O botão "Pegar" move todos os que combinam para o inventário, como um shift+clique em cada um. Nada é necessário no servidor além do jar de sempre, e quem não instalar o mod no cliente joga normalmente.
 
+## Copiar texto de placas (`/placa copiar`, `/placa colar`)
+
+Olhando para uma placa, `/placa copiar` mostra as 4 linhas no formato de códigos (`&c`, `&#ff8a24`, degradês `<#ff0000-#0000ff>texto</>`). Clicar na linha copia o comando pronto (`/placa 1 ...`) para a área de transferência, e clicar no código cinza copia só o texto. As 4 linhas também ficam guardadas: olhe para outra placa e use `/placa colar`. Não precisa de nada no cliente. Placas encerradas não recebem colagem.
+
 ## Marcador de áreas (`/marcador`)
 
 Escolhe uma região (dois cantos) para usar nos recursos de construção. Não precisa de nada no cliente.

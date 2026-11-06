@@ -63,6 +63,7 @@ public class Testes {
         dueloLog();
         marcador();
         catalogo();
+        placaCopiar();
         System.out.println(falhas == 0 ? "tudo certo (" + total + " checagens)" : falhas + " falhas de " + total);
         if (falhas > 0) System.exit(1);
     }
@@ -959,5 +960,37 @@ public class Testes {
         igual(true, l.apagar("u1", "torre"), "catalogo: apagar");
         igual(false, l.apagar("u1", "torre"), "catalogo: apagar de novo");
         igual(0, ContagemBlocos.ler(tmp.resolve("x.json")).projetos.size(), "catalogo: arquivo ausente");
+    }
+
+    /** Mesma aparência, caractere por caractere. */
+    static boolean mesmaAparencia(String a, String b) {
+        var x = new StringBuilder();
+        var y = new StringBuilder();
+        for (var s : TextoPlaca.ler(a)) for (char c : s.texto.toCharArray()) x.append(c).append(s.cor).append(s.negrito).append(s.italico).append(s.sublinhado).append(s.riscado).append(s.embaralhado).append(';');
+        for (var s : TextoPlaca.ler(b)) for (char c : s.texto.toCharArray()) y.append(c).append(s.cor).append(s.negrito).append(s.italico).append(s.sublinhado).append(s.riscado).append(s.embaralhado).append(';');
+        return x.toString().equals(y.toString());
+    }
+
+    static void placaCopiar() {
+        String[] amostras = {"", "texto simples", "&cvermelho", "&c&lnegrito vermelho&r normal", "&#ff8a24laranja &9azul",
+            "<#ff0000-#0000ff>degradê bonito</>", "&l<#ff0000-#00ff00>negrito e degradê</> fim", "ab<#ffffff-#000000>cde</>fg",
+            "&aum &bdois &ctrês", "&n&m&o&ktudo", "&1&2&3&4&5&6&7&8&9&a&b&c&d&e&f", "&e&lA&r&eB", "<#123456-#abcdef>xy</>", "&#010203x&#040506y"};
+        for (String a : amostras) {
+            String volta = TextoPlaca.paraCodigos(TextoPlaca.ler(a));
+            igual(true, mesmaAparencia(a, volta), "placa copiar: ida e volta de [" + a + "] -> [" + volta + "]");
+            igual(TextoPlaca.semCodigos(a), TextoPlaca.semCodigos(volta), "placa copiar: mesmo texto de [" + a + "]");
+        }
+        igual("", TextoPlaca.paraCodigos(TextoPlaca.ler("")), "placa copiar: vazio");
+        igual("texto simples", TextoPlaca.paraCodigos(TextoPlaca.ler("texto simples")), "placa copiar: sem formatação fica igual");
+        igual("&cvermelho", TextoPlaca.paraCodigos(TextoPlaca.ler("&cvermelho")), "placa copiar: cor da paleta usa letra");
+        igual(true, TextoPlaca.paraCodigos(TextoPlaca.ler("&#ff8a24x")).contains("&#ff8a24"), "placa copiar: cor exata usa hex");
+        String g = TextoPlaca.paraCodigos(TextoPlaca.ler("<#ff0000-#0000ff>degradê</>"));
+        igual(true, g.contains("<#ff0000-#0000ff>") && g.endsWith("</>"), "placa copiar: degradê volta como degradê (" + g + ")");
+        igual(true, g.length() < 40, "placa copiar: degradê não vira um código por letra");
+        // aparência que não vem de códigos (texto vindo de outro mod ou do /data): cai em cor por letra, sem quebrar
+        var sg = new TextoPlaca.Seg();
+        sg.texto = "oi";
+        sg.cor = 0x123456;
+        igual("&#123456oi", TextoPlaca.paraCodigos(java.util.List.of(sg)), "placa copiar: segmento solto");
     }
 }

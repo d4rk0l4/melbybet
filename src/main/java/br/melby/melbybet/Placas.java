@@ -4,7 +4,14 @@ import br.melby.melbybet.core.TextoPlaca;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
+import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.network.chat.ClickEvent;
+import net.minecraft.network.chat.HoverEvent;
+import net.minecraft.network.chat.Style;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerPlayer;
@@ -50,6 +57,8 @@ public final class Placas {
 
     public static void registrar(CommandDispatcher<CommandSourceStack> d) {
         d.register(literal("placa")
+            .then(literal("copiar").executes(c -> copiar(c.getSource().getPlayerOrException())))
+            .then(literal("colar").executes(c -> colar(c.getSource().getPlayerOrException())))
             .then(literal("limpar").executes(c -> {
                 ServerPlayer p = c.getSource().getPlayerOrException();
                 SignBlockEntity s = placaOlhada(p);
@@ -69,6 +78,76 @@ public final class Placas {
                     editar(s, p, IntegerArgumentType.getInteger(c, "linha") - 1, texto);
                     return ok(c, "Linha " + IntegerArgumentType.getInteger(c, "linha") + " atualizada.");
                 }))));
+    }
+
+    /** Linhas copiadas por jogador (com códigos), para colar em outra placa. */
+    private static final java.util.Map<java.util.UUID, String[]> COPIADAS = new java.util.HashMap<>();
+
+    private static String[] lerLinhas(SignBlockEntity s, SignTextSlot lado) {
+        String[] r = new String[4];
+        s.updateText(st -> {
+            for (int i = 0; i < 4; i++) {
+                List<TextoPlaca.Seg> segs = new ArrayList<>();
+                st.getMessages(false).get(i).visit((estilo, texto) -> {
+                    TextoPlaca.Seg g = new TextoPlaca.Seg();
+                    g.texto = texto;
+                    g.cor = estilo.getColor() == null ? -1 : estilo.getColor().getValue();
+                    g.negrito = estilo.isBold();
+                    g.italico = estilo.isItalic();
+                    g.sublinhado = estilo.isUnderlined();
+                    g.riscado = estilo.isStrikethrough();
+                    g.embaralhado = estilo.isObfuscated();
+                    if (!texto.isEmpty()) segs.add(g);
+                    return Optional.empty();
+                }, Style.EMPTY);
+                r[i] = TextoPlaca.paraCodigos(segs);
+            }
+            return st;
+        }, lado);
+        return r;
+    }
+
+    private static int copiar(ServerPlayer p) {
+        SignBlockEntity s = placaOlhada(p);
+        if (s == null) return avisoErro(p, "Olhe para uma placa (a até 5 blocos).");
+        String[] l = lerLinhas(s, s.getSlotPlayerIsFacing(p));
+        COPIADAS.put(p.getUUID(), l);
+        boolean vazia = true;
+        for (String x : l) if (!x.isEmpty()) vazia = false;
+        if (vazia) return avisoErro(p, "Essa placa está sem texto.");
+        p.sendSystemMessage(Component.literal("Texto da placa (clique numa linha para copiar o comando dela):").withStyle(ChatFormatting.GOLD), false);
+        for (int i = 0; i < 4; i++) {
+            final String cmd = "/placa " + (i + 1) + " " + l[i];
+            final String cru = l[i];
+            MutableComponent previa = componente(cru).copy().withStyle(st -> st.withClickEvent(new ClickEvent.CopyToClipboard(cmd))
+                .withHoverEvent(new HoverEvent.ShowText(Component.literal("Clique para copiar: " + cmd))));
+            MutableComponent codigo = Component.literal("  " + (cru.isEmpty() ? "(vazia)" : cru)).withStyle(st -> st.withColor(ChatFormatting.DARK_GRAY)
+                .withClickEvent(new ClickEvent.CopyToClipboard(cru)).withHoverEvent(new HoverEvent.ShowText(Component.literal("Clique para copiar só o texto"))));
+            p.sendSystemMessage(Component.literal("[" + (i + 1) + "] ").withStyle(ChatFormatting.AQUA).append(previa).append(codigo), false);
+        }
+        p.sendSystemMessage(Component.literal("Guardei as 4 linhas. Olhe para outra placa e use /placa colar.").withStyle(ChatFormatting.GRAY), false);
+        return 1;
+    }
+
+    private static int colar(ServerPlayer p) {
+        String[] l = COPIADAS.get(p.getUUID());
+        if (l == null) return avisoErro(p, "Copie uma placa primeiro com /placa copiar.");
+        SignBlockEntity s = placaOlhada(p);
+        if (s == null) return avisoErro(p, "Olhe para a placa de destino (a até 5 blocos).");
+        if (s.isWaxed()) return avisoErro(p, "Essa placa está encerada, não dá para mudar.");
+        if (!p.level().mayInteract(p, s.getBlockPos())) return avisoErro(p, "Você não pode mexer nessa placa.");
+        for (int i = 0; i < 4; i++) editar(s, p, i, l[i]);
+        p.sendSystemMessage(Component.literal("Texto colado na placa.").withStyle(ChatFormatting.GREEN), true);
+        return 1;
+    }
+
+    private static int avisoErro(ServerPlayer p, String m) {
+        p.sendSystemMessage(Component.literal(m).withStyle(ChatFormatting.RED), true);
+        return 0;
+    }
+
+    public static void aoSair(ServerPlayer p) {
+        COPIADAS.remove(p.getUUID());
     }
 
     private static void editar(SignBlockEntity s, ServerPlayer p, int linha, String texto) {

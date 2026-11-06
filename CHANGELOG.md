@@ -1,5 +1,8 @@
 # Versões do MelbyBet
 
+## 2.7.0
+- /placa copiar: mostra o texto da placa para a qual você olha como código (&c, &#hex, degradê), com clique para copiar para a área de transferência (a linha inteira como comando /placa N ... ou só o texto). /placa colar passa as 4 linhas copiadas para outra placa
+
 ## 2.6.0
 - /catalogo: conta os blocos da área marcada com /marcador, tipo por tipo, com porcentagem e pilhas/shulkers. Lê aos poucos (sem travar o servidor), só chunks carregados, até 2 milhões de blocos. Salvar, listar, ver e apagar projetos
 

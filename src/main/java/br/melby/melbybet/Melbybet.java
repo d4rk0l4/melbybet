@@ -62,6 +62,7 @@ public class Melbybet implements ModInitializer {
             Rastro.aoSair(handler.getPlayer());
             Duelos.aoSair(handler.getPlayer());
             Catalogo.aoSair(handler.getPlayer());
+            Placas.aoSair(handler.getPlayer());
         });
         ServerLivingEntityEvents.AFTER_DAMAGE.register((entidade, fonte, base, tomado, bloqueado) -> Duelos.aoDano(entidade, fonte));
         ServerMessageDecoratorEvent.EVENT.register(ServerMessageDecoratorEvent.CONTENT_PHASE, Extras::decorar);

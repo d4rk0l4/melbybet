@@ -123,6 +123,96 @@ public final class TextoPlaca {
         grad.clear();
     }
 
+    private static boolean mesmoEstilo(Seg a, Seg b) {
+        return a.negrito == b.negrito && a.italico == b.italico && a.sublinhado == b.sublinhado && a.riscado == b.riscado && a.embaralhado == b.embaralhado;
+    }
+
+    private static String codigoCor(int cor) {
+        for (int k = 0; k < PALETA.length; k++) if (PALETA[k] == cor) return "&" + Integer.toHexString(k);
+        return "&" + Gradiente.paraHex(cor);
+    }
+
+    private static String codigoFlags(Seg s) {
+        return (s.negrito ? "&l" : "") + (s.italico ? "&o" : "") + (s.sublinhado ? "&n" : "") + (s.riscado ? "&m" : "") + (s.embaralhado ? "&k" : "");
+    }
+
+    /**
+     * O contrário de {@link #ler}: devolve o texto com códigos (&c, &l, &#rrggbb e degradês) que, escrito de novo,
+     * dá a mesma aparência. Trechos de cores que formam um degradê viram <#a-#b>texto</>.
+     */
+    public static String paraCodigos(List<Seg> segs) {
+        List<Seg> cs = new ArrayList<>(); // um caractere por item
+        for (Seg s : segs) {
+            for (int k = 0; k < s.texto.length(); k++) {
+                Seg c = new Seg();
+                c.texto = String.valueOf(s.texto.charAt(k));
+                c.cor = s.cor;
+                c.negrito = s.negrito;
+                c.italico = s.italico;
+                c.sublinhado = s.sublinhado;
+                c.riscado = s.riscado;
+                c.embaralhado = s.embaralhado;
+                cs.add(c);
+            }
+        }
+        StringBuilder sb = new StringBuilder();
+        Seg atual = new Seg(); // estado que o leitor teria agora: sem cor e sem estilo
+        int i = 0;
+        while (i < cs.size()) {
+            Seg c = cs.get(i);
+            // degradê: o maior trecho com o mesmo estilo cujas cores são exatamente as de um degradê entre as pontas
+            int melhor = 0;
+            if (c.cor >= 0) {
+                int fim = i;
+                while (fim + 1 < cs.size() && cs.get(fim + 1).cor >= 0 && mesmoEstilo(c, cs.get(fim + 1))) fim++;
+                for (int f = fim; f >= i + 2; f--) {
+                    if (cs.get(f).cor == c.cor) continue;
+                    int n = f - i + 1;
+                    int[] esperado = Gradiente.cores(n, c.cor, cs.get(f).cor);
+                    boolean ok = true;
+                    for (int k = 0; k < n && ok; k++) ok = cs.get(i + k).cor == esperado[k];
+                    if (ok) {
+                        melhor = n;
+                        break;
+                    }
+                }
+            }
+            if (melhor > 0) {
+                if (atual.cor != -1 || !mesmoEstilo(atual, c)) {
+                    if (atual.cor != -1 || atual.negrito || atual.italico || atual.sublinhado || atual.riscado || atual.embaralhado) sb.append("&r");
+                    sb.append(codigoFlags(c));
+                    atual = new Seg();
+                    atual.negrito = c.negrito;
+                    atual.italico = c.italico;
+                    atual.sublinhado = c.sublinhado;
+                    atual.riscado = c.riscado;
+                    atual.embaralhado = c.embaralhado;
+                }
+                sb.append('<').append(Gradiente.paraHex(c.cor)).append('-').append(Gradiente.paraHex(cs.get(i + melhor - 1).cor)).append('>');
+                for (int k = 0; k < melhor; k++) sb.append(cs.get(i + k).texto);
+                sb.append("</>");
+                i += melhor;
+                continue;
+            }
+            if (c.cor != atual.cor || !mesmoEstilo(atual, c)) {
+                boolean tinha = atual.cor != -1 || atual.negrito || atual.italico || atual.sublinhado || atual.riscado || atual.embaralhado;
+                if (c.cor >= 0) sb.append(codigoCor(c.cor));
+                else if (tinha) sb.append("&r");
+                sb.append(codigoFlags(c));
+                atual = new Seg();
+                atual.cor = c.cor;
+                atual.negrito = c.negrito;
+                atual.italico = c.italico;
+                atual.sublinhado = c.sublinhado;
+                atual.riscado = c.riscado;
+                atual.embaralhado = c.embaralhado;
+            }
+            sb.append(c.texto);
+            i++;
+        }
+        return sb.toString();
+    }
+
     /** O texto sem códigos (o que aparece na placa). */
     public static String semCodigos(String bruto) {
         StringBuilder sb = new StringBuilder();
