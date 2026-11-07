@@ -20,6 +20,22 @@ jobs:
           distribution: 'microsoft'
       - name: make gradle wrapper executable
         run: chmod +x ./gradlew
+      - name: TEMP javap cliente
+        continue-on-error: true
+        shell: bash {0}
+        run: |
+          ./gradlew build -x test --no-daemon -q >/dev/null 2>&1
+          G=~/.gradle/caches
+          MCJ="$G/fabric-loom/minecraftMaven/net/minecraft/minecraft-clientonly-deobf/26.3/minecraft-clientonly-deobf-26.3.jar:$G/fabric-loom/minecraftMaven/net/minecraft/minecraft-common-deobf/26.3/minecraft-common-deobf-26.3.jar"
+          FJ=$(find $G/modules-2 -name 'fabric-*.jar' ! -name '*sources*' | tr '\n' ':')
+          CP="$MCJ:$FJ"
+          for C in net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent net.minecraft.world.inventory.tooltip.TooltipComponent net.minecraft.world.inventory.tooltip.BundleTooltip net.minecraft.client.gui.screens.inventory.tooltip.ClientBundleTooltip net.minecraft.world.inventory.Slot net.minecraft.world.inventory.ContainerInput net.minecraft.world.item.component.ItemContainerContents; do echo "=== $C"; javap -cp "$CP" -public "$C" 2>&1 | cut -c1-230 | head -70; done
+          echo "=== ItemStack tooltip"; javap -cp "$CP" -public net.minecraft.world.item.ItemStack | grep -i 'tooltip\|isSame\|getCount\|getMaxStackSize\|has(\|get(\|getItem()'
+          echo "=== Item tooltip"; javap -cp "$CP" -public net.minecraft.world.item.Item | grep -i 'tooltip'
+          echo "=== DataComponents"; javap -cp "$CP" -public net.minecraft.core.component.DataComponents | grep -i 'FOOD\|CONTAINER\|CUSTOM_NAME\|BUNDLE'
+          echo "=== Fabric tooltip jars"; for J in $(echo "$FJ" | tr ':' ' '); do unzip -l $J | awk '{print $4}' | grep -i 'tooltip' | grep -v 'mixin\|/impl/'; done
+          for C in $(for J in $(echo "$FJ" | tr ':' ' '); do unzip -l $J | awk '{print $4}' | grep -i 'tooltip' | grep -v 'mixin\|/impl/\|\$' | sed 's/\.class$//;s#/#.#g'; done | head -8); do echo "=== $C"; javap -cp "$CP" -public "$C" 2>&1 | cut -c1-230 | head -30; done
+          echo "=== AbstractContainerScreen"; javap -cp "$CP" -protected net.minecraft.client.gui.screens.inventory.AbstractContainerScreen | grep -i 'slot\|extractTooltip\|hovered\|keyPressed\|isHovering'
       - name: build
         run: ./gradlew build
       - name: testes da lógica (apostas, pagamento, ranking)

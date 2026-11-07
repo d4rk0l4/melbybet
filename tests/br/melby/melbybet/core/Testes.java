@@ -55,6 +55,7 @@ public class Testes {
         loteria();
         corpos();
         waypoints();
+        organizar();
         msgMatar();
         backups();
         busca();
@@ -673,6 +674,103 @@ public class Testes {
         l.comprar("b", "Beto", 2);
         igual(true, l.cancelar(casa, 1L), "loteria: cancela");
         igual(false, l.cancelar(casa, 1L), "loteria: nada a cancelar");
+    }
+
+    static Organizar.Pilha pilha(String id, int qtd, int max) {
+        return new Organizar.Pilha(id, id, qtd, max, Organizar.categoria(id, id.contains("beef"), id.contains("stone") || id.contains("dirt")));
+    }
+
+    static void organizar() {
+        igual(Organizar.Categoria.ESPADA, Organizar.categoria("iron_sword", false, false), "org cat: espada");
+        igual(Organizar.Categoria.PICARETA, Organizar.categoria("diamond_pickaxe", false, false), "org cat: picareta não vira machado");
+        igual(Organizar.Categoria.MACHADO, Organizar.categoria("netherite_axe", false, false), "org cat: machado");
+        igual(Organizar.Categoria.COMIDA, Organizar.categoria("cooked_beef", true, false), "org cat: comida");
+        igual(Organizar.Categoria.BLOCO, Organizar.categoria("cobblestone", false, true), "org cat: bloco");
+        igual(Organizar.Categoria.MATERIAL, Organizar.categoria("iron_ingot", false, false), "org cat: material");
+        igual(Organizar.Categoria.BALDE, Organizar.categoria("water_bucket", false, false), "org cat: balde");
+        igual(Organizar.Categoria.OUTRO, Organizar.categoria("name_tag", false, false), "org cat: outro");
+        // simulação do clique
+        var inv = new Organizar.Pilha[Organizar.SLOTS];
+        inv[0] = pilha("cobblestone", 10, 64);
+        inv[1] = pilha("cobblestone", 50, 64);
+        Organizar.aplicarTroca(inv, 0, 1);
+        igual(null, inv[0], "org sim: junta e esvazia a origem");
+        igual(60, inv[1].qtd(), "org sim: destino recebe tudo");
+        inv = new Organizar.Pilha[Organizar.SLOTS];
+        inv[0] = pilha("cobblestone", 40, 64);
+        inv[1] = pilha("cobblestone", 40, 64);
+        Organizar.aplicarTroca(inv, 0, 1);
+        igual(16, inv[0].qtd(), "org sim: sobra volta para a origem");
+        igual(64, inv[1].qtd(), "org sim: destino cheio");
+        inv = new Organizar.Pilha[Organizar.SLOTS];
+        inv[5] = pilha("iron_sword", 1, 1);
+        Organizar.aplicarTroca(inv, 0, 5);
+        igual("iron_sword", inv[0].id(), "org sim: vazio pega o do outro");
+        igual(null, inv[5], "org sim: e deixa o outro vazio");
+        // perfil
+        var perfil = Organizar.Perfil.padrao();
+        igual(Organizar.Categoria.ESPADA, perfil.dono(0), "org perfil: espada no 0");
+        igual(Organizar.Categoria.BLOCO, perfil.dono(7), "org perfil: bloco também no 7");
+        perfil.alternar(Organizar.Categoria.MACHADO, 0);
+        igual(Organizar.Categoria.MACHADO, perfil.dono(0), "org perfil: slot muda de dono");
+        igual(false, perfil.de(Organizar.Categoria.ESPADA).contains(0), "org perfil: o antigo dono perdeu o slot");
+        perfil.alternar(Organizar.Categoria.MACHADO, 0);
+        igual(null, perfil.dono(0), "org perfil: alternar de novo tira");
+        // exemplo concreto
+        perfil = Organizar.Perfil.padrao();
+        inv = new Organizar.Pilha[Organizar.SLOTS];
+        inv[20] = pilha("iron_sword", 1, 1);
+        inv[3] = pilha("cooked_beef", 12, 64);
+        inv[30] = pilha("cobblestone", 10, 64);
+        inv[31] = pilha("cobblestone", 30, 64);
+        inv[9] = pilha("name_tag", 3, 64);
+        var ops = Organizar.plano(inv, perfil);
+        var fim = Organizar.aplicar(inv, ops);
+        igual("iron_sword", fim[0].id(), "org plano: espada vai para o 0");
+        igual("cooked_beef", fim[5].id(), "org plano: comida vai para o 5");
+        igual("cobblestone", fim[6].id(), "org plano: bloco vai para o 6");
+        igual(40, fim[6].qtd(), "org plano: pedregulho junto");
+        int pedregulhos = 0;
+        for (var p : fim) if (p != null && p.id().equals("cobblestone")) pedregulhos++;
+        igual(1, pedregulhos, "org plano: uma pilha só");
+        igual(0, Organizar.plano(fim, perfil).size(), "org plano: já organizado não faz nada");
+        // hotbar protegida
+        perfil.organizarHotbar = false;
+        inv = new Organizar.Pilha[Organizar.SLOTS];
+        inv[3] = pilha("iron_sword", 1, 1);
+        inv[20] = pilha("cooked_beef", 5, 64);
+        fim = Organizar.aplicar(inv, Organizar.plano(inv, perfil));
+        igual("iron_sword", fim[3].id(), "org plano: hotbar protegida não mexe");
+        // propriedade: aleatório conserva tudo e fica estável
+        String[] ids = {"iron_sword", "diamond_pickaxe", "iron_axe", "cobblestone", "dirt", "cooked_beef", "name_tag", "bow", "arrow", "water_bucket", "iron_ingot"};
+        int[] maxes = {1, 1, 1, 64, 64, 64, 64, 1, 64, 1, 64};
+        var rnd = new java.util.Random(42);
+        int falhas = 0;
+        for (int rodada = 0; rodada < 300; rodada++) {
+            var a = new Organizar.Pilha[Organizar.SLOTS];
+            int n = 1 + rnd.nextInt(34);
+            for (int k = 0; k < n; k++) {
+                int slot = rnd.nextInt(Organizar.SLOTS);
+                int t = rnd.nextInt(ids.length);
+                a[slot] = pilha(ids[t], maxes[t] == 1 ? 1 : 1 + rnd.nextInt(maxes[t]), maxes[t]);
+            }
+            var pf = rnd.nextBoolean() ? Organizar.Perfil.padrao() : new Organizar.Perfil();
+            pf.organizarHotbar = rnd.nextInt(4) != 0;
+            var o = Organizar.plano(a, pf);
+            var b = Organizar.aplicar(a, o);
+            java.util.Map<String, Integer> antes = new java.util.TreeMap<>(), depois = new java.util.TreeMap<>();
+            for (var p : a) if (p != null) antes.merge(p.id(), p.qtd(), Integer::sum);
+            for (var p : b) if (p != null) depois.merge(p.id(), p.qtd(), Integer::sum);
+            if (!antes.equals(depois)) falhas++;
+            if (!pf.organizarHotbar) for (int i = 0; i < 9; i++) if (a[i] != b[i]) falhas++;
+            // no máximo uma pilha incompleta por item entre os slots que mexem
+            java.util.Map<String, Integer> parciais = new java.util.HashMap<>();
+            for (int i = 0; i < Organizar.SLOTS; i++) if ((pf.organizarHotbar || i >= 9) && b[i] != null && b[i].qtd() < b[i].max()) parciais.merge(b[i].id(), 1, Integer::sum);
+            for (int v : parciais.values()) if (v > 1) falhas++;
+            // segunda passada não deve mexer mais (estável)
+            if (!Organizar.plano(b, pf).isEmpty()) falhas++;
+        }
+        igual(0, falhas, "org aleatório: conserva itens, respeita hotbar, junta e é estável");
     }
 
     static void waypoints() {
