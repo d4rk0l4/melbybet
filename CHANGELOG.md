@@ -1,5 +1,8 @@
 # Versões do MelbyBet
 
+## 2.14.1
+- Barra de busca do baú: com ela em foco, as teclas vão para a caixa. Apertar E não fecha mais o baú e os números 1 a 9 não trocam itens da hotbar enquanto você digita. Esc continua fechando
+
 ## 2.14.0
 - Waypoints (só no jar de cliente, no mesmo arquivo do mod): lista com tecla B, criar um ponto aqui com N, criar um temporário com J e ligar/desligar todos com H. As teclas aparecem em Opções > Controles, na categoria "MelbyCraft: Waypoints", e podem ser trocadas. Cada waypoint tem nome, inicial, cor, coordenadas e dimensão, e pode ser ligado, editado, apagado e compartilhado no chat. Temporários somem ao chegar perto (raio configurável) ou depois de N minutos
 - No mundo cada waypoint aparece com um marcador visível através das paredes, nome, distância e um feixe de luz opcional. No topo da tela há uma bússola com os waypoints (os que ficam atrás aparecem nas pontas). Não há minimapa

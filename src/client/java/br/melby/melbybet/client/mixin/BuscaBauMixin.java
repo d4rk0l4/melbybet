@@ -24,6 +24,9 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import com.mojang.blaze3d.platform.InputConstants;
+import net.minecraft.client.input.KeyEvent;
 
 /**
  * Barra de busca em cima de baús, barris e shulker boxes: digite o nome do item e os que combinam ficam destacados
@@ -94,6 +97,18 @@ public abstract class BuscaBauMixin extends Screen {
             if (slot.container instanceof Inventory) continue;
             if (melbybet$combina(slot.getItem())) this.slotClicked(slot, slot.index, 0, ContainerInput.QUICK_MOVE);
         }
+    }
+
+    /**
+     * Com a barra de busca em foco, as teclas vão para ela: sem isto, "E" (inventário) fecha o baú e os números 1 a 9
+     * trocam itens da hotbar enquanto você digita. Esc continua fechando a tela.
+     */
+    @Inject(method = "keyPressed", at = @At("HEAD"), cancellable = true)
+    private void melbybet$teclasNaBusca(KeyEvent event, CallbackInfoReturnable<Boolean> cir) {
+        if (melbybet$busca == null || !melbybet$busca.isFocused()) return;
+        if (event.key() == InputConstants.KEY_ESCAPE) return;
+        melbybet$busca.keyPressed(event);
+        cir.setReturnValue(true);
     }
 
     @Inject(method = "extractSlot", at = @At("TAIL"))
