@@ -20,18 +20,6 @@ jobs:
           distribution: 'microsoft'
       - name: make gradle wrapper executable
         run: chmod +x ./gradlew
-      - name: TEMP javap cliente
-        continue-on-error: true
-        shell: bash {0}
-        run: |
-          ./gradlew build -x test --no-daemon -q >/dev/null 2>&1
-          G=~/.gradle/caches
-          CP="$G/fabric-loom/minecraftMaven/net/minecraft/minecraft-clientonly-deobf/26.3/minecraft-clientonly-deobf-26.3.jar:$G/fabric-loom/minecraftMaven/net/minecraft/minecraft-common-deobf/26.3/minecraft-common-deobf-26.3.jar"
-          echo "=== Minecraft screen"; javap -cp "$CP" -public net.minecraft.client.Minecraft | grep -i 'screen'
-          echo "=== Gui"; javap -cp "$CP" -public net.minecraft.client.gui.Gui | grep -i 'overlay\|message\|actionbar\|screen\|setTitle\|chat'
-          echo "=== InputConstants"; javap -cp "$CP" -public com.mojang.blaze3d.platform.InputConstants | grep -E ' KEY_(B|N|J|H);'
-          echo "=== LocalPlayer msgs"; javap -cp "$CP" -public net.minecraft.client.player.LocalPlayer | grep -i 'message\|sendSystem\|overlay'
-          echo "=== Player msgs"; javap -cp "$CP" -public net.minecraft.world.entity.player.Player | grep -i 'message\|sendSystem\|overlay'
       - name: build
         run: ./gradlew build
       - name: testes da lógica (apostas, pagamento, ranking)

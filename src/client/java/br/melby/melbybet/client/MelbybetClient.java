@@ -12,7 +12,7 @@ import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderEvents;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.Identifier;
-import org.lwjgl.glfw.GLFW;
+import com.mojang.blaze3d.platform.InputConstants;
 
 public class MelbybetClient implements ClientModInitializer {
 	private static KeyMapping teclaLista, teclaCriar, teclaTemp, teclaLigar;
@@ -21,10 +21,10 @@ public class MelbybetClient implements ClientModInitializer {
 	@Override
 	public void onInitializeClient() {
 		KeyMapping.Category categoria = KeyMapping.Category.register(Identifier.fromNamespaceAndPath("melbybet", "waypoints"));
-		teclaLista = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.melbybet.waypoint_lista", GLFW.GLFW_KEY_B, categoria));
-		teclaCriar = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.melbybet.waypoint_criar", GLFW.GLFW_KEY_N, categoria));
-		teclaTemp = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.melbybet.waypoint_temp", GLFW.GLFW_KEY_J, categoria));
-		teclaLigar = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.melbybet.waypoint_ligar", GLFW.GLFW_KEY_H, categoria));
+		teclaLista = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.melbybet.waypoint_lista", InputConstants.KEY_B, categoria));
+		teclaCriar = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.melbybet.waypoint_criar", InputConstants.KEY_N, categoria));
+		teclaTemp = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.melbybet.waypoint_temp", InputConstants.KEY_J, categoria));
+		teclaLigar = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.melbybet.waypoint_ligar", InputConstants.KEY_H, categoria));
 
 		ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> WaypointStore.carregar(client));
 		ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> WaypointStore.descarregar());
@@ -50,7 +50,7 @@ public class MelbybetClient implements ClientModInitializer {
 
 	private static void aCadaTick(Minecraft mc) {
 		if (mc.player == null || mc.level == null) return;
-		boolean livre = mc.screen == null;
+		boolean livre = mc.gui.screen() == null;
 		while (teclaLista.consumeClick()) {
 			if (livre && WaypointStore.ativo()) mc.setScreenAndShow(new WaypointTela(0));
 			else if (livre) WaypointStore.aviso("Waypoints desligados neste servidor.");

@@ -61,6 +61,6 @@ public final class WaypointStore {
     /** Mensagem curta acima da hotbar. */
     public static void aviso(String texto) {
         Minecraft mc = Minecraft.getInstance();
-        if (mc.gui != null) mc.gui.setOverlayMessage(Component.literal(texto), false);
+        if (mc.player != null) mc.player.sendOverlayMessage(Component.literal(texto));
     }
 }
