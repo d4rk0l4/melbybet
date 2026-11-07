@@ -220,6 +220,7 @@ public final class Baus {
         if (l.isEmpty()) return erro(p, "Nenhum baú etiquetado combina com \"" + texto + "\".");
         p.sendSystemMessage(Component.literal("Baús que combinam com \"" + texto + "\" (" + l.size() + ")").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), false);
         imprimir(p, l, true);
+        WaypointsServidor.marcarBuscaDeBaus(p, l);
         return l.size();
     }
 

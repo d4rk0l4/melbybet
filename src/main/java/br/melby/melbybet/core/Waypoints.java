@@ -20,7 +20,7 @@ public class Waypoints {
         0xFF5555, 0xFFAA00, 0xFFFF55, 0x55FF55, 0x00AA00, 0x55FFFF, 0x00AAAA, 0x5555FF, 0xAA00AA, 0xFF55FF, 0xFFFFFF, 0xAAAAAA
     };
 
-    public static final String NORMAL = "normal", TEMP = "temp", CORPO = "corpo", COMPARTILHADO = "compartilhado";
+    public static final String NORMAL = "normal", TEMP = "temp", CORPO = "corpo", COMPARTILHADO = "compartilhado", BUSCA = "busca";
 
     public static class Ponto {
         public String id = UUID.randomUUID().toString();
@@ -46,7 +46,7 @@ public class Waypoints {
         }
 
         public boolean automatico() {
-            return CORPO.equals(tipo);
+            return CORPO.equals(tipo) || BUSCA.equals(tipo);
         }
     }
 
@@ -170,7 +170,7 @@ public class Waypoints {
     public List<Ponto> limparTemporarios(long agora, String dim, double x, double y, double z) {
         List<Ponto> saiu = new ArrayList<>();
         for (Ponto p : pontos) {
-            if (!TEMP.equals(p.tipo)) continue;
+            if (!TEMP.equals(p.tipo) && !BUSCA.equals(p.tipo)) continue;
             boolean venceu = p.expiraEm > 0 && agora >= p.expiraEm;
             boolean chegou = p.raio > 0 && p.dim.equals(dim) && distancia(p, x, y, z) <= p.raio;
             if (venceu || chegou) saiu.add(p);

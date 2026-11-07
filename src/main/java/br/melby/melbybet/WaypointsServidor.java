@@ -75,6 +75,18 @@ public final class WaypointsServidor {
         enviar(dono, new WaypointRede.PontoPayload(true, "corpo-" + c.id, "", "overworld", 0, 0, 0, Waypoints.CORPO, 0));
     }
 
+    /** Resultado do /bau buscar: marca os baús achados como waypoints temporários (amarelos) para quem tem o jar de cliente. */
+    public static void marcarBuscaDeBaus(ServerPlayer p, java.util.List<br.melby.melbybet.core.EtiquetaBau.Etiqueta> achados) {
+        if (!Jogo.casa.config.waypoints || !pode(p, WaypointRede.PontoPayload.TYPE)) return;
+        enviar(p, new WaypointRede.PontoPayload(true, "busca", "", "overworld", 0, 0, 0, Waypoints.BUSCA, 0));
+        int n = 0;
+        for (var e : achados) {
+            if (n++ >= 8) break;
+            enviar(p, new WaypointRede.PontoPayload(false, "bau-" + e.dim + "-" + e.x + "-" + e.y + "-" + e.z, e.nome.isEmpty() ? "Baú" : e.nome,
+                e.dim, e.x, e.y, e.z, Waypoints.BUSCA, 0xFFC928));
+        }
+    }
+
     public static void aoSair(ServerPlayer p) {
         ULTIMO_COMPARTILHAR.remove(p.getUUID());
     }

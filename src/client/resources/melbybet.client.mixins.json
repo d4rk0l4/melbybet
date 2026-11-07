@@ -3,7 +3,9 @@
 	"package": "br.melby.melbybet.client.mixin",
 	"compatibilityLevel": "JAVA_25",
 	"client": [
-		"BuscaBauMixin"
+		"BuscaBauMixin",
+		"InventarioMixin",
+		"ShulkerTooltipMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

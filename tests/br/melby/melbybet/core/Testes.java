@@ -865,6 +865,11 @@ public class Testes {
         igual(9, w4.porId("corpo-1").x, "wp corpo: atualiza");
         igual(0, w4.manuais(), "wp corpo: não conta no limite");
         igual(true, w4.remover("corpo-1"), "wp corpo: remove");
+        var w6 = new Waypoints();
+        var bu = w6.upsertDoServidor("bau-1", "Baú", "overworld", 10, 0, 0, Waypoints.BUSCA, 0xFFC928, 1L);
+        bu.raio = 4;
+        igual(0, w6.manuais(), "wp busca: não conta no limite");
+        igual(1, w6.limparTemporarios(5L, "overworld", 9, 0, 0).size(), "wp busca: some ao chegar");
         igual(Waypoints.PALETA[1], Waypoints.proximaCor(Waypoints.PALETA[0]), "wp: próxima cor");
         igual(Waypoints.PALETA[0], Waypoints.proximaCor(Waypoints.PALETA[Waypoints.PALETA.length - 1]), "wp: cor volta ao início");
         // limite

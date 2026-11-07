@@ -7,6 +7,7 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.fabricmc.fabric.api.client.rendering.v1.ClientTooltipComponentCallback;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderEvents;
 import net.minecraft.client.KeyMapping;
@@ -26,6 +27,9 @@ public class MelbybetClient implements ClientModInitializer {
 		teclaTemp = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.melbybet.waypoint_temp", InputConstants.KEY_J, categoria));
 		teclaLigar = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.melbybet.waypoint_ligar", InputConstants.KEY_H, categoria));
 
+		InventarioCliente.carregar();
+		ClientTooltipComponentCallback.EVENT.register(c -> c instanceof ShulkerTooltip s ? new ShulkerTooltipCliente(s) : null);
+
 		ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> WaypointStore.carregar(client));
 		ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> WaypointStore.descarregar());
 
@@ -34,11 +38,19 @@ public class MelbybetClient implements ClientModInitializer {
 			WaypointStore.area = payload.tem1() || payload.tem2() ? payload : null);
 		ClientPlayNetworking.registerGlobalReceiver(WaypointRede.PontoPayload.TYPE, (payload, ctx) -> {
 			if (payload.remover()) {
-				WaypointStore.dados.remover(payload.chave());
+				if (Waypoints.BUSCA.equals(payload.tipo()) && "busca".equals(payload.chave())) WaypointStore.dados.pontos.removeIf(p -> Waypoints.BUSCA.equals(p.tipo));
+				else WaypointStore.dados.remover(payload.chave());
 			} else {
 				WaypointStore.dados.upsertDoServidor(payload.chave(), payload.nome(), payload.dim(), payload.x(), payload.y(), payload.z(),
 					payload.tipo(), payload.cor(), System.currentTimeMillis());
 				if (Waypoints.CORPO.equals(payload.tipo())) WaypointStore.aviso("Waypoint do seu corpo criado.");
+				if (Waypoints.BUSCA.equals(payload.tipo())) {
+					var ponto = WaypointStore.dados.porId(payload.chave());
+					if (ponto != null) {
+						ponto.raio = 4;
+						ponto.expiraEm = System.currentTimeMillis() + 10 * 60_000L;
+					}
+				}
 			}
 			WaypointStore.salvar();
 		});
