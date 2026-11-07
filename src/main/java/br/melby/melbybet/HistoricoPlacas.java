@@ -126,4 +126,52 @@ public final class HistoricoPlacas {
         p.sendSystemMessage(Component.literal("Placa restaurada para a versão #" + id + ".").withStyle(ChatFormatting.GREEN), true);
         return 1;
     }
+
+    // ---------- editor do cliente ----------
+
+    /** Manda ao cliente o texto atual da placa e as versões do histórico (até 10). */
+    public static void enviarAoCliente(ServerPlayer p, net.minecraft.core.BlockPos pos) {
+        SignBlockEntity s = ConstrucaoServidor.placaPerto(p, pos);
+        if (s == null) return;
+        SignTextSlot lado = s.getSlotPlayerIsFacing(p);
+        String[] atual = Placas.lerLinhas(s, lado);
+        List<ConstrucaoRede.VersaoPlaca> vs = new java.util.ArrayList<>();
+        for (Versao v : dados.lista(chave(s, lado))) {
+            if (vs.size() >= 10) break;
+            vs.add(new ConstrucaoRede.VersaoPlaca(v.id, DueloLog.data(v.quando, Jogo.casa.config.fuso) + " " + v.nome, List.of(v.linhas)));
+        }
+        ConstrucaoServidor.enviar(p, new ConstrucaoRede.PlacaDadosPayload(pos.getX(), pos.getY(), pos.getZ(), List.of(atual), s.isWaxed(), vs));
+    }
+
+    public static void aplicarDoCliente(ServerPlayer p, net.minecraft.core.BlockPos pos, List<String> linhas) {
+        SignBlockEntity s = ConstrucaoServidor.placaPerto(p, pos);
+        if (s == null) return;
+        if (s.isWaxed()) {
+            Placas.avisoErro(p, "Essa placa está encerada, não dá para mudar.");
+            return;
+        }
+        if (!p.level().mayInteract(p, pos)) {
+            Placas.avisoErro(p, "Você não pode mexer nessa placa.");
+            return;
+        }
+        for (String l : linhas) {
+            if (br.melby.melbybet.core.TextoPlaca.semCodigos(l).length() > 40) {
+                Placas.avisoErro(p, "Linha grande demais.");
+                return;
+            }
+        }
+        SignTextSlot lado = s.getSlotPlayerIsFacing(p);
+        antes(s, lado);
+        for (int i = 0; i < 4; i++) Placas.editar(s, p, i, i < linhas.size() ? linhas.get(i) : "");
+        depois(p, s, lado);
+        p.sendSystemMessage(Component.literal("Placa atualizada.").withStyle(ChatFormatting.GREEN), true);
+        enviarAoCliente(p, pos);
+    }
+
+    public static void restaurarDoCliente(ServerPlayer p, net.minecraft.core.BlockPos pos, int id) {
+        SignBlockEntity s = ConstrucaoServidor.placaPerto(p, pos);
+        if (s == null) return;
+        restaurar(p, s, id);
+        enviarAoCliente(p, pos);
+    }
 }

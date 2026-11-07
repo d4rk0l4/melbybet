@@ -81,6 +81,12 @@ public final class MapArt {
                         IntegerArgumentType.getInteger(c, "largura"), IntegerArgumentType.getInteger(c, "altura"), IntegerArgumentType.getInteger(c, "escala"))))
                     .executes(c -> projeto(c.getSource().getPlayerOrException(), StringArgumentType.getString(c, "nome"),
                         IntegerArgumentType.getInteger(c, "largura"), IntegerArgumentType.getInteger(c, "altura"), 0))))))
+            .then(literal("esconder").executes(c -> {
+                ServerPlayer p = c.getSource().getPlayerOrException();
+                ConstrucaoServidor.enviar(p, new ConstrucaoRede.MapArtPayload(false, "overworld", 0, 0, 0, 0, 0, 0));
+                p.sendSystemMessage(Component.literal("Grade de mapas escondida.").withStyle(ChatFormatting.YELLOW), true);
+                return 1;
+            }))
             .then(literal("lista").executes(c -> lista(c.getSource().getPlayerOrException())))
             .then(literal("ver").then(argument("nome", StringArgumentType.word()).suggests((c, b) -> sugerir(c.getSource(), b))
                 .executes(c -> ver(c.getSource().getPlayerOrException(), StringArgumentType.getString(c, "nome")))))
@@ -155,6 +161,7 @@ public final class MapArt {
         int x0 = MapArtGeo.inicio(gx, escala), z0 = MapArtGeo.inicio(gz, escala);
         int x1 = MapArtGeo.fim(gx + l - 1, escala), z1 = MapArtGeo.fim(gz + a - 1, escala);
         Marcadores.definirArea(p, x0, y, z0, x1, y, z1);
+        ConstrucaoServidor.enviar(p, new ConstrucaoRede.MapArtPayload(true, Corpos.dimDe((ServerLevel) p.level()), escala, x0, z0, l, a, y));
         p.sendSystemMessage(Component.literal(titulo + ": x " + x0 + ".." + x1 + ", z " + z0 + ".." + z1 + ". Os limites aparecem em partículas; /marcador altura estica para cima e para baixo.")
             .withStyle(ChatFormatting.GREEN), false);
         return 1;

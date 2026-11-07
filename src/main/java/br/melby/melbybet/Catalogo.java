@@ -110,6 +110,10 @@ public final class Catalogo {
             .then(literal("salvar").then(argument("nome", StringArgumentType.word())
                 .executes(c -> salvar(c.getSource().getPlayerOrException(), StringArgumentType.getString(c, "nome")))))
             .then(literal("lista").executes(c -> lista(c.getSource().getPlayerOrException())))
+            .then(literal("hud")
+                .then(argument("nome", StringArgumentType.word()).suggests((c, b) -> sugerir(c.getSource(), b))
+                    .executes(c -> hud(c.getSource().getPlayerOrException(), StringArgumentType.getString(c, "nome"))))
+                .executes(c -> hud(c.getSource().getPlayerOrException(), "")))
             .then(literal("ver").then(argument("nome", StringArgumentType.word()).suggests((c, b) -> sugerir(c.getSource(), b))
                 .executes(c -> ver(c.getSource().getPlayerOrException(), StringArgumentType.getString(c, "nome")))))
             .then(literal("apagar").then(argument("nome", StringArgumentType.word()).suggests((c, b) -> sugerir(c.getSource(), b))
@@ -242,6 +246,30 @@ public final class Catalogo {
             p.sendSystemMessage(Component.literal("Atenção: " + Fmt.inteiro(c.puladas) + " posições estavam em chunks não carregados e ficaram de fora. Chegue perto e repita.")
                 .withStyle(ChatFormatting.RED), false);
         }
+    }
+
+    /** Id (só o caminho) do item que representa esse bloco, ou o próprio id se não achar. */
+    static String itemDe(String id) {
+        try {
+            var bloco = BuiltInRegistries.BLOCK.stream().filter(b -> BuiltInRegistries.BLOCK.getKey(b).getPath().equals(id)).findFirst().orElse(null);
+            if (bloco == null) return id;
+            return BuiltInRegistries.ITEM.getKey(bloco.asItem()).getPath();
+        } catch (Exception e) {
+            return id;
+        }
+    }
+
+    private static int hud(ServerPlayer p, String nome) {
+        if (nome.equalsIgnoreCase("limpar")) {
+            ConstrucaoServidor.limparMateriais(p);
+            aviso(p, "Lista de materiais escondida.", ChatFormatting.YELLOW);
+            return 1;
+        }
+        Projeto pr = nome.isEmpty() ? ULTIMO.get(p.getUUID()) : dados.obter(p.getUUID().toString(), nome);
+        if (pr == null) return erro(p, nome.isEmpty() ? "Faça uma contagem primeiro (/catalogo)." : "Não tenho um projeto chamado \"" + nome + "\".");
+        if (!ConstrucaoServidor.enviarMateriais(p, pr)) return erro(p, "Isso precisa do MelbyCraft instalado no seu jogo (jar de cliente).");
+        aviso(p, "Acompanhando o projeto na tela. /catalogo hud limpar para esconder.", ChatFormatting.GREEN);
+        return 1;
     }
 
     /** Tamanho da pilha do item daquele bloco (a maioria é 64; placas, baldes etc. diferem). */

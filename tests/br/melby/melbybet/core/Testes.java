@@ -56,6 +56,7 @@ public class Testes {
         corpos();
         waypoints();
         organizar();
+        formas();
         msgMatar();
         backups();
         busca();
@@ -771,6 +772,57 @@ public class Testes {
             if (!Organizar.plano(b, pf).isEmpty()) falhas++;
         }
         igual(0, falhas, "org aleatório: conserva itens, respeita hotbar, junta e é estável");
+    }
+
+    static void formas() {
+        var c = Formas.casca(Formas.Tipo.CIRCULO, Formas.Plano.HORIZONTAL, 5, 5, 5);
+        igual(true, c.size() > 20, "forma: círculo tem blocos");
+        boolean simetrico = true, plano0 = true;
+        java.util.Set<String> s = new java.util.HashSet<>();
+        for (int[] p : c) s.add(p[0] + "," + p[1] + "," + p[2]);
+        for (int[] p : c) {
+            if (!s.contains(-p[0] + "," + p[1] + "," + p[2]) || !s.contains(p[0] + "," + p[1] + "," + -p[2]) || !s.contains(p[2] + "," + p[1] + "," + p[0])) simetrico = false;
+            if (p[1] != 0) plano0 = false;
+        }
+        igual(true, simetrico, "forma: círculo é simétrico");
+        igual(true, plano0, "forma: círculo horizontal fica em y = 0");
+        // o contorno do círculo de raio 5 passa pelos extremos
+        igual(true, s.contains("5,0,0") && s.contains("-5,0,0") && s.contains("0,0,5") && s.contains("0,0,-5"), "forma: círculo toca os 4 extremos");
+        igual(false, s.contains("0,0,0"), "forma: círculo é só contorno");
+        var v = Formas.casca(Formas.Tipo.CIRCULO, Formas.Plano.VERTICAL_X, 4, 4, 4);
+        boolean z0 = true;
+        for (int[] p : v) if (p[2] != 0) z0 = false;
+        igual(true, z0, "forma: círculo vertical X fica em z = 0");
+        var e = Formas.casca(Formas.Tipo.ELIPSE, Formas.Plano.HORIZONTAL, 8, 1, 3);
+        int maxX = 0, maxZ = 0;
+        for (int[] p : e) {
+            maxX = Math.max(maxX, Math.abs(p[0]));
+            maxZ = Math.max(maxZ, Math.abs(p[2]));
+        }
+        igual(8, maxX, "forma: elipse largura");
+        igual(3, maxZ, "forma: elipse profundidade");
+        var es = Formas.casca(Formas.Tipo.ESFERA, Formas.Plano.HORIZONTAL, 6, 6, 6);
+        java.util.Set<String> se = new java.util.HashSet<>();
+        for (int[] p : es) se.add(p[0] + "," + p[1] + "," + p[2]);
+        igual(true, se.contains("6,0,0") && se.contains("0,6,0") && se.contains("0,-6,0"), "forma: esfera toca os extremos");
+        igual(false, se.contains("0,0,0"), "forma: esfera é oca");
+        boolean sim = true;
+        for (int[] p : es) if (!se.contains(-p[0] + "," + -p[1] + "," + -p[2])) sim = false;
+        igual(true, sim, "forma: esfera é simétrica");
+        var cu = Formas.casca(Formas.Tipo.CUPULA, Formas.Plano.HORIZONTAL, 6, 6, 6);
+        boolean acima = true;
+        for (int[] p : cu) if (p[1] < 0) acima = false;
+        igual(true, acima, "forma: cúpula não passa de y = 0");
+        igual(true, cu.size() < es.size(), "forma: cúpula é menor que a esfera");
+        igual(Formas.MAX_RAIO, Formas.casca(Formas.Tipo.CIRCULO, Formas.Plano.HORIZONTAL, 999, 1, 1).stream().mapToInt(p -> Math.abs(p[0])).max().getAsInt(), "forma: raio é limitado");
+        // régua e espelho
+        double[] m = Formas.medir(new int[] {0, 0, 0}, new int[] {9, 0, 0});
+        igual(10.0, m[0], "régua: conta os dois cantos");
+        igual(9.0, m[3], "régua: distância reta");
+        igual(7, Formas.espelhar(new int[] {3, 5, 2}, true, 5, false)[0], "espelho: x pelo centro do bloco");
+        igual(8, Formas.espelhar(new int[] {3, 5, 2}, true, 5, true)[0], "espelho: x entre blocos");
+        igual(0, Formas.espelhar(new int[] {3, 5, 4}, false, 2, false)[2], "espelho: z pelo centro");
+        igual(5, Formas.espelhar(new int[] {3, 5, 4}, false, 2, false)[1], "espelho: y não muda");
     }
 
     static void waypoints() {

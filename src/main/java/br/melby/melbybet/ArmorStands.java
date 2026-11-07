@@ -143,6 +143,36 @@ public final class ArmorStands {
         return melhor;
     }
 
+    /** Mudança vinda do editor do cliente (sliders): valida distância e dono e aplica. */
+    static void aplicarDoCliente(ServerPlayer p, ConstrucaoRede.PosePayload v) {
+        if (!(p.level().getEntity(v.entidade()) instanceof ArmorStand a)) return;
+        if (p.distanceToSqr(a) > 8.0 * 8.0) return;
+        if (pode(p, a) != null) return;
+        switch (v.tipo()) {
+            case 0 -> {
+                if (v.parte() < 0 || v.parte() >= PosePreset.PARTES) return;
+                float[] g = {v.x(), v.y(), v.z()};
+                for (int i = 0; i < 3; i++) {
+                    if (Float.isNaN(g[i]) || Float.isInfinite(g[i])) return;
+                    g[i] = PosePreset.girar(Math.max(-360f, Math.min(360f, g[i])), 0);
+                }
+                aplicarParte(a, v.parte(), g);
+            }
+            case 1 -> a.setShowArms(v.flag());
+            case 2 -> a.setNoBasePlate(!v.flag());
+            case 3 -> a.setInvisible(v.flag());
+            case 4 -> {
+                if (Float.isNaN(v.x()) || Float.isInfinite(v.x())) return;
+                float y = PosePreset.girar(v.x(), 0);
+                a.setYRot(y);
+                a.setYBodyRot(y);
+                a.setYHeadRot(y);
+            }
+            default -> {
+            }
+        }
+    }
+
     private static boolean vazio(ArmorStand a) {
         for (EquipmentSlot s : EquipmentSlot.values()) if (!a.getItemBySlot(s).isEmpty()) return false;
         return true;
