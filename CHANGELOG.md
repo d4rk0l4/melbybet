@@ -1,5 +1,11 @@
 # Versões do MelbyBet
 
+## 2.15.0
+- Inventário e baús (jar de cliente): botão **Organizar** no inventário e nos baús, que arruma a mochila e a hotbar pelo seu perfil e junta pilhas iguais. O botão **Perfil...** abre uma tela onde você escolhe o tipo (espada, machado, picareta, pá, comida, blocos e outros 17) e clica nos slots onde ele deve ficar; também dá para "Aprender da hotbar" ou "Aprender de tudo" a partir do inventário atual. Armadura e mão secundária nunca são mexidas. Há opções para o Organizar mexer ou não na hotbar
+- Nos baús e shulker boxes: **Guardar iguais** manda para o recipiente o que você tem e que já existe lá dentro (por padrão sem tocar na hotbar), e **Pegar iguais** traz tudo do recipiente de que você já tem pelo menos uma unidade (para quando o inventário encher e avisa)
+- Shulker box com itens mostra o conteúdo em grade 9x3 ao passar o mouse, sem abrir
+- /bau buscar: quem tem o jar de cliente recebe os baús achados como waypoints temporários amarelos (até 8, somem ao chegar perto ou em 10 minutos)
+
 ## 2.14.1
 - Barra de busca do baú: com ela em foco, as teclas vão para a caixa. Apertar E não fecha mais o baú e os números 1 a 9 não trocam itens da hotbar enquanto você digita. Esc continua fechando
 

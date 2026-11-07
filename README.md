@@ -267,6 +267,15 @@ Transforma uma imagem da internet num mural de mapas do jogo. Os jogadores veem 
 - Os mapas são criados bem longe do centro do mundo, então ninguém os "repinta" com o terreno ao carregá-los.
 - Dados em `config/melbybet/fotomolduras.json`.
 
+## Inventário e baús (jar de cliente)
+
+- **Organizar** (botão ao lado do inventário e dos baús): arruma os seus 36 slots pelo seu perfil e junta as pilhas incompletas. Usa cliques normais de inventário, então funciona em qualquer servidor.
+- **Perfil...**: escolha o tipo de item (espada, machado, picareta, pá, enxada, arco, besta, tridente, maça, vara, ferramenta, flecha, poção, pérola, foguete, totem, tocha, balde, comida, bloco, material) e clique nos slots onde ele deve ficar. "Aprender da hotbar" e "Aprender de tudo" copiam o seu inventário de agora. O arquivo fica em `config/melbybet/inventario.json`. O que não tem posição fixa vai para a mochila, por tipo e nome.
+- **Guardar iguais** (em baú, barril e shulker): manda para o recipiente os itens que ele já tem (mesmo item e mesmos dados). Por padrão não mexe na hotbar.
+- **Pegar iguais**: traz do recipiente tudo o que você já tem pelo menos uma unidade (qualquer slot do inventário). Para quando enche.
+- **Shulker box:** o tooltip mostra o conteúdo em grade.
+- **`/bau buscar`:** os baús achados viram waypoints amarelos temporários.
+
 ## Waypoints (jar de cliente)
 
 Os waypoints existem só no cliente: instale o mesmo `.jar` do servidor na pasta `mods` do seu jogo. Cada jogador tem a sua lista, guardada no PC em `config/melbybet/waypoints/<servidor>.json`. Não há minimapa, só pontos com nome.

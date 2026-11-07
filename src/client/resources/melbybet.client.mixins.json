@@ -5,7 +5,8 @@
 	"client": [
 		"BuscaBauMixin",
 		"InventarioMixin",
-		"ShulkerTooltipMixin"
+		"ShulkerTooltipMixin",
+		"ContainerTextoMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1
