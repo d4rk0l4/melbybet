@@ -9,13 +9,13 @@ import net.minecraft.resources.Identifier;
 public final class WaypointRede {
     private WaypointRede() {}
 
-    private static <T extends CustomPacketPayload> CustomPacketPayload.Type<T> tipo(String nome) {
+    private static <T extends CustomPacketPayload> CustomPacketPayload.Type<T> novoTipo(String nome) {
         return new CustomPacketPayload.Type<>(Identifier.fromNamespaceAndPath("melbybet", nome));
     }
 
     /** Servidor -> cliente: cria, atualiza ou remove um waypoint (corpo, compartilhado). */
     public record PontoPayload(boolean remover, String chave, String nome, String dim, int x, int y, int z, String tipo, int cor) implements CustomPacketPayload {
-        public static final CustomPacketPayload.Type<PontoPayload> TYPE = tipo("waypoint");
+        public static final CustomPacketPayload.Type<PontoPayload> TYPE = novoTipo("waypoint");
         public static final StreamCodec<RegistryFriendlyByteBuf, PontoPayload> CODEC = StreamCodec.of(
             (b, v) -> {
                 b.writeBoolean(v.remover);
@@ -38,7 +38,7 @@ public final class WaypointRede {
 
     /** Servidor -> cliente: a seleção atual do /marcador (para o cliente desenhar linhas em vez de partículas). */
     public record AreaPayload(String dim, boolean tem1, int ax, int ay, int az, boolean tem2, int bx, int by, int bz) implements CustomPacketPayload {
-        public static final CustomPacketPayload.Type<AreaPayload> TYPE = tipo("marcador_area");
+        public static final CustomPacketPayload.Type<AreaPayload> TYPE = novoTipo("marcador_area");
         public static final StreamCodec<RegistryFriendlyByteBuf, AreaPayload> CODEC = StreamCodec.of(
             (b, v) -> {
                 b.writeUtf(v.dim, 64);
@@ -65,7 +65,7 @@ public final class WaypointRede {
 
     /** Servidor -> cliente: se os waypoints estão liberados neste servidor. */
     public record ConfigPayload(boolean waypoints) implements CustomPacketPayload {
-        public static final CustomPacketPayload.Type<ConfigPayload> TYPE = tipo("waypoint_config");
+        public static final CustomPacketPayload.Type<ConfigPayload> TYPE = novoTipo("waypoint_config");
         public static final StreamCodec<RegistryFriendlyByteBuf, ConfigPayload> CODEC = StreamCodec.of(
             (b, v) -> b.writeBoolean(v.waypoints),
             b -> new ConfigPayload(b.readBoolean()));
@@ -78,7 +78,7 @@ public final class WaypointRede {
 
     /** Cliente -> servidor: compartilhar um waypoint no chat (todo mundo vê um botão para adicionar). */
     public record CompartilharPayload(String nome, String dim, int x, int y, int z) implements CustomPacketPayload {
-        public static final CustomPacketPayload.Type<CompartilharPayload> TYPE = tipo("waypoint_compartilhar");
+        public static final CustomPacketPayload.Type<CompartilharPayload> TYPE = novoTipo("waypoint_compartilhar");
         public static final StreamCodec<RegistryFriendlyByteBuf, CompartilharPayload> CODEC = StreamCodec.of(
             (b, v) -> {
                 b.writeUtf(v.nome, 64);
