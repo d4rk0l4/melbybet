@@ -1,5 +1,12 @@
 # Versões do MelbyBet
 
+## 2.14.0
+- Waypoints (só no jar de cliente, no mesmo arquivo do mod): lista com tecla B, criar um ponto aqui com N, criar um temporário com J e ligar/desligar todos com H. As teclas aparecem em Opções > Controles, na categoria "MelbyCraft: Waypoints", e podem ser trocadas. Cada waypoint tem nome, inicial, cor, coordenadas e dimensão, e pode ser ligado, editado, apagado e compartilhado no chat. Temporários somem ao chegar perto (raio configurável) ou depois de N minutos
+- No mundo cada waypoint aparece com um marcador visível através das paredes, nome, distância e um feixe de luz opcional. No topo da tela há uma bússola com os waypoints (os que ficam atrás aparecem nas pontas). Não há minimapa
+- O corpo ganha um waypoint automático para quem morreu, que some quando o corpo é esvaziado. Em /coords, os botões ganham [Waypoint], e quem compartilha um waypoint no chat dá um botão [Waypoint] para todos adicionarem
+- OP: /waypoint servidor ligar ou desligar, para liberar ou bloquear os waypoints no servidor inteiro
+- /marcador: quem tem o jar de cliente vê o contorno como linhas de verdade, através das paredes, em vez de partículas. Quem não tem continua vendo as partículas
+
 ## 2.13.1
 - Corpo: quando o dono pega os itens do próprio corpo (um a um ou em "Pegar tudo"), cada item volta para o slot onde estava: hotbar no mesmo lugar, armadura já equipada e item da mão secundária. Se o slot já estiver ocupado, o item vai para o primeiro espaço livre. Outros jogadores que pegam itens do corpo continuam recebendo no primeiro espaço livre, sem bagunçar a hotbar deles. Corpos criados antes desta versão não guardam o slot e se comportam como antes
 

@@ -267,6 +267,19 @@ Transforma uma imagem da internet num mural de mapas do jogo. Os jogadores veem 
 - Os mapas são criados bem longe do centro do mundo, então ninguém os "repinta" com o terreno ao carregá-los.
 - Dados em `config/melbybet/fotomolduras.json`.
 
+## Waypoints (jar de cliente)
+
+Os waypoints existem só no cliente: instale o mesmo `.jar` do servidor na pasta `mods` do seu jogo. Cada jogador tem a sua lista, guardada no PC em `config/melbybet/waypoints/<servidor>.json`. Não há minimapa, só pontos com nome.
+
+- **Teclas** (trocáveis em Opções > Controles > "MelbyCraft: Waypoints"): `B` abre a lista, `N` cria um ponto aqui, `J` cria um temporário aqui, `H` liga ou desliga todos.
+- **Lista:** liga/desliga cada waypoint, edita (nome, inicial, cor, coordenadas, temporário), apaga e cria um novo na sua posição. Ordenada por distância; os de outras dimensões vêm depois.
+- **No mundo:** marcador visível através das paredes, nome, distância e feixe de luz (opcional). A bússola no topo da tela mostra a direção de cada um.
+- **Temporário:** some ao chegar a N blocos dele (padrão 5) e/ou depois de N minutos.
+- **Corpo:** ao morrer, o servidor cria sozinho um waypoint "Corpo", que some quando os itens são pegos.
+- **Compartilhar:** o botão na tela de edição manda o waypoint no chat com um botão [Waypoint] para todos adicionarem. O `/coords` também ganhou o botão [Waypoint].
+- **OP:** `/waypoint servidor ligar` ou `desligar` libera ou bloqueia os waypoints para todos.
+- **`/marcador`:** quem tem o jar de cliente vê o contorno em linhas de verdade, através das paredes. Sem o jar, continuam as partículas.
+
 ## Marcador de áreas (`/marcador`)
 
 Escolhe uma região (dois cantos) para usar nos recursos de construção. Não precisa de nada no cliente.
