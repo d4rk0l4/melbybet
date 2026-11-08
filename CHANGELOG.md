@@ -1,5 +1,13 @@
 # Versões do MelbyBet
 
+## 2.20.0
+- **Tempo AFK não conta nas horas online.** O tempo em AFK (manual ou automático, incluindo os minutos parado antes de entrar em AFK) é descontado do tempo online no `/top`, no `/perfil`, na tela de estatísticas e nos marcos de horas
+- Estatísticas novas no `/top` (agora 20 categorias, menu maior): pulos, dano causado, peixes pescados, trocas com villagers, diamantes minerados, animais criados, vezes que dormiu e itens encantados
+- Tela de estatísticas (jar de cliente, tecla **F7**): suas estatísticas, sua posição e o ranking da Gangue por categoria
+- **Travar slots** (jar de cliente): botão ao lado do Organizar. Ligue e clique nos slots do seu inventário (contorno dourado). Travado: o Organizar e o Guardar iguais não mexem, e o shift-clique e o drop não tiram o item
+- **Reposição automática** (jar de cliente): quando a pilha na mão acaba (bloco, comida, flecha), puxa a próxima igual do inventário, sem usar slots travados. Dá para desligar em Perfil
+- O GitHub avisa no Discord a cada versão nova, mandando o jar e as novidades
+
 ## 2.19.1
 - O corpo agora abre com a disposição do inventário: armadura e mão secundária na fileira de cima, mochila no meio e hotbar embaixo, cada item no lugar onde estava. Item sem lugar de origem (corpos antigos) vai para o primeiro espaço vazio. O botão **Transferir itens** leva tudo que couber. Funciona em qualquer cliente, sem o jar
 

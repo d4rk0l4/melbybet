@@ -13,6 +13,8 @@ public final class InventarioCliente {
     private InventarioCliente() {}
 
     public static Organizar.Perfil perfil = Organizar.Perfil.padrao();
+    /** Com o botão Travar ligado, clicar num slot do seu inventário trava ou destrava. */
+    public static boolean modoTrava;
     private static Path arquivo;
 
     public static void carregar() {

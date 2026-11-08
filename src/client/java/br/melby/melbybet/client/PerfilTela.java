@@ -61,6 +61,12 @@ public class PerfilTela extends Screen {
             InventarioCliente.salvar();
         }).bounds(gx, y, w, 20).build());
         y += 22;
+        this.addRenderableWidget(Button.builder(Component.literal("Repor bloco ao acabar: " + (perfil().reporBloco ? "Sim" : "Não")), b -> {
+            perfil().reporBloco = !perfil().reporBloco;
+            b.setMessage(Component.literal("Repor bloco ao acabar: " + (perfil().reporBloco ? "Sim" : "Não")));
+            InventarioCliente.salvar();
+        }).bounds(gx, y, w, 20).build());
+        y += 22;
         this.addRenderableWidget(Button.builder(Component.literal("Fechar"), b -> this.onClose()).bounds(gx, y, w, 20).build());
     }
 

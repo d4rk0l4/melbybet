@@ -51,6 +51,20 @@ public final class Organizar {
         public boolean organizarHotbar = true;
         /** "Guardar iguais" deixa a hotbar de fora. */
         public boolean guardarIgnoraHotbar = true;
+        /** Quando a pilha na mão acaba, puxa a próxima igual do inventário. */
+        public boolean reporBloco = true;
+        /** Slots travados: o Organizar e o Guardar iguais não mexem neles. */
+        public List<Integer> travados = new ArrayList<>();
+
+        public boolean travado(int slot) {
+            return travados != null && travados.contains(slot);
+        }
+
+        public void alternarTrava(int slot) {
+            if (slot < 0 || slot >= SLOTS) return;
+            if (travados == null) travados = new ArrayList<>();
+            if (!travados.remove(Integer.valueOf(slot))) travados.add(slot);
+        }
 
         public static Perfil padrao() {
             Perfil p = new Perfil();
@@ -106,6 +120,9 @@ public final class Organizar {
             if (!ok.isEmpty()) limpo.put(e.getKey(), ok);
         }
         p.slots = limpo;
+        List<Integer> trav = new ArrayList<>();
+        if (p.travados != null) for (Integer t : p.travados) if (t != null && t >= 0 && t < SLOTS && !trav.contains(t)) trav.add(t);
+        p.travados = trav;
         return p;
     }
 
@@ -189,7 +206,7 @@ public final class Organizar {
     public static List<int[]> plano(Pilha[] inicial, Perfil perfil) {
         Pilha[] inv = inicial.clone();
         boolean[] mexe = new boolean[SLOTS];
-        for (int i = 0; i < SLOTS; i++) mexe[i] = perfil.organizarHotbar || i >= 9;
+        for (int i = 0; i < SLOTS; i++) mexe[i] = (perfil.organizarHotbar || i >= 9) && !perfil.travado(i);
         List<int[]> ops = new ArrayList<>();
 
         // 1. junta as pilhas incompletas do mesmo item

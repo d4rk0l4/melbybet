@@ -142,6 +142,7 @@ public class MelbybetClient implements ClientModInitializer {
 		while (teclaMortes.consumeClick()) if (livre) MortesTela.abrir();
 		while (teclaEstat.consumeClick()) if (livre) EstatTela.abrir();
 		FarmHud.aCadaTick(mc);
+		ReposicaoAuto.aCadaTick(mc);
 		LuzCliente.aCadaTick(mc);
 		if (++tick % 10 == 0 && WaypointStore.ativo()) {
 			var saiu = WaypointStore.dados.limparTemporarios(System.currentTimeMillis(), WaypointStore.dimAtual(mc), mc.player.getX(), mc.player.getY(), mc.player.getZ());

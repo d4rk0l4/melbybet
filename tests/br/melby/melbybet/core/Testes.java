@@ -740,6 +740,20 @@ public class Testes {
         for (var p : fim) if (p != null && p.id().equals("cobblestone")) pedregulhos++;
         igual(1, pedregulhos, "org plano: uma pilha só");
         igual(0, Organizar.plano(fim, perfil).size(), "org plano: já organizado não faz nada");
+        // slot travado: o item fica onde está, mesmo que o perfil o queira em outro lugar
+        var trava = new Organizar.Pilha[Organizar.SLOTS];
+        trava[20] = pilha("iron_sword", 1, 1);
+        trava[8] = pilha("cooked_beef", 12, 64);
+        trava[30] = pilha("cobblestone", 10, 64);
+        trava[31] = pilha("cobblestone", 30, 64);
+        perfil.alternarTrava(20);
+        igual(true, perfil.travado(20), "travar: marcou");
+        var fimTrava = Organizar.aplicar(trava, Organizar.plano(trava, perfil));
+        igual("iron_sword", fimTrava[20].id(), "travar: a espada travada não saiu do 20");
+        igual(null, fimTrava[0], "travar: nada foi parar no 0 vindo do travado");
+        igual("cooked_beef", fimTrava[5].id(), "travar: o resto foi organizado");
+        perfil.alternarTrava(20);
+        igual(false, perfil.travado(20), "travar: desmarcou");
         // hotbar protegida
         perfil.organizarHotbar = false;
         inv = new Organizar.Pilha[Organizar.SLOTS];

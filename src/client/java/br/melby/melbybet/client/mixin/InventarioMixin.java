@@ -56,8 +56,25 @@ public abstract class InventarioMixin extends Screen {
         if (!recipiente && !(melbybet$tela() instanceof InventoryScreen)) return;
         int x = this.leftPos + this.imageWidth + 4;
         int y = this.topPos;
+        InventarioCliente.modoTrava = false;
+        // contorno dourado nos slots travados (fica por baixo do item)
+        this.addRenderableOnly((g, mx, my, d) -> {
+            for (Slot s : melbybet$tela().getMenu().slots) {
+                if (!(s.container instanceof Inventory) || !InventarioCliente.perfil.travado(s.getContainerSlot())) continue;
+                int sx = this.leftPos + s.x, sy = this.topPos + s.y;
+                g.fill(sx - 1, sy - 1, sx + 17, sy, 0xFFFFC928);
+                g.fill(sx - 1, sy + 16, sx + 17, sy + 17, 0xFFFFC928);
+                g.fill(sx - 1, sy, sx, sy + 16, 0xFFFFC928);
+                g.fill(sx + 16, sy, sx + 17, sy + 16, 0xFFFFC928);
+            }
+        });
         this.addRenderableWidget(Button.builder(Component.literal("Organizar"), b -> melbybet$organizar())
             .bounds(x, y, 78, 20).tooltip(Tooltip.create(Component.literal("Arruma o seu inventário pelo seu perfil e junta pilhas iguais."))).build());
+        y += 22;
+        this.addRenderableWidget(Button.builder(Component.literal("Travar slots"), b -> {
+            InventarioCliente.modoTrava = !InventarioCliente.modoTrava;
+            b.setMessage(Component.literal(InventarioCliente.modoTrava ? "Travar: clique" : "Travar slots"));
+        }).bounds(x, y, 78, 20).tooltip(Tooltip.create(Component.literal("Ligue e clique nos slots do seu inventário para travar ou destravar. Travado: o Organizar e o Guardar iguais não mexem, e o shift-clique e o drop não tiram o item."))).build());
         y += 22;
         this.addRenderableWidget(Button.builder(Component.literal("Perfil..."), b -> Minecraft.getInstance().setScreenAndShow(new PerfilTela()))
             .bounds(x, y, 78, 20).tooltip(Tooltip.create(Component.literal("Escolha onde você gosta de cada tipo de item."))).build());
@@ -68,6 +85,23 @@ public abstract class InventarioMixin extends Screen {
         y += 22;
         this.addRenderableWidget(Button.builder(Component.literal("Pegar iguais"), b -> melbybet$pegarIguais())
             .bounds(x, y, 78, 20).tooltip(Tooltip.create(Component.literal("Traz para você tudo daqui que você já tem pelo menos uma unidade."))).build());
+    }
+
+    @Inject(method = "slotClicked", at = @At("HEAD"), cancellable = true, require = 0)
+    private void melbybet$travas(Slot slot, int slotId, int button, ContainerInput input, CallbackInfo ci) {
+        if (slot == null || !(slot.container instanceof Inventory)) return;
+        int i = slot.getContainerSlot();
+        if (i < 0 || i >= Organizar.SLOTS) return;
+        if (InventarioCliente.modoTrava) {
+            InventarioCliente.perfil.alternarTrava(i);
+            InventarioCliente.salvar();
+            ci.cancel();
+            return;
+        }
+        if (InventarioCliente.perfil.travado(i) && (input == ContainerInput.QUICK_MOVE || input == ContainerInput.THROW)) {
+            InventarioCliente.aviso("Slot travado. Use o botão Travar slots para destravar.");
+            ci.cancel();
+        }
     }
 
     /** Os slots do jogador (0 a 8 hotbar, 9 a 35 mochila) pela posição no inventário. */
@@ -134,7 +168,7 @@ public abstract class InventarioMixin extends Screen {
         int movidos = 0;
         for (int i = pulaHotbar ? 9 : 0; i < Organizar.SLOTS; i++) {
             Slot s = meus[i];
-            if (s == null || !s.hasItem() || !melbybet$existeIgual(s.getItem(), dentro)) continue;
+            if (s == null || !s.hasItem() || InventarioCliente.perfil.travado(i) || !melbybet$existeIgual(s.getItem(), dentro)) continue;
             int antes = s.getItem().getCount();
             melbybet$clicar(s, ContainerInput.QUICK_MOVE);
             movidos += antes - (s.hasItem() ? s.getItem().getCount() : 0);
