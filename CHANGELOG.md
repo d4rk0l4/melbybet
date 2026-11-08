@@ -1,5 +1,10 @@
 # Versões do MelbyBet
 
+## 2.17.0
+- Luz dos monstros (jar de cliente, tecla **L**): quadrados no chão até 12 blocos de você. Vermelho = sem luz de bloco e sem céu (monstro nasce a qualquer hora); amarelo = sem luz de bloco mas com céu (nasce à noite)
+- Zoom segurando **C** (volta ao normal ao soltar). O F1 do jogo já esconde o HUD
+- Foto na parede por arquivo do seu computador (tecla **F8**): cole o caminho ou arraste o arquivo para a tela, escolha tamanho e modo. O jogo reduz a imagem e manda ao servidor em pedaços, então o servidor não precisa de internet. O `/fotomoldura <LxA> <endereço>` continua existindo
+
 ## 2.16.0
 - Ferramentas de construção (jar de cliente), tecla **G** abre o painel: guia de forma só com contorno (círculo, esfera, elipse, cúpula; centro no bloco olhado ou na sua posição, camada dos pés, estimativa de blocos e pilhas), **régua** (R marca A e B e mostra dx x dy x dz e distância), **espelho** (Y define o plano de simetria no bloco olhado e mostra o bloco espelhado)
 - Lista de materiais na tela (U liga/desliga): o `/catalogo hud [nome|limpar]` mostra o que falta de um projeto descontando o inventário
