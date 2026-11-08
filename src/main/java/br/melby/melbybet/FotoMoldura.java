@@ -95,7 +95,7 @@ public final class FotoMoldura {
     }
 
     public static void aoSair(ServerPlayer p) {
-        // o trabalho em andamento termina sozinho; só libera o limite de um por vez se ele já acabou
+        UPLOADS.remove(p.getUUID());
     }
 
     // ---------- comandos ----------
@@ -212,10 +212,6 @@ public final class FotoMoldura {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         for (byte[] b : u.partes) out.write(b, 0, b.length);
         criarDeBytes(p, u.larg, u.alt, u.modo, out.toByteArray());
-    }
-
-    public static void aoSair(ServerPlayer p) {
-        UPLOADS.remove(p.getUUID());
     }
 
     private static void criarDeBytes(ServerPlayer p, int larg, int alt, String modo, byte[] bytes) {
