@@ -28,7 +28,7 @@ jobs:
         shell: bash {0}
         run: |
           J=$(find ~/.gradle/caches/fabric-loom/minecraftMaven/net/minecraft/minecraft-clientonly-deobf/26.3 -name '*.jar' | head -1)
-          javap -p -cp "$J" net.minecraft.client.Options | grep -i "hide\|gui"
+          javap -p -cp "$J" net.minecraft.client.gui.Gui | grep -i "hide\|visible\|toggle"; javap -p -cp "$J" net.minecraft.client.Minecraft | grep -i "hide\|toggle"; javap -p -cp "$J" net.minecraft.client.Options | grep -i "keyToggleGui"; javap -p -cp "$J" net.minecraft.client.OptionInstance | grep -i "set(\|get("
       - name: testes da lógica (apostas, pagamento, ranking)
         run: |
           GSON=$(find ~/.gradle -name 'gson-*.jar' ! -name '*sources*' | head -1)
