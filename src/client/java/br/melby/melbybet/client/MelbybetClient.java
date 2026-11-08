@@ -64,7 +64,10 @@ public class MelbybetClient implements ClientModInitializer {
 		InventarioCliente.carregar();
 		ClientTooltipComponentCallback.EVENT.register(c -> c instanceof ShulkerTooltip s ? new ShulkerTooltipCliente(s) : null);
 
-		ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> WaypointStore.carregar(client));
+		ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
+			WaypointStore.carregar(client);
+			ClientPlayNetworking.send(new br.melby.melbybet.JarRede.OlaPayload(br.melby.melbybet.JarObrigatorio.versaoDoServidor()));
+		});
 		ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
 			WaypointStore.descarregar();
 			ConstrucaoCliente.limparTudo();

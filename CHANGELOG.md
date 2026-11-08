@@ -1,5 +1,11 @@
 # Versões do MelbyBet
 
+## 2.21.0
+- **Corpo deitado.** O corpo agora é um manequim com a skin de quem morreu, deitado, com a armadura e os itens das mãos que a pessoa usava. O nome fica em cima. Botão direito abre os itens. A pose é `corpoPose` no casa.json (`sleeping` deitado de costas, `swimming` de bruços, `crouching`, `standing`). Funciona sem o jar
+- **Log de corpos** (OP): `/corpo log [nick]` mostra os últimos eventos: quem morreu e onde, quem pegou o quê do corpo de quem, expirações e recuperações
+- **Recuperar itens.** Se o corpo sumir (expirou, foi removido, ou você morreu de novo tentando pegar), os itens que sobraram ficam guardados. Você recupera com `/corpo recuperar` ou pelo botão **Recuperar itens** no histórico de mortes (M). OP devolve com `/corpo recuperar <nick>` mesmo se o corpo ainda existir. Com `corpoHoras` ligado, o corpo que expira guarda os itens em vez de soltar no chão (`corpoGuardarAoExpirar`)
+- **Jar do MelbyCraft exigido.** O cliente avisa a versão ao entrar. `/jar modo off|avisar|barrar` (padrão: avisar), `/jar quem` mostra quem está com o jar e a versão. No modo barrar, quem não tem o jar na versão do servidor é removido depois de 12 segundos, com a mensagem do que baixar
+
 ## 2.20.0
 - **Tempo AFK não conta nas horas online.** O tempo em AFK (manual ou automático, incluindo os minutos parado antes de entrar em AFK) é descontado do tempo online no `/top`, no `/perfil`, na tela de estatísticas e nos marcos de horas
 - Estatísticas novas no `/top` (agora 20 categorias, menu maior): pulos, dano causado, peixes pescados, trocas com villagers, diamantes minerados, animais criados, vezes que dormiu e itens encantados

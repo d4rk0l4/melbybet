@@ -122,6 +122,7 @@ public final class Extras {
         conferirAfk();
         Prefixos.atualizarTodos();
         Presenca.aCadaSegundo();
+        JarObrigatorio.aCadaSegundo();
     }
 
     // ---------- fotos compartilhadas no chat ----------

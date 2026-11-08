@@ -42,6 +42,7 @@ public class Melbybet implements ModInitializer {
         WaypointsServidor.registrar();
         ConstrucaoServidor.registrar();
         MortesServidor.registrar();
+        JarObrigatorio.registrarRede();
         EstatServidor.registrar();
         Arena.registrar();
         Rastro.registrar();

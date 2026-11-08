@@ -43,6 +43,8 @@ public class Casa {
         public int chatLocalRaio = 100;
         /** Segundos depois da morte em que só o dono (ou um OP) pega os itens do corpo; depois qualquer um pega (0 = sem proteção). */
         public int corpoProtecaoSeg = 30;
+        /** Exigência do jar do MelbyCraft no cliente: off, avisar (padrão) ou barrar. */
+        public String jarModo = "avisar";
         /** Pose do manequim do corpo: sleeping (deitado de costas), swimming (de bruços), crouching ou standing. */
         public String corpoPose = "sleeping";
         /** Ao expirar (corpoHoras), guarda os itens para o dono recuperar em vez de soltar no chão. */
