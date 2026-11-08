@@ -296,6 +296,8 @@ Teclas configuráveis em Controles > MelbyCraft: Construção. **G** painel de g
 
 **M** abre o histórico de mortes (corpos ativos e histórico, com data, local e o equipamento que você usava).
 
+**F7** abre as estatísticas e o ranking. No inventário, **Travar slots** protege slots do Organizar, do Guardar iguais, do shift-clique e do drop; a reposição automática de bloco liga e desliga em Perfil.
+
 ## Marcador de áreas (`/marcador`)
 
 Escolhe uma região (dois cantos) para usar nos recursos de construção. Não precisa de nada no cliente.
