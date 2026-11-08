@@ -23,7 +23,7 @@ public class MortesTela extends Screen {
     private Button abaAtivos, abaHistorico;
     private static final DateTimeFormatter DATA = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss").withZone(ZoneId.systemDefault());
 
-    private Button anterior, proximo, itens;
+    private Button anterior, proximo, itens, recuperar;
 
     public MortesTela() {
         super(Component.literal("Histórico de mortes"));
@@ -94,6 +94,10 @@ public class MortesTela extends Screen {
             indice++;
             atualizar();
         }).bounds(x + 2 * (bw + 4), y, bw, 20).build());
+        recuperar = this.addRenderableWidget(Button.builder(Component.literal("Recuperar itens (corpo sumiu)"), b -> {
+            var m = atual();
+            if (m != null && m.recuperavel()) ClientPlayNetworking.send(new MortesRede.PedirPayload(-m.corpoId()));
+        }).bounds(x, y + 24, w, 20).build());
         atualizar();
     }
 
@@ -105,14 +109,15 @@ public class MortesTela extends Screen {
         anterior.active = indice > 0;
         proximo.active = indice < n - 1;
         var m = atual();
-        itens.active = m != null && !m.recuperado();
+        itens.active = m != null && !m.recuperado() && !m.recuperavel();
+        recuperar.active = m != null && m.recuperavel();
     }
 
     @Override
     public void extractRenderState(GuiGraphicsExtractor g, int mouseX, int mouseY, float delta) {
         super.extractRenderState(g, mouseX, mouseY, delta);
         int w = Math.min(300, this.width - 20), x = this.width / 2 - w / 2, top = this.height / 2 - 80;
-        g.fill(x - 6, top - 8, x + w + 6, this.height / 2 + 90, 0xE0202020);
+        g.fill(x - 6, top - 8, x + w + 6, this.height / 2 + 114, 0xE0202020);
         g.centeredText(this.font, this.title, this.width / 2, top, 0xFFFFFFFF);
         var m = atual();
         if (dados == null) {
@@ -141,7 +146,10 @@ public class MortesTela extends Screen {
         linha(g, "Distância:", dist, c1, c2, y + 70);
         String estado;
         int cor = 0xFFFFFFFF;
-        if (m.recuperado()) {
+        if (m.recuperavel()) {
+            estado = "Corpo sumiu: " + m.itens() + " item(ns) podem ser recuperados";
+            cor = 0xFFFF7777;
+        } else if (m.recuperado()) {
             estado = "Itens recuperados";
             cor = 0xFF88FF88;
         } else {

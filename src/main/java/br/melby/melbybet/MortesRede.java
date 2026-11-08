@@ -18,7 +18,7 @@ public final class MortesRede {
     }
 
     /** Uma morte. corpoId só vale se o corpo ainda existe (recuperado = false). equip: cabeça, peito, calça, bota, mão principal, mão secundária, como estavam. */
-    public record Morte(int corpoId, String dim, int x, int y, int z, long quando, int itens, boolean recuperado, long protegidoMs, List<ItemStack> equip) {}
+    public record Morte(int corpoId, String dim, int x, int y, int z, long quando, int itens, boolean recuperado, long protegidoMs, List<ItemStack> equip, boolean recuperavel) {}
 
     /** Servidor -> cliente: suas últimas mortes, da mais nova para a mais antiga. */
     public record ListaPayload(String nome, List<Morte> mortes) implements CustomPacketPayload {
@@ -38,6 +38,7 @@ public final class MortesRede {
                     b.writeBoolean(m.recuperado);
                     b.writeLong(m.protegidoMs);
                     for (int k = 0; k < 6; k++) ItemStack.OPTIONAL_STREAM_CODEC.encode(b, k < m.equip.size() ? m.equip.get(k) : ItemStack.EMPTY);
+                    b.writeBoolean(m.recuperavel);
                 }
             },
             b -> {
@@ -54,7 +55,7 @@ public final class MortesRede {
                     long prot = b.readLong();
                     List<ItemStack> eq = new ArrayList<>();
                     for (int k = 0; k < 6; k++) eq.add(ItemStack.OPTIONAL_STREAM_CODEC.decode(b));
-                    l.add(new Morte(id, dim, x, y, z, q, it, rec, prot, eq));
+                    l.add(new Morte(id, dim, x, y, z, q, it, rec, prot, eq, b.readBoolean()));
                 }
                 return new ListaPayload(nome, l);
             });
@@ -65,7 +66,7 @@ public final class MortesRede {
         }
     }
 
-    /** Cliente -> servidor: mande minha lista (corpoId 0) ou abra os itens deste corpo (corpoId > 0). */
+    /** Cliente -> servidor: mande minha lista (0), abra os itens deste corpo (> 0) ou recupere os itens da morte com esse corpo (< 0). */
     public record PedirPayload(int corpoId) implements CustomPacketPayload {
         public static final CustomPacketPayload.Type<PedirPayload> TYPE = novoTipo("mortes_pedir");
         public static final StreamCodec<RegistryFriendlyByteBuf, PedirPayload> CODEC = StreamCodec.of(

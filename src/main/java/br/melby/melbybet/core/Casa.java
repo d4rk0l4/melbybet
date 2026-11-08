@@ -43,6 +43,10 @@ public class Casa {
         public int chatLocalRaio = 100;
         /** Segundos depois da morte em que só o dono (ou um OP) pega os itens do corpo; depois qualquer um pega (0 = sem proteção). */
         public int corpoProtecaoSeg = 30;
+        /** Pose do manequim do corpo: sleeping (deitado de costas), swimming (de bruços), crouching ou standing. */
+        public String corpoPose = "sleeping";
+        /** Ao expirar (corpoHoras), guarda os itens para o dono recuperar em vez de soltar no chão. */
+        public boolean corpoGuardarAoExpirar = true;
         /** Quanto o banco invisível do /sit fica abaixo dos pés, em blocos (maior = senta mais baixo). */
         public double bancoAltura = 1.6;
         /** De quantos em quantos minutos o servidor apaga os itens do chão (0 = desligado). */
@@ -251,12 +255,24 @@ public class Casa {
         public int x, y, z, itens;
         public long quando;
         public boolean recuperado;
+        /** Itens que ainda estão no corpo (espelho do corpo, para recuperar se ele sumir) e o slot de origem de cada um. */
+        public List<String> restantes = new ArrayList<>();
+        public List<Integer> restSlots = new ArrayList<>();
+        public boolean expirado;
         /** Cabeça, peito, calça, bota, mão principal e mão secundária (JSON de cada item, "" se vazio). */
         public List<String> equip = new ArrayList<>();
     }
 
     /** Tempo AFK acumulado por jogador (uuid -> ms); sai das horas online nas estatísticas. */
     public Map<String, Long> afkMs = new LinkedHashMap<>();
+    /** Log de eventos dos corpos: "ms\ttexto", os mais novos no fim. */
+    public List<String> logCorpos = new ArrayList<>();
+
+    public void logCorpo(String texto) {
+        logCorpos.add(System.currentTimeMillis() + "\t" + texto);
+        while (logCorpos.size() > 400) logCorpos.remove(0);
+    }
+
     public List<Morte> historicoMortes = new ArrayList<>();
     public List<Corpo> corpos = new ArrayList<>();
     public int proximoCorpo = 1;

@@ -23,20 +23,7 @@ jobs:
       - name: make gradle wrapper executable
         run: chmod +x ./gradlew
       - name: build
-        continue-on-error: true
         run: ./gradlew build
-      - name: TEMP javap
-        continue-on-error: true
-        shell: bash {0}
-        run: |
-          J=$(find ~/.gradle/caches/fabric-loom/minecraftMaven/net/minecraft/minecraft-common-deobf/26.3 -name '*.jar' | head -1)
-          unzip -l "$J" | grep -i "mannequin\|ResolvableProfile" | awk '{print $4}'
-          C=$(unzip -l "$J" | awk '{print $4}' | grep -i "/Mannequin.class")
-          javap -p -cp "$J" "${C%.class}" | head -50
-          javap -p -cp "$J" net.minecraft.world.item.component.ResolvableProfile | grep "public static\|create"
-          javap -p -cp "$J" net.minecraft.world.entity.Avatar | grep -i "pose\|profile\|immov"
-          javap -p -cp "$J" net.minecraft.world.entity.Entity | grep -i "setPose\|getPose"
-          javap -p -cp "$J" net.minecraft.world.entity.Pose | grep "static final"
       - name: testes da lógica (apostas, pagamento, ranking)
         run: |
           GSON=$(find ~/.gradle -name 'gson-*.jar' ! -name '*sources*' | head -1)

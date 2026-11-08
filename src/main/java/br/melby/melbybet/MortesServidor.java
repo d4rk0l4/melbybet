@@ -19,7 +19,17 @@ public final class MortesServidor {
         PayloadTypeRegistry.serverboundPlay().register(MortesRede.PedirPayload.TYPE, MortesRede.PedirPayload.CODEC);
         ServerPlayNetworking.registerGlobalReceiver(MortesRede.PedirPayload.TYPE, (v, ctx) -> {
             ServerPlayer p = ctx.player();
-            if (v.corpoId() <= 0) {
+            if (v.corpoId() < 0) {
+                for (Casa.Morte m : Jogo.casa.historicoMortes) {
+                    if (m.corpoId != -v.corpoId() || !m.uuid.equals(p.getUUID().toString())) continue;
+                    String erro = Corpos.recuperar(p, m, false);
+                    p.sendSystemMessage(Jogo.prefixo(erro == null ? "Itens recuperados." : erro));
+                    break;
+                }
+                enviar(p);
+                return;
+            }
+            if (v.corpoId() == 0) {
                 enviar(p);
                 return;
             }
@@ -48,6 +58,9 @@ public final class MortesServidor {
             for (int i = 0; i < c.itens.size(); i++) if (c.slotDe(i) == slot) json = c.itens.get(i);
             m.equip.add(json);
         }
+        Corpos.vestir(c, equipDe(m));
+        m.restantes = new ArrayList<>(c.itens);
+        m.restSlots = new ArrayList<>(c.slots == null ? List.of() : c.slots);
         Jogo.casa.historicoMortes.add(m);
         int n = 0;
         for (int i = Jogo.casa.historicoMortes.size() - 1; i >= 0; i--) {
@@ -66,14 +79,15 @@ public final class MortesServidor {
             Casa.Morte m = Jogo.casa.historicoMortes.get(i);
             if (!m.uuid.equals(uuid)) continue;
             Casa.Corpo c = m.recuperado ? null : Jogo.casa.corpo(m.corpoId);
-            boolean rec = c == null;
-            long prot = rec ? 0 : Math.max(0, Jogo.casa.config.corpoProtecaoSeg * 1000L - (agora - m.quando));
-            l.add(new MortesRede.Morte(m.corpoId, m.dim, m.x, m.y, m.z, m.quando, rec ? 0 : c.itens.size(), rec, prot, equipDe(m)));
+            boolean sumiu = c == null && !m.recuperado && !m.restantes.isEmpty();
+            boolean rec = c == null && !sumiu;
+            long prot = c == null ? 0 : Math.max(0, Jogo.casa.config.corpoProtecaoSeg * 1000L - (agora - m.quando));
+            l.add(new MortesRede.Morte(m.corpoId, m.dim, m.x, m.y, m.z, m.quando, c != null ? c.itens.size() : sumiu ? m.restantes.size() : 0, rec, prot, equipDe(m), sumiu));
         }
         ServerPlayNetworking.send(p, new MortesRede.ListaPayload(p.getGameProfile().name(), l));
     }
 
-    private static List<net.minecraft.world.item.ItemStack> equipDe(Casa.Morte m) {
+    static List<net.minecraft.world.item.ItemStack> equipDe(Casa.Morte m) {
         List<net.minecraft.world.item.ItemStack> l = new ArrayList<>();
         for (int k = 0; k < 6; k++) {
             String j = k < m.equip.size() ? m.equip.get(k) : "";
@@ -84,8 +98,16 @@ public final class MortesServidor {
 
     /** O corpo foi esvaziado ou mexido: atualiza a tela de quem estiver com ela aberta. */
     public static void corpoMudou(Casa.Corpo c, boolean vazio) {
-        if (vazio) {
-            for (Casa.Morte m : Jogo.casa.historicoMortes) if (m.corpoId == c.id && m.uuid.equals(c.uuid)) m.recuperado = true;
+        for (Casa.Morte m : Jogo.casa.historicoMortes) {
+            if (m.corpoId != c.id || !m.uuid.equals(c.uuid)) continue;
+            if (vazio) {
+                m.recuperado = true;
+                m.restantes = new ArrayList<>();
+                m.restSlots = new ArrayList<>();
+            } else {
+                m.restantes = new ArrayList<>(c.itens);
+                m.restSlots = new ArrayList<>(c.slots == null ? List.of() : c.slots);
+            }
         }
         if (Jogo.server == null) return;
         ServerPlayer dono = Jogo.server.getPlayerList().getPlayer(java.util.UUID.fromString(c.uuid));

@@ -20,7 +20,6 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
@@ -92,7 +91,7 @@ public final class Corpos {
 
     public static void registrar(CommandDispatcher<CommandSourceStack> d) {
         UseEntityCallback.EVENT.register((player, nivel, mao, entidade, hit) -> {
-            if (!(entidade instanceof ArmorStand) || !entidade.entityTags().contains(TAG)) return InteractionResult.PASS;
+            if (!entidade.entityTags().contains(TAG)) return InteractionResult.PASS;
             if (player instanceof ServerPlayer sp && mao == InteractionHand.MAIN_HAND && Jogo.server != null) {
                 Casa.Corpo c = Jogo.casa.corpoDoBoneco(entidade.getUUID().toString());
                 if (c != null) MenuCorpo.abrir(sp, c);
@@ -100,7 +99,7 @@ public final class Corpos {
             return InteractionResult.SUCCESS;
         });
         AttackEntityCallback.EVENT.register((player, nivel, mao, entidade, hit) ->
-            entidade instanceof ArmorStand && entidade.entityTags().contains(TAG) ? InteractionResult.FAIL : InteractionResult.PASS);
+            entidade.entityTags().contains(TAG) ? InteractionResult.FAIL : InteractionResult.PASS);
 
         d.register(literal("corpo")
             .executes(c -> {
@@ -125,12 +124,66 @@ public final class Corpos {
                     MenuCorpo.abrir(c.getSource().getPlayerOrException(), x);
                     return 1;
                 })))
+            .then(literal("recuperar").executes(c -> {
+                ServerPlayer p = c.getSource().getPlayerOrException();
+                Casa.Morte alvo = null;
+                for (int i = Jogo.casa.historicoMortes.size() - 1; i >= 0 && alvo == null; i--) {
+                    Casa.Morte m = Jogo.casa.historicoMortes.get(i);
+                    if (m.uuid.equals(p.getUUID().toString()) && !m.recuperado && !m.restantes.isEmpty() && Jogo.casa.corpo(m.corpoId) == null) alvo = m;
+                }
+                if (alvo == null) {
+                    p.sendSystemMessage(Jogo.prefixo("Nenhuma morte sua com itens a recuperar (o corpo precisa ter sumido)."));
+                    return 0;
+                }
+                String erro = recuperar(p, alvo, false);
+                p.sendSystemMessage(Jogo.prefixo(erro == null ? "Itens recuperados." : erro));
+                return erro == null ? 1 : 0;
+            })
+            .then(argument("nick", com.mojang.brigadier.arguments.StringArgumentType.word()).requires(s -> s.getPlayer() != null && Comandos.admin(s.getPlayer())).executes(c -> {
+                String nick = com.mojang.brigadier.arguments.StringArgumentType.getString(c, "nick");
+                ServerPlayer op = c.getSource().getPlayerOrException();
+                Casa.Morte alvo = null;
+                for (int i = Jogo.casa.historicoMortes.size() - 1; i >= 0 && alvo == null; i--) {
+                    Casa.Morte m = Jogo.casa.historicoMortes.get(i);
+                    Casa.Visto v = Jogo.casa.vistos.get(nick.toLowerCase());
+                    if (v != null && m.uuid.equals(v.uuid) && !m.recuperado && !m.restantes.isEmpty()) alvo = m;
+                }
+                if (alvo == null) {
+                    op.sendSystemMessage(Jogo.prefixo("Nenhuma morte de " + nick + " com itens guardados."));
+                    return 0;
+                }
+                ServerPlayer dono = Jogo.server.getPlayerList().getPlayerByName(nick);
+                if (dono == null) {
+                    op.sendSystemMessage(Jogo.prefixo(nick + " precisa estar online para receber."));
+                    return 0;
+                }
+                String erro = recuperar(dono, alvo, true);
+                op.sendSystemMessage(Jogo.prefixo(erro == null ? "Itens de " + nick + " devolvidos." : erro));
+                return erro == null ? 1 : 0;
+            })))
+            .then(literal("log").requires(s -> s.getPlayer() != null && Comandos.admin(s.getPlayer()))
+                .executes(c -> mostrarLog(c.getSource(), ""))
+                .then(argument("nick", com.mojang.brigadier.arguments.StringArgumentType.word()).executes(c -> mostrarLog(c.getSource(), com.mojang.brigadier.arguments.StringArgumentType.getString(c, "nick")))))
             .then(literal("lista").requires(s -> s.getPlayer() != null && Comandos.admin(s.getPlayer())).executes(c -> {
                 for (Casa.Corpo x : Jogo.casa.corpos)
                     c.getSource().sendSuccess(() -> Component.literal("#" + x.id + " " + x.nome + ": " + x.dim + " " + Math.round(x.x) + " " + Math.round(x.y) + " " + Math.round(x.z)
                         + " (" + x.itens.size() + " item(ns))"), false);
                 return Jogo.casa.corpos.size();
             })));
+    }
+
+    private static int mostrarLog(CommandSourceStack src, String filtro) {
+        var fmt = new java.text.SimpleDateFormat("dd/MM HH:mm");
+        List<String> l = new ArrayList<>();
+        for (String e : Jogo.casa.logCorpos) if (filtro.isEmpty() || e.toLowerCase().contains(filtro.toLowerCase())) l.add(e);
+        for (String e : l.subList(Math.max(0, l.size() - 15), l.size())) {
+            int t = e.indexOf('\t');
+            String quando = t > 0 ? fmt.format(new java.util.Date(Long.parseLong(e.substring(0, t)))) : "";
+            String txt = t > 0 ? e.substring(t + 1) : e;
+            src.sendSuccess(() -> Component.literal(quando + "  " + txt), false);
+        }
+        if (l.isEmpty()) src.sendSuccess(() -> Component.literal("Log de corpos vazio."), false);
+        return l.size();
     }
 
     // ---------- morte ----------
@@ -174,21 +227,69 @@ public final class Corpos {
             }
         }
         Casa.Corpo c = Jogo.casa.novoCorpo(p.getUUID().toString(), p.getGameProfile().name(), dim, x, y, z, itens, slots, System.currentTimeMillis());
-        ArmorStand boneco = new ArmorStand(nivel, x, y, z);
-        boneco.addTag(TAG);
-        boneco.setInvisible(true);
-        boneco.setNoGravity(true);
-        boneco.setPermanentlyInvulnerable(true);
-        boneco.setCustomName(Component.literal("Corpo de " + p.getGameProfile().name()).withStyle(ChatFormatting.GRAY));
-        boneco.setCustomNameVisible(true);
-        boneco.setItemSlot(EquipmentSlot.HEAD, new GuiElementBuilder(Items.PLAYER_HEAD).setProfile(p.getGameProfile().name()).asStack());
-        nivel.addFreshEntity(boneco);
-        c.boneco = boneco.getUUID().toString();
+        UUID idBoneco = UUID.randomUUID();
+        String nick = p.getGameProfile().name();
+        String pose = Jogo.casa.config.corpoPose.matches("sleeping|swimming|crouching|standing|fall_flying") ? Jogo.casa.config.corpoPose : "sleeping";
+        long ua = idBoneco.getMostSignificantBits(), ub = idBoneco.getLeastSignificantBits();
+        String nbt = "{UUID:[I;" + (int) (ua >> 32) + "," + (int) ua + "," + (int) (ub >> 32) + "," + (int) ub + "],Tags:[\"" + TAG + "\"],"
+            + "CustomName:'{\"text\":\"Corpo de " + nick + "\",\"color\":\"gray\"}',CustomNameVisible:1b,Invulnerable:1b,NoGravity:1b,"
+            + "immovable:1b,hide_description:1b,pose:\"" + pose + "\",profile:\"" + nick + "\"}";
+        String cmd = String.format(java.util.Locale.ROOT, "execute in minecraft:%s run summon minecraft:mannequin %.3f %.3f %.3f %s", dim, x, y, z, nbt);
+        Jogo.server.getCommands().performPrefixedCommand(Jogo.server.createCommandSourceStack().withSuppressedOutput(), cmd);
+        c.boneco = idBoneco.toString();
         WaypointsServidor.corpoCriado(p, c);
         MortesServidor.registrarMorte(p, c);
+        Jogo.casa.logCorpo(nick + " morreu em " + dim + " " + Math.round(x) + " " + Math.round(y) + " " + Math.round(z) + " (" + itens.size() + " itens, corpo #" + c.id + ")");
         Jogo.salvar();
         p.sendSystemMessage(Component.literal("Seus itens ficaram no seu corpo em " + dim + " " + Math.round(x) + " " + Math.round(y) + " " + Math.round(z)
             + ". Só você pega nos primeiros " + Jogo.casa.config.corpoProtecaoSeg + "s; depois qualquer jogador abre com o botão direito. Use /corpo para ver depois.").withStyle(ChatFormatting.YELLOW));
+    }
+
+    /** Veste o manequim com o que o jogador usava (cabeça, peito, calça, bota, mão principal e secundária). */
+    static void vestir(Casa.Corpo c, List<ItemStack> equip) {
+        Entity e = bonecoDe(c);
+        if (!(e instanceof net.minecraft.world.entity.LivingEntity vivo) || equip.size() < 6) return;
+        EquipmentSlot[] ordem = {EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET, EquipmentSlot.MAINHAND, EquipmentSlot.OFFHAND};
+        for (int i = 0; i < 6; i++) if (!equip.get(i).isEmpty()) vivo.setItemSlot(ordem[i], equip.get(i).copy());
+    }
+
+    /**
+     * Devolve os itens que sobraram de um corpo que sumiu (expirou, foi removido ou o dono morreu de novo tentando pegar).
+     * Dono: só se o corpo não existe mais. OP (forcar): remove o corpo se ainda existir. Devolve null se deu certo, ou o motivo.
+     */
+    public static String recuperar(ServerPlayer p, Casa.Morte m, boolean forcar) {
+        Casa.Corpo vivo = Jogo.casa.corpo(m.corpoId);
+        if (vivo != null && vivo.uuid.equals(m.uuid)) {
+            if (!forcar) return "O corpo ainda existe em " + vivo.dim + " " + Math.round(vivo.x) + " " + Math.round(vivo.y) + " " + Math.round(vivo.z) + ".";
+            Entity e = bonecoDe(vivo);
+            if (e != null) e.discard();
+            WaypointsServidor.corpoRemovido(vivo);
+            Jogo.casa.removerCorpo(vivo.id);
+        }
+        if (m.recuperado || m.restantes.isEmpty()) return "Não há itens para recuperar dessa morte.";
+        Inventory inv = p.getInventory();
+        int dados = 0;
+        for (int i = 0; i < m.restantes.size(); i++) {
+            ItemStack st = deJson(m.restantes.get(i));
+            if (st.isEmpty()) continue;
+            dados++;
+            int slot = i < m.restSlots.size() && m.restSlots.get(i) != null ? m.restSlots.get(i) : -1;
+            int alvo = Casa.Corpo.destino(slot, inv.getContainerSize(), n -> inv.getItem(n).isEmpty());
+            if (alvo >= 0) {
+                inv.setItem(alvo, st);
+                continue;
+            }
+            inv.add(st);
+            if (!st.isEmpty() && p.level() instanceof ServerLevel nivel) nivel.addFreshEntity(new ItemEntity(nivel, p.getX(), p.getY(), p.getZ(), st));
+        }
+        m.restantes = new ArrayList<>();
+        m.restSlots = new ArrayList<>();
+        m.recuperado = true;
+        Jogo.casa.logCorpo(p.getGameProfile().name() + " recuperou " + dados + " item(ns) da morte de " + new java.text.SimpleDateFormat("dd/MM HH:mm").format(new java.util.Date(m.quando)) + (forcar ? " (OP)" : ""));
+        p.containerMenu.broadcastChanges();
+        MortesServidor.enviar(p);
+        Jogo.salvar();
+        return null;
     }
 
     // ---------- pegar itens ----------
@@ -212,6 +313,7 @@ public final class Corpos {
         }
         if (indice < 0 || indice >= c.itens.size()) return;
         ItemStack st = deJson(c.itens.get(indice));
+        String descricao = st.getCount() + "x " + st.getHoverName().getString();
         if (st.isEmpty()) {
             c.removerItem(indice);
         } else {
@@ -232,6 +334,7 @@ public final class Corpos {
             }
         }
         p.containerMenu.broadcastChanges();
+        Jogo.casa.logCorpo(p.getGameProfile().name() + " pegou " + descricao + " do corpo #" + c.id + " de " + c.nome);
         avisarDono(p, c);
         fecharSeVazio(c);
         MortesServidor.corpoMudou(c, c.itens.isEmpty());
@@ -280,7 +383,10 @@ public final class Corpos {
         for (Casa.Corpo c : new ArrayList<>(Jogo.casa.corpos)) {
             if (c.quando > limite) continue;
             ServerLevel nivel = nivelDe(c.dim);
-            if (nivel != null) {
+            boolean guardar = Jogo.casa.config.corpoGuardarAoExpirar;
+            for (Casa.Morte m : Jogo.casa.historicoMortes) if (m.corpoId == c.id && m.uuid.equals(c.uuid)) m.expirado = true;
+            Jogo.casa.logCorpo("Corpo #" + c.id + " de " + c.nome + " expirou com " + c.itens.size() + " item(ns)" + (guardar ? " (guardados para recuperar)" : " (soltos no chão)"));
+            if (nivel != null && !guardar) {
                 for (String j : c.itens) {
                     ItemStack st = deJson(j);
                     if (!st.isEmpty()) nivel.addFreshEntity(new ItemEntity(nivel, c.x, c.y, c.z, st));
