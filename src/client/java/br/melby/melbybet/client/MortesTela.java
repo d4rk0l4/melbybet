@@ -19,6 +19,8 @@ public class MortesTela extends Screen {
     private static MortesRede.ListaPayload dados;
     private static long recebidoEm;
     private static int indice;
+    private static boolean soAtivos = true;
+    private Button abaAtivos, abaHistorico;
     private static final DateTimeFormatter DATA = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss").withZone(ZoneId.systemDefault());
 
     private Button anterior, proximo, itens;
@@ -35,12 +37,18 @@ public class MortesTela extends Screen {
     public static void receber(MortesRede.ListaPayload p) {
         dados = p;
         recebidoEm = System.currentTimeMillis();
-        if (indice >= p.mortes().size()) indice = 0;
+        if (indice >= lista().size()) indice = 0;
         if (Minecraft.getInstance().gui.screen() instanceof MortesTela t) t.atualizar();
     }
 
+    private static List<MortesRede.Morte> lista() {
+        if (dados == null) return List.of();
+        return soAtivos ? dados.mortes().stream().filter(m -> !m.recuperado()).toList() : dados.mortes();
+    }
+
     private MortesRede.Morte atual() {
-        return dados != null && indice < dados.mortes().size() ? dados.mortes().get(indice) : null;
+        var l = lista();
+        return indice < l.size() ? l.get(indice) : null;
     }
 
     private static String dimensao(String d) {
@@ -61,6 +69,16 @@ public class MortesTela extends Screen {
     protected void init() {
         int w = Math.min(300, this.width - 20), x = this.width / 2 - w / 2, y = this.height / 2 + 62;
         int bw = (w - 8) / 3;
+        abaAtivos = this.addRenderableWidget(Button.builder(Component.literal("Corpos ativos"), b -> {
+            soAtivos = true;
+            indice = 0;
+            atualizar();
+        }).bounds(x, this.height / 2 - 100, w / 2 - 2, 20).build());
+        abaHistorico = this.addRenderableWidget(Button.builder(Component.literal("Histórico"), b -> {
+            soAtivos = false;
+            indice = 0;
+            atualizar();
+        }).bounds(x + w / 2 + 2, this.height / 2 - 100, w / 2 - 2, 20).build());
         anterior = this.addRenderableWidget(Button.builder(Component.literal("Anterior"), b -> {
             indice--;
             atualizar();
@@ -80,8 +98,10 @@ public class MortesTela extends Screen {
     }
 
     private void atualizar() {
-        int n = dados == null ? 0 : dados.mortes().size();
+        int n = lista().size();
         if (anterior == null) return;
+        abaAtivos.active = !soAtivos;
+        abaHistorico.active = soAtivos;
         anterior.active = indice > 0;
         proximo.active = indice < n - 1;
         var m = atual();
@@ -100,10 +120,10 @@ public class MortesTela extends Screen {
             return;
         }
         if (m == null) {
-            g.centeredText(this.font, Component.literal("Você ainda não morreu."), this.width / 2, top + 40, 0xFFAAAAAA);
+            g.centeredText(this.font, Component.literal(soAtivos ? "Nenhum corpo com itens." : "Você ainda não morreu."), this.width / 2, top + 40, 0xFFAAAAAA);
             return;
         }
-        g.centeredText(this.font, Component.literal(DATA.format(Instant.ofEpochMilli(m.quando())) + "  (" + (indice + 1) + "/" + dados.mortes().size() + ")"), this.width / 2, top + 14, 0xFFFFC928);
+        g.centeredText(this.font, Component.literal(DATA.format(Instant.ofEpochMilli(m.quando())) + "  (" + (indice + 1) + "/" + lista().size() + ")"), this.width / 2, top + 14, 0xFFFFC928);
         int y = top + 34, c1 = x, c2 = x + 70;
         linha(g, "Nome:", dados.nome(), c1, c2, y);
         linha(g, "Dimensão:", dimensao(m.dim()), c1, c2, y + 14);
@@ -130,8 +150,21 @@ public class MortesTela extends Screen {
             cor = prot > 0 ? 0xFFFFAA55 : 0xFFFFFFFF;
         }
         g.text(this.font, estado, c1, y + 86, cor);
+        // o que você vestia e segurava
+        int ex = x + w - 112;
+        String[] nomes = {"Cabeça", "Peito", "Calça", "Bota", "Mão", "Outra mão"};
+        for (int k = 0; k < 6 && k < m.equip().size(); k++) {
+            int ix = ex, iy = y - 4 + k * 20;
+            g.fill(ix - 1, iy - 1, ix + 17, iy + 17, 0xFF555555);
+            var st = m.equip().get(k);
+            if (!st.isEmpty()) {
+                g.item(st, ix, iy);
+                g.itemDecorations(this.font, st, ix, iy);
+                if (mouseX >= ix && mouseX < ix + 16 && mouseY >= iy && mouseY < iy + 16) g.setTooltipForNextFrame(this.font, st, mouseX, mouseY);
+            }
+        }
         if (mc.player != null) {
-            int bx = x + w - 90;
+            int bx = x + w - 88;
             InventoryScreen.extractEntityInInventoryFollowsMouse(g, bx, y, bx + 80, y + 100, 40, 0.0625F, mouseX, mouseY, mc.player);
         }
     }

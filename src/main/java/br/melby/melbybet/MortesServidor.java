@@ -40,6 +40,14 @@ public final class MortesServidor {
         m.z = (int) Math.round(c.z);
         m.quando = c.quando;
         m.itens = c.itens.size();
+        // o que você vestia e segurava: o slot de origem de cada item diz (39 cabeça, 38 peito, 37 calça, 36 bota, 40 mão secundária)
+        int mao = p.getInventory().getSelectedSlot();
+        int[] ordem = {39, 38, 37, 36, mao, 40};
+        for (int slot : ordem) {
+            String json = "";
+            for (int i = 0; i < c.itens.size(); i++) if (c.slotDe(i) == slot) json = c.itens.get(i);
+            m.equip.add(json);
+        }
         Jogo.casa.historicoMortes.add(m);
         int n = 0;
         for (int i = Jogo.casa.historicoMortes.size() - 1; i >= 0; i--) {
@@ -60,9 +68,18 @@ public final class MortesServidor {
             Casa.Corpo c = m.recuperado ? null : Jogo.casa.corpo(m.corpoId);
             boolean rec = c == null;
             long prot = rec ? 0 : Math.max(0, Jogo.casa.config.corpoProtecaoSeg * 1000L - (agora - m.quando));
-            l.add(new MortesRede.Morte(m.corpoId, m.dim, m.x, m.y, m.z, m.quando, rec ? 0 : c.itens.size(), rec, prot));
+            l.add(new MortesRede.Morte(m.corpoId, m.dim, m.x, m.y, m.z, m.quando, rec ? 0 : c.itens.size(), rec, prot, equipDe(m)));
         }
         ServerPlayNetworking.send(p, new MortesRede.ListaPayload(p.getGameProfile().name(), l));
+    }
+
+    private static List<net.minecraft.world.item.ItemStack> equipDe(Casa.Morte m) {
+        List<net.minecraft.world.item.ItemStack> l = new ArrayList<>();
+        for (int k = 0; k < 6; k++) {
+            String j = k < m.equip.size() ? m.equip.get(k) : "";
+            l.add(j.isEmpty() ? net.minecraft.world.item.ItemStack.EMPTY : Corpos.deJson(j));
+        }
+        return l;
     }
 
     /** O corpo foi esvaziado ou mexido: atualiza a tela de quem estiver com ela aberta. */

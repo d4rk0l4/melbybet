@@ -251,6 +251,8 @@ public class Casa {
         public int x, y, z, itens;
         public long quando;
         public boolean recuperado;
+        /** Cabeça, peito, calça, bota, mão principal e mão secundária (JSON de cada item, "" se vazio). */
+        public List<String> equip = new ArrayList<>();
     }
 
     public List<Morte> historicoMortes = new ArrayList<>();

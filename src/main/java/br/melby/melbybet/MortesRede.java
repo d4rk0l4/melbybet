@@ -1,6 +1,7 @@
 package br.melby.melbybet;
 
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.Identifier;
@@ -16,8 +17,8 @@ public final class MortesRede {
         return new CustomPacketPayload.Type<>(Identifier.fromNamespaceAndPath("melbybet", nome));
     }
 
-    /** Uma morte. corpoId só vale se o corpo ainda existe (recuperado = false). */
-    public record Morte(int corpoId, String dim, int x, int y, int z, long quando, int itens, boolean recuperado, long protegidoMs) {}
+    /** Uma morte. corpoId só vale se o corpo ainda existe (recuperado = false). equip: cabeça, peito, calça, bota, mão principal, mão secundária, como estavam. */
+    public record Morte(int corpoId, String dim, int x, int y, int z, long quando, int itens, boolean recuperado, long protegidoMs, List<ItemStack> equip) {}
 
     /** Servidor -> cliente: suas últimas mortes, da mais nova para a mais antiga. */
     public record ListaPayload(String nome, List<Morte> mortes) implements CustomPacketPayload {
@@ -36,13 +37,25 @@ public final class MortesRede {
                     b.writeVarInt(m.itens);
                     b.writeBoolean(m.recuperado);
                     b.writeLong(m.protegidoMs);
+                    for (int k = 0; k < 6; k++) ItemStack.OPTIONAL_STREAM_CODEC.encode(b, k < m.equip.size() ? m.equip.get(k) : ItemStack.EMPTY);
                 }
             },
             b -> {
                 String nome = b.readUtf(40);
                 int n = Math.min(b.readVarInt(), 30);
                 List<Morte> l = new ArrayList<>();
-                for (int i = 0; i < n; i++) l.add(new Morte(b.readVarInt(), b.readUtf(60), b.readInt(), b.readInt(), b.readInt(), b.readLong(), b.readVarInt(), b.readBoolean(), b.readLong()));
+                for (int i = 0; i < n; i++) {
+                    int id = b.readVarInt();
+                    String dim = b.readUtf(60);
+                    int x = b.readInt(), y = b.readInt(), z = b.readInt();
+                    long q = b.readLong();
+                    int it = b.readVarInt();
+                    boolean rec = b.readBoolean();
+                    long prot = b.readLong();
+                    List<ItemStack> eq = new ArrayList<>();
+                    for (int k = 0; k < 6; k++) eq.add(ItemStack.OPTIONAL_STREAM_CODEC.decode(b));
+                    l.add(new Morte(id, dim, x, y, z, q, it, rec, prot, eq));
+                }
                 return new ListaPayload(nome, l);
             });
 
