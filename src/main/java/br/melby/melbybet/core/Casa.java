@@ -253,7 +253,7 @@ public class Casa {
         public boolean recuperado;
     }
 
-    public List<Morte> mortes = new ArrayList<>();
+    public List<Morte> historicoMortes = new ArrayList<>();
     public List<Corpo> corpos = new ArrayList<>();
     public int proximoCorpo = 1;
 

@@ -40,11 +40,11 @@ public final class MortesServidor {
         m.z = (int) Math.round(c.z);
         m.quando = c.quando;
         m.itens = c.itens.size();
-        Jogo.casa.mortes.add(m);
+        Jogo.casa.historicoMortes.add(m);
         int n = 0;
-        for (int i = Jogo.casa.mortes.size() - 1; i >= 0; i--) {
-            if (!Jogo.casa.mortes.get(i).uuid.equals(c.uuid)) continue;
-            if (++n > MAX_POR_JOGADOR) Jogo.casa.mortes.remove(i);
+        for (int i = Jogo.casa.historicoMortes.size() - 1; i >= 0; i--) {
+            if (!Jogo.casa.historicoMortes.get(i).uuid.equals(c.uuid)) continue;
+            if (++n > MAX_POR_JOGADOR) Jogo.casa.historicoMortes.remove(i);
         }
         enviar(p);
     }
@@ -54,8 +54,8 @@ public final class MortesServidor {
         String uuid = p.getUUID().toString();
         List<MortesRede.Morte> l = new ArrayList<>();
         long agora = System.currentTimeMillis();
-        for (int i = Jogo.casa.mortes.size() - 1; i >= 0; i--) {
-            Casa.Morte m = Jogo.casa.mortes.get(i);
+        for (int i = Jogo.casa.historicoMortes.size() - 1; i >= 0; i--) {
+            Casa.Morte m = Jogo.casa.historicoMortes.get(i);
             if (!m.uuid.equals(uuid)) continue;
             Casa.Corpo c = m.recuperado ? null : Jogo.casa.corpo(m.corpoId);
             boolean rec = c == null;
@@ -68,7 +68,7 @@ public final class MortesServidor {
     /** O corpo foi esvaziado ou mexido: atualiza a tela de quem estiver com ela aberta. */
     public static void corpoMudou(Casa.Corpo c, boolean vazio) {
         if (vazio) {
-            for (Casa.Morte m : Jogo.casa.mortes) if (m.corpoId == c.id && m.uuid.equals(c.uuid)) m.recuperado = true;
+            for (Casa.Morte m : Jogo.casa.historicoMortes) if (m.corpoId == c.id && m.uuid.equals(c.uuid)) m.recuperado = true;
         }
         if (Jogo.server == null) return;
         ServerPlayer dono = Jogo.server.getPlayerList().getPlayer(java.util.UUID.fromString(c.uuid));
