@@ -105,6 +105,7 @@ public final class FotoMoldura {
             .then(literal("lista").executes(c -> lista(c.getSource().getPlayerOrException())))
             .then(literal("info").executes(c -> info(c.getSource().getPlayerOrException())))
             .then(literal("reparar").executes(c -> reparar(c.getSource().getPlayerOrException())))
+            .then(literal("desfazer").executes(c -> desfazer(c.getSource().getPlayerOrException())))
             .then(literal("apagar").executes(c -> apagar(c.getSource().getPlayerOrException(), -1))
                 .then(argument("id", IntegerArgumentType.integer(1)).executes(c -> apagar(c.getSource().getPlayerOrException(), IntegerArgumentType.getInteger(c, "id")))))
             .then(argument("tamanho", StringArgumentType.word()).then(argument("endereco", StringArgumentType.greedyString())
@@ -121,7 +122,7 @@ public final class FotoMoldura {
             "O endereço precisa ser https:// direto para a imagem (PNG, JPG, GIF ou BMP; WebP não funciona).",
             "Modo: cortar (padrão, preenche e corta as bordas), ajustar (mostra tudo, com faixas pretas) ou esticar.",
             "Olhe para o bloco que será o canto inferior esquerdo da foto: ela cresce para a direita e para cima, na frente da parede.",
-            "/fotomoldura lista | info | reparar | apagar [id]  (info, reparar e apagar valem para o mural para o qual você olha)"};
+            "/fotomoldura lista | info | reparar | desfazer | apagar [id]  (info, reparar e apagar valem para o mural para o qual você olha)"};
         p.sendSystemMessage(Component.literal("Fotos em molduras").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), false);
         for (String s : l) p.sendSystemMessage(Component.literal(s).withStyle(ChatFormatting.GRAY), false);
     }
@@ -436,6 +437,14 @@ public final class FotoMoldura {
         p.sendSystemMessage(Component.literal(n1 == 0 ? "Nenhuma moldura estava girada." : n1 + " moldura(s) desgirada(s)."
             ).withStyle(ChatFormatting.GREEN), true);
         return 1;
+    }
+
+    /** Apaga a última foto que você colocou, sem precisar olhar para ela. */
+    private static int desfazer(ServerPlayer p) {
+        int ultimo = -1;
+        for (Grupo g : dados.grupos) if (g.dono.equals(p.getUUID().toString()) && g.id > ultimo) ultimo = g.id;
+        if (ultimo < 0) return erro(p, "Você não tem foto para desfazer.");
+        return apagar(p, ultimo);
     }
 
     private static int apagar(ServerPlayer p, int id) {

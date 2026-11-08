@@ -1,5 +1,10 @@
 # Versões do MelbyBet
 
+## 2.18.0
+- Contador de farm (jar de cliente, tecla **V**): liga zerando e mostra no canto o que entrou no inventário e os itens por minuto; aperte de novo para parar. Mexer em baú ou inventário não conta
+- `/catalogo` agora conta o que você precisa levar: bandeiras e placas de parede viram a bandeira e a placa, planta em vaso vira vaso mais planta, caules e vinhas viram muda ou semente. A lista de materiais na tela usa a mesma conta. O padrão da bandeira não é contado, só a cor
+- `/fotomoldura desfazer` apaga a última foto que você colocou, sem precisar olhar para ela
+
 ## 2.17.0
 - Luz dos monstros (jar de cliente, tecla **L**): quadrados no chão até 12 blocos de você. Vermelho = sem luz de bloco e sem céu (monstro nasce a qualquer hora); amarelo = sem luz de bloco mas com céu (nasce à noite)
 - Zoom segurando **C** (volta ao normal ao soltar). O F1 do jogo já esconde o HUD

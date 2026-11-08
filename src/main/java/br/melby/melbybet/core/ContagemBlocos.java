@@ -19,6 +19,11 @@ public class ContagemBlocos {
         /** Posições que não foram lidas porque o chunk não estava carregado. */
         public long puladas;
 
+        /** Soma um bloco já traduzido para o que você precisa levar (veja {@link #paraItens}). */
+        public void somarBloco(String id, long n) {
+            for (String[] par : paraItens(id)) somar(par[0], n * Long.parseLong(par[1]));
+        }
+
         public void somar(String id, long n) {
             if (n <= 0) return;
             blocos.merge(id, n, Long::sum);
@@ -45,6 +50,37 @@ public class ContagemBlocos {
             if (n < 1 || de >= l.size()) return List.of();
             return l.subList(de, Math.min(l.size(), de + POR_PAGINA));
         }
+    }
+
+    /**
+     * Traduz o id de um bloco para os itens que ele exige: placa e bandeira de parede viram a placa e a bandeira,
+     * vaso com planta vira vaso mais planta, caules e plantas de caule viram a muda ou semente. Devolve pares [id, quantidade].
+     */
+    public static List<String[]> paraItens(String id) {
+        String r = id;
+        if (id.startsWith("potted_")) {
+            String planta = id.substring(7);
+            if (planta.equals("azalea_bush")) planta = "azalea";
+            else if (planta.equals("flowering_azalea_bush")) planta = "flowering_azalea";
+            return List.of(new String[] {"flower_pot", "1"}, new String[] {planta, "1"});
+        }
+        if (id.endsWith("_wall_banner")) r = id.replace("_wall_banner", "_banner");
+        else if (id.endsWith("_wall_hanging_sign")) r = id.replace("_wall_hanging_sign", "_hanging_sign");
+        else if (id.endsWith("_wall_sign")) r = id.replace("_wall_sign", "_sign");
+        else if (id.endsWith("_wall_head")) r = id.replace("_wall_head", "_head");
+        else if (id.endsWith("_wall_skull")) r = id.replace("_wall_skull", "_skull");
+        else if (id.equals("wall_torch")) r = "torch";
+        else if (id.equals("soul_wall_torch")) r = "soul_torch";
+        else if (id.equals("redstone_wall_torch")) r = "redstone_torch";
+        else if (id.equals("kelp_plant")) r = "kelp";
+        else if (id.equals("weeping_vines_plant")) r = "weeping_vines";
+        else if (id.equals("twisting_vines_plant")) r = "twisting_vines";
+        else if (id.equals("cave_vines") || id.equals("cave_vines_plant")) r = "glow_berries";
+        else if (id.equals("bamboo_sapling")) r = "bamboo";
+        else if (id.equals("melon_stem") || id.equals("attached_melon_stem")) r = "melon_seeds";
+        else if (id.equals("pumpkin_stem") || id.equals("attached_pumpkin_stem")) r = "pumpkin_seeds";
+        else if (id.equals("tall_seagrass")) r = "seagrass";
+        return java.util.Collections.singletonList(new String[] {r, "1"});
     }
 
     public static class Projeto {

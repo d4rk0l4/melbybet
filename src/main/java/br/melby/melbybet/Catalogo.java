@@ -199,7 +199,7 @@ public final class Catalogo {
         long n = 1;
         if (bloco instanceof SlabBlock && st.getValue(SlabBlock.TYPE) == SlabType.DOUBLE) n = 2;
         String id = BuiltInRegistries.BLOCK.getKey(bloco).getPath();
-        v.res.somar(id, n);
+        v.res.somarBloco(id, n);
     }
 
     private static void terminar(ServerPlayer p, Varredura v) {

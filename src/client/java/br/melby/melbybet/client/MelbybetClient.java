@@ -18,7 +18,7 @@ import com.mojang.blaze3d.platform.InputConstants;
 
 public class MelbybetClient implements ClientModInitializer {
 	private static KeyMapping teclaLista, teclaCriar, teclaTemp, teclaLigar;
-	private static KeyMapping teclaGuias, teclaRegua, teclaEspelho, teclaMateriais, teclaStand, teclaPlaca, teclaLuz, teclaZoom, teclaImagem;
+	private static KeyMapping teclaGuias, teclaRegua, teclaEspelho, teclaMateriais, teclaStand, teclaPlaca, teclaLuz, teclaZoom, teclaImagem, teclaFarm;
 	private static int tick;
 
 	@Override
@@ -40,6 +40,9 @@ public class MelbybetClient implements ClientModInitializer {
 		teclaLuz = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.melbybet.luz", InputConstants.KEY_L, cons));
 		teclaZoom = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.melbybet.zoom", InputConstants.KEY_C, cons));
 		teclaImagem = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.melbybet.foto_parede", InputConstants.KEY_F8, cons));
+
+		teclaFarm = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.melbybet.farm", InputConstants.KEY_V, cons));
+		HudElementRegistry.addLast(Identifier.fromNamespaceAndPath("melbybet", "farm"), (g, tracker) -> FarmHud.desenhar(g));
 
 		ClientPlayNetworking.registerGlobalReceiver(ConstrucaoRede.MateriaisPayload.TYPE, (payload, ctx) -> {
 			ConstrucaoCliente.projeto = payload.nome();
@@ -125,6 +128,12 @@ public class MelbybetClient implements ClientModInitializer {
 		}
 		while (teclaImagem.consumeClick()) if (livre) mc.setScreenAndShow(new FotoTela());
 		FotoModo.zoom(mc, livre && teclaZoom.isDown());
+		while (teclaFarm.consumeClick()) {
+			if (!livre) continue;
+			FarmHud.alternar(mc);
+			WaypointStore.aviso("Contador de farm " + (FarmHud.ativo ? "ligado (aperte de novo para parar)" : "desligado"));
+		}
+		FarmHud.aCadaTick(mc);
 		LuzCliente.aCadaTick(mc);
 		if (++tick % 10 == 0 && WaypointStore.ativo()) {
 			var saiu = WaypointStore.dados.limparTemporarios(System.currentTimeMillis(), WaypointStore.dimAtual(mc), mc.player.getX(), mc.player.getY(), mc.player.getZ());
