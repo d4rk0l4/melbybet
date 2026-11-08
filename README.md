@@ -294,6 +294,8 @@ Teclas configuráveis em Controles > MelbyCraft: Construção. **G** painel de g
 
 **L** mostra onde monstros nascem, **C** (segurar) dá zoom, **F8** abre a tela de foto na parede com arquivo do PC (o servidor valida tamanho, limite por jogador e permissão como no `/fotomoldura`).
 
+**M** abre o histórico de mortes (corpos ativos e histórico, com data, local e o equipamento que você usava).
+
 ## Marcador de áreas (`/marcador`)
 
 Escolhe uma região (dois cantos) para usar nos recursos de construção. Não precisa de nada no cliente.

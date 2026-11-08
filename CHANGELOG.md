@@ -1,5 +1,8 @@
 # Versões do MelbyBet
 
+## 2.19.0
+- Histórico de mortes (jar de cliente, tecla **M**): duas abas, **Corpos ativos** (os que ainda têm itens) e **Histórico** (todas as vezes que você morreu). Cada morte mostra data e hora, dimensão, coordenadas, distância, quantos itens ainda estão no corpo (ou "recuperados"), o tempo de proteção restante e o que você vestia e segurava (cabeça, peito, calça, bota e as duas mãos, com o nome ao passar o mouse). O botão **Itens** abre o corpo. Guarda as últimas 10 mortes
+
 ## 2.18.1
 - Corpo protegido nos primeiros 30 segundos depois da morte: só o dono (ou um OP) pega os itens; depois qualquer um pega, como antes. O tempo fica em `corpoProtecaoSeg` no casa.json (0 desliga)
 
