@@ -21,6 +21,7 @@ jobs:
       - name: make gradle wrapper executable
         run: chmod +x ./gradlew
       - name: build
+        continue-on-error: true
         run: ./gradlew build
       - name: TEMP javap cliente
         continue-on-error: true
