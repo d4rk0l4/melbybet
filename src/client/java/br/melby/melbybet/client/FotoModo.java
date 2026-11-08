@@ -2,16 +2,12 @@ package br.melby.melbybet.client;
 
 import net.minecraft.client.Minecraft;
 
-/** Modo foto: esconde o HUD e deixa dar zoom segurando uma tecla. */
+/** Modo foto: zoom segurando uma tecla (o F1 do jogo já esconde o HUD). */
 public final class FotoModo {
     private FotoModo() {}
 
     private static boolean zoomAtivo;
     private static int fovOriginal = -1;
-
-    public static void alternarHud(Minecraft mc) {
-        mc.options.hideGui = !mc.options.hideGui;
-    }
 
     public static void zoom(Minecraft mc, boolean segurando) {
         if (segurando && !zoomAtivo) {

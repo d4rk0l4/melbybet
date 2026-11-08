@@ -18,7 +18,7 @@ import com.mojang.blaze3d.platform.InputConstants;
 
 public class MelbybetClient implements ClientModInitializer {
 	private static KeyMapping teclaLista, teclaCriar, teclaTemp, teclaLigar;
-	private static KeyMapping teclaGuias, teclaRegua, teclaEspelho, teclaMateriais, teclaStand, teclaPlaca, teclaLuz, teclaFoto, teclaZoom, teclaImagem;
+	private static KeyMapping teclaGuias, teclaRegua, teclaEspelho, teclaMateriais, teclaStand, teclaPlaca, teclaLuz, teclaZoom, teclaImagem;
 	private static int tick;
 
 	@Override
@@ -38,7 +38,6 @@ public class MelbybetClient implements ClientModInitializer {
 		teclaPlaca = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.melbybet.placa", InputConstants.KEY_O, cons));
 
 		teclaLuz = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.melbybet.luz", InputConstants.KEY_L, cons));
-		teclaFoto = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.melbybet.modo_foto", InputConstants.KEY_F9, cons));
 		teclaZoom = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.melbybet.zoom", InputConstants.KEY_C, cons));
 		teclaImagem = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.melbybet.foto_parede", InputConstants.KEY_F8, cons));
 
@@ -124,7 +123,6 @@ public class MelbybetClient implements ClientModInitializer {
 			LuzCliente.ativo = !LuzCliente.ativo;
 			WaypointStore.aviso("Luz dos monstros " + (LuzCliente.ativo ? "ligada (vermelho: nasce sempre; amarelo: nasce à noite)" : "desligada"));
 		}
-		while (teclaFoto.consumeClick()) if (livre) FotoModo.alternarHud(mc);
 		while (teclaImagem.consumeClick()) if (livre) mc.setScreenAndShow(new FotoTela());
 		FotoModo.zoom(mc, livre && teclaZoom.isDown());
 		LuzCliente.aCadaTick(mc);
