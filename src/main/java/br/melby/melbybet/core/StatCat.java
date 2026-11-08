@@ -19,7 +19,15 @@ public enum StatCat {
     MATOU("Mais matou mobs", "mobs"),
     MORREU("Mais morreu", "x"),
     TEMPO("Mais tempo online", "h"),
-    CRAFTOU("Mais craftou", "itens");
+    CRAFTOU("Mais craftou", "itens"),
+    PULOS("Mais pulou", "x"),
+    DANO("Mais dano causado", "dano"),
+    PESCOU("Mais pescou", "peixes"),
+    TROCOU("Mais trocou com villagers", "trocas"),
+    DIAMANTE("Mais diamantes minerados", "minérios"),
+    CRIOU("Mais criou animais", "x"),
+    DORMIU("Mais dormiu em cama", "x"),
+    ENCANTOU("Mais encantou itens", "x");
 
     public final String rotulo;
     private final String unidade;
@@ -83,6 +91,17 @@ public enum StatCat {
         return t;
     }
 
+    private static double minerado(JsonObject stats, String... blocos) {
+        JsonElement e = stats.get("minecraft:mined");
+        if (e == null || !e.isJsonObject()) return 0;
+        double t = 0;
+        for (String b : blocos) {
+            JsonElement v = e.getAsJsonObject().get("minecraft:" + b);
+            if (v != null) t += numero(v);
+        }
+        return t;
+    }
+
     private static String[] mov(String... base) {
         String[] r = new String[base.length];
         for (int i = 0; i < base.length; i++) r[i] = base[i] + "_one_cm";
@@ -110,6 +129,14 @@ public enum StatCat {
             case MORREU: return custom(stats, "deaths");
             case TEMPO: return custom(stats, "play_time") + custom(stats, "play_one_minute");
             case CRAFTOU: return somaMapa(stats, "minecraft:crafted");
+            case PULOS: return custom(stats, "jump");
+            case DANO: return custom(stats, "damage_dealt");
+            case PESCOU: return custom(stats, "fish_caught");
+            case TROCOU: return custom(stats, "traded_with_villager");
+            case DIAMANTE: return minerado(stats, "diamond_ore", "deepslate_diamond_ore");
+            case CRIOU: return custom(stats, "animals_bred");
+            case DORMIU: return custom(stats, "sleep_in_bed");
+            case ENCANTOU: return custom(stats, "enchant_item");
             default: return 0;
         }
     }
@@ -120,6 +147,7 @@ public enum StatCat {
         switch (unidade) {
             case "dist": case "km": return b / 100000.0;
             case "h": return b / 72000.0;
+            case "dano": return b / 20.0;
             default: return b;
         }
     }
@@ -131,6 +159,10 @@ public enum StatCat {
             case "blocos": return Fmt.inteiro(Math.round(v)) + " blocos";
             case "mobs": return Fmt.inteiro(Math.round(v)) + " mobs";
             case "itens": return Fmt.inteiro(Math.round(v)) + " itens";
+            case "dano": return Fmt.decimal(v, 1) + " corações";
+            case "peixes": return Fmt.inteiro(Math.round(v)) + " peixes";
+            case "trocas": return Fmt.inteiro(Math.round(v)) + " trocas";
+            case "minérios": return Fmt.inteiro(Math.round(v)) + " minérios";
             default: return Fmt.inteiro(Math.round(v)) + "x";
         }
     }

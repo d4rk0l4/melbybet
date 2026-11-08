@@ -1,6 +1,7 @@
 package br.melby.melbybet.client;
 
 import br.melby.melbybet.ConstrucaoRede;
+import br.melby.melbybet.EstatRede;
 import br.melby.melbybet.MortesRede;
 import br.melby.melbybet.WaypointRede;
 import br.melby.melbybet.core.Waypoints;
@@ -19,7 +20,7 @@ import com.mojang.blaze3d.platform.InputConstants;
 
 public class MelbybetClient implements ClientModInitializer {
 	private static KeyMapping teclaLista, teclaCriar, teclaTemp, teclaLigar;
-	private static KeyMapping teclaGuias, teclaRegua, teclaEspelho, teclaMateriais, teclaStand, teclaPlaca, teclaLuz, teclaZoom, teclaImagem, teclaFarm, teclaMortes;
+	private static KeyMapping teclaGuias, teclaRegua, teclaEspelho, teclaMateriais, teclaStand, teclaPlaca, teclaLuz, teclaZoom, teclaImagem, teclaFarm, teclaMortes, teclaEstat;
 	private static int tick;
 
 	@Override
@@ -44,6 +45,8 @@ public class MelbybetClient implements ClientModInitializer {
 
 		teclaFarm = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.melbybet.farm", InputConstants.KEY_V, cons));
 		teclaMortes = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.melbybet.mortes", InputConstants.KEY_M, cons));
+		teclaEstat = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.melbybet.estat", InputConstants.KEY_F7, cons));
+		ClientPlayNetworking.registerGlobalReceiver(EstatRede.DadosPayload.TYPE, (payload, ctx) -> EstatTela.receber(payload));
 		ClientPlayNetworking.registerGlobalReceiver(MortesRede.ListaPayload.TYPE, (payload, ctx) -> MortesTela.receber(payload));
 		HudElementRegistry.addLast(Identifier.fromNamespaceAndPath("melbybet", "farm"), (g, tracker) -> FarmHud.desenhar(g));
 
@@ -137,6 +140,7 @@ public class MelbybetClient implements ClientModInitializer {
 			WaypointStore.aviso("Contador de farm " + (FarmHud.ativo ? "ligado (aperte de novo para parar)" : "desligado"));
 		}
 		while (teclaMortes.consumeClick()) if (livre) MortesTela.abrir();
+		while (teclaEstat.consumeClick()) if (livre) EstatTela.abrir();
 		FarmHud.aCadaTick(mc);
 		LuzCliente.aCadaTick(mc);
 		if (++tick % 10 == 0 && WaypointStore.ativo()) {

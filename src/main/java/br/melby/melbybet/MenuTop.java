@@ -35,6 +35,14 @@ public final class MenuTop {
             case MATOU: return Items.DIAMOND_SWORD;
             case MORREU: return Items.SKELETON_SKULL;
             case TEMPO: return Items.CLOCK;
+            case PULOS: return Items.RABBIT_FOOT;
+            case DANO: return Items.IRON_SWORD;
+            case PESCOU: return Items.FISHING_ROD;
+            case TROCOU: return Items.EMERALD;
+            case DIAMANTE: return Items.DIAMOND;
+            case CRIOU: return Items.WHEAT;
+            case DORMIU: return Items.RED_BED;
+            case ENCANTOU: return Items.ENCHANTING_TABLE;
             default: return Items.CRAFTING_TABLE;
         }
     }
@@ -54,9 +62,9 @@ public final class MenuTop {
 
     public static void abrir(ServerPlayer p) {
         Map<String, JsonObject> stats = Jogo.statsTodos();
-        SimpleGui gui = new SimpleGui(MenuType.GENERIC_9x3, p, false);
+        SimpleGui gui = new SimpleGui(MenuType.GENERIC_9x4, p, false);
         gui.setTitle(Component.literal("Ranking da Gangue"));
-        int[] slots = {1, 2, 3, 4, 5, 6, 7, 10, 11, 12, 13, 14};
+        int[] slots = {1, 2, 3, 4, 5, 6, 7, 10, 11, 12, 13, 14, 15, 16, 19, 20, 21, 22, 23, 24};
         StatCat[] cats = StatCat.values();
         for (int i = 0; i < cats.length; i++) {
             StatCat c = cats[i];
@@ -73,7 +81,7 @@ public final class MenuTop {
             b.setCallback((index, type, action, g) -> chat(p, c, rank));
             gui.setSlot(slots[i], b.build());
         }
-        gui.setSlot(22, new GuiElementBuilder(Items.BARRIER)
+        gui.setSlot(31, new GuiElementBuilder(Items.BARRIER)
             .setName(Component.literal("Fechar").withStyle(ChatFormatting.RED))
             .setCallback((index, type, action, g) -> g.close()).build());
         gui.open();

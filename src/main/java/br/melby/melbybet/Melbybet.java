@@ -42,6 +42,7 @@ public class Melbybet implements ModInitializer {
         WaypointsServidor.registrar();
         ConstrucaoServidor.registrar();
         MortesServidor.registrar();
+        EstatServidor.registrar();
         Arena.registrar();
         Rastro.registrar();
         Marcadores.registrarEventos();
@@ -75,6 +76,7 @@ public class Melbybet implements ModInitializer {
             WaypointsServidor.aoSair(handler.getPlayer());
             Marcadores.aoSair(handler.getPlayer());
             FotoMoldura.aoSair(handler.getPlayer());
+            EstatServidor.aoSair(handler.getPlayer());
         });
         ServerLivingEntityEvents.AFTER_DAMAGE.register((entidade, fonte, base, tomado, bloqueado) -> Duelos.aoDano(entidade, fonte));
         ServerMessageDecoratorEvent.EVENT.register(ServerMessageDecoratorEvent.CONTENT_PHASE, Extras::decorar);
