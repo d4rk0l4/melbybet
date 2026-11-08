@@ -22,6 +22,7 @@ public final class WaypointMundo {
         if (mc.player == null || mc.level == null) return;
         String dim = WaypointStore.dimAtual(mc);
         desenharArea(dim);
+        ConstrucaoMundo.desenhar(dim);
         if (!WaypointStore.ativo() || !WaypointStore.dados.tudoVisivel) return;
         double px = mc.player.getX(), py = mc.player.getY(), pz = mc.player.getZ();
         boolean feixe = WaypointStore.dados.feixe;

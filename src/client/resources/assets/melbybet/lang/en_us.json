@@ -3,5 +3,12 @@
   "key.melbybet.waypoint_lista": "Open waypoint list",
   "key.melbybet.waypoint_criar": "Create waypoint here",
   "key.melbybet.waypoint_temp": "Create temporary waypoint here",
-  "key.melbybet.waypoint_ligar": "Toggle waypoints"
+  "key.melbybet.waypoint_ligar": "Toggle waypoints",
+  "key.category.melbybet.construcao": "MelbyCraft: Building",
+  "key.melbybet.guias": "Shape guides, ruler and mirror",
+  "key.melbybet.regua": "Ruler: mark point",
+  "key.melbybet.espelho": "Mirror: plane at looked block",
+  "key.melbybet.materiais": "Show/hide materials",
+  "key.melbybet.armorstand": "Edit armor stand",
+  "key.melbybet.placa": "Edit sign"
 }

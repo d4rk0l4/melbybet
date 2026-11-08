@@ -1,5 +1,6 @@
 package br.melby.melbybet.client;
 
+import br.melby.melbybet.ConstrucaoRede;
 import br.melby.melbybet.WaypointRede;
 import br.melby.melbybet.core.Waypoints;
 import net.fabricmc.api.ClientModInitializer;
@@ -17,6 +18,7 @@ import com.mojang.blaze3d.platform.InputConstants;
 
 public class MelbybetClient implements ClientModInitializer {
 	private static KeyMapping teclaLista, teclaCriar, teclaTemp, teclaLigar;
+	private static KeyMapping teclaGuias, teclaRegua, teclaEspelho, teclaMateriais, teclaStand, teclaPlaca;
 	private static int tick;
 
 	@Override
@@ -27,11 +29,33 @@ public class MelbybetClient implements ClientModInitializer {
 		teclaTemp = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.melbybet.waypoint_temp", InputConstants.KEY_J, categoria));
 		teclaLigar = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.melbybet.waypoint_ligar", InputConstants.KEY_H, categoria));
 
+		KeyMapping.Category cons = KeyMapping.Category.register(Identifier.fromNamespaceAndPath("melbybet", "construcao"));
+		teclaGuias = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.melbybet.guias", InputConstants.KEY_G, cons));
+		teclaRegua = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.melbybet.regua", InputConstants.KEY_R, cons));
+		teclaEspelho = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.melbybet.espelho", InputConstants.KEY_Y, cons));
+		teclaMateriais = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.melbybet.materiais", InputConstants.KEY_U, cons));
+		teclaStand = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.melbybet.armorstand", InputConstants.KEY_K, cons));
+		teclaPlaca = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.melbybet.placa", InputConstants.KEY_O, cons));
+
+		ClientPlayNetworking.registerGlobalReceiver(ConstrucaoRede.MateriaisPayload.TYPE, (payload, ctx) -> {
+			ConstrucaoCliente.projeto = payload.nome();
+			ConstrucaoCliente.blocos = payload.blocos();
+			ConstrucaoCliente.itens = payload.itens();
+			ConstrucaoCliente.qtds = payload.qtds();
+		});
+		ClientPlayNetworking.registerGlobalReceiver(ConstrucaoRede.MapArtPayload.TYPE, (payload, ctx) ->
+			ConstrucaoCliente.grade = payload.ativo() ? payload : null);
+		ClientPlayNetworking.registerGlobalReceiver(ConstrucaoRede.PlacaDadosPayload.TYPE, (payload, ctx) -> PlacaTela.receber(payload));
+		HudElementRegistry.addLast(Identifier.fromNamespaceAndPath("melbybet", "materiais"), (g, tracker) -> MateriaisHud.desenhar(g));
+
 		InventarioCliente.carregar();
 		ClientTooltipComponentCallback.EVENT.register(c -> c instanceof ShulkerTooltip s ? new ShulkerTooltipCliente(s) : null);
 
 		ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> WaypointStore.carregar(client));
-		ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> WaypointStore.descarregar());
+		ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
+			WaypointStore.descarregar();
+			ConstrucaoCliente.limparTudo();
+		});
 
 		ClientPlayNetworking.registerGlobalReceiver(WaypointRede.ConfigPayload.TYPE, (payload, ctx) -> WaypointStore.liberado = payload.waypoints());
 		ClientPlayNetworking.registerGlobalReceiver(WaypointRede.AreaPayload.TYPE, (payload, ctx) ->
@@ -75,6 +99,21 @@ public class MelbybetClient implements ClientModInitializer {
 			WaypointStore.salvar();
 			WaypointStore.aviso("Waypoints " + (WaypointStore.dados.tudoVisivel ? "ligados" : "desligados"));
 		}
+		while (teclaGuias.consumeClick()) if (livre) mc.setScreenAndShow(new GuiasTela());
+		while (teclaRegua.consumeClick()) if (livre) GuiasTela.marcarRegua();
+		while (teclaEspelho.consumeClick()) if (livre) GuiasTela.definirEspelho();
+		while (teclaMateriais.consumeClick()) {
+			if (!livre) continue;
+			ConstrucaoCliente.materiaisVisivel = !ConstrucaoCliente.materiaisVisivel;
+			WaypointStore.aviso("Lista de materiais " + (ConstrucaoCliente.materiaisVisivel ? "visível" : "escondida"));
+		}
+		while (teclaStand.consumeClick()) {
+			if (!livre) continue;
+			var a = ArmorStandTela.olhado();
+			if (a == null) WaypointStore.aviso("Olhe para um armor stand.");
+			else mc.setScreenAndShow(new ArmorStandTela(a.getId(), 0));
+		}
+		while (teclaPlaca.consumeClick()) if (livre) PlacaTela.pedir();
 		if (++tick % 10 == 0 && WaypointStore.ativo()) {
 			var saiu = WaypointStore.dados.limparTemporarios(System.currentTimeMillis(), WaypointStore.dimAtual(mc), mc.player.getX(), mc.player.getY(), mc.player.getZ());
 			if (!saiu.isEmpty()) {

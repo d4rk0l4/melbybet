@@ -3,5 +3,12 @@
   "key.melbybet.waypoint_lista": "Abrir lista de waypoints",
   "key.melbybet.waypoint_criar": "Criar waypoint aqui",
   "key.melbybet.waypoint_temp": "Criar waypoint temporário aqui",
-  "key.melbybet.waypoint_ligar": "Ligar ou desligar waypoints"
+  "key.melbybet.waypoint_ligar": "Ligar ou desligar waypoints",
+  "key.category.melbybet.construcao": "MelbyCraft: Construção",
+  "key.melbybet.guias": "Guias de forma, régua e espelho",
+  "key.melbybet.regua": "Régua: marcar ponto",
+  "key.melbybet.espelho": "Espelho: plano no bloco olhado",
+  "key.melbybet.materiais": "Mostrar/esconder materiais",
+  "key.melbybet.armorstand": "Editar armor stand",
+  "key.melbybet.placa": "Editar placa"
 }
