@@ -167,6 +167,18 @@ public enum StatCat {
         }
     }
 
+    /** Tira o tempo AFK (em ms) do tempo jogado nas stats (ticks), sem deixar ficar negativo. */
+    public static void descontarAfk(JsonObject stats, long afkMs) {
+        if (afkMs <= 0) return;
+        JsonElement e = stats.get("minecraft:custom");
+        if (e == null || !e.isJsonObject()) return;
+        JsonObject c = e.getAsJsonObject();
+        String chave = c.has("minecraft:play_time") ? "minecraft:play_time" : "minecraft:play_one_minute";
+        if (!c.has(chave)) return;
+        double ticks = numero(c.get(chave)) - afkMs / 50.0;
+        c.addProperty(chave, Math.max(0, Math.round(ticks)));
+    }
+
     /** Lê o JSON de estatísticas do jogador (world/.../stats/uuid.json) e devolve o objeto "stats". */
     public static JsonObject lerStats(String json) {
         try {

@@ -41,7 +41,7 @@ public final class MenuTop {
             case TROCOU: return Items.EMERALD;
             case DIAMANTE: return Items.DIAMOND;
             case CRIOU: return Items.WHEAT;
-            case DORMIU: return Items.RED_BED;
+            case DORMIU: return Items.PHANTOM_MEMBRANE;
             case ENCANTOU: return Items.ENCHANTING_TABLE;
             default: return Items.CRAFTING_TABLE;
         }

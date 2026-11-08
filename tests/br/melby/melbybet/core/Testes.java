@@ -85,6 +85,11 @@ public class Testes {
         igual("8,90", Fmt.decimal(8.9, 2), "decimal zero");
         igual("0,05", Fmt.decimal(0.05, 2), "decimal pequeno");
         igual("1.000,00", Fmt.decimal(1000, 2), "decimal milhar");
+        var stAfk = StatCat.lerStats("{\"stats\":{\"minecraft:custom\":{\"minecraft:play_time\":72000}}}");
+        StatCat.descontarAfk(stAfk, 1_800_000L);
+        igual("0,50h", StatCat.TEMPO.formatar(StatCat.TEMPO.valor(stAfk)), "afk: meia hora a menos");
+        StatCat.descontarAfk(stAfk, 99_000_000L);
+        igual("0,00h", StatCat.TEMPO.formatar(StatCat.TEMPO.valor(stAfk)), "afk: não fica negativo");
         igual("41,42 km", StatCat.DISTANCIA.formatar(41.42), "km");
         igual("30x", StatCat.MORREU.formatar(30), "mortes");
         igual("1.738 itens", StatCat.CRAFTOU.formatar(1738), "itens");
@@ -366,7 +371,7 @@ public class Testes {
         igual("Edu", r.get(0).nome, "empate desempata por nome");
         igual("Kaue", r.get(1).nome, "segundo");
         igual("Davi", r.get(2).nome, "terceiro");
-        igual(12, StatCat.values().length, "12 categorias");
+        igual(20, StatCat.values().length, "20 categorias");
     }
 
     static String adv(String id, String when, boolean done) {

@@ -31,6 +31,8 @@ public final class Extras {
         double x, y, z;
         float giroY, giroX;
         long parouDesde;
+        /** Até quando o tempo AFK já foi somado em casa.afkMs. */
+        long contadoAte;
         boolean afk;
     }
 
@@ -59,7 +61,7 @@ public final class Extras {
             return false;
         }
         guardarPosicao(p, e);
-        marcarAfk(p, e);
+        marcarAfk(p, e, false);
         return true;
     }
 
@@ -68,13 +70,17 @@ public final class Extras {
         return e != null && e.afk;
     }
 
-    private static void marcarAfk(ServerPlayer p, EstadoAfk e) {
+    /** @param auto ficou parado: conta o tempo parado desde que parou, não só desde o aviso. */
+    private static void marcarAfk(ServerPlayer p, EstadoAfk e, boolean auto) {
         e.afk = true;
+        e.contadoAte = auto && e.parouDesde > 0 ? e.parouDesde : System.currentTimeMillis();
         Prefixos.atualizar(p, Jogo.casa.rankingApostadores());
         Jogo.avisar(p.getGameProfile().name() + " ficou AFK.");
     }
 
     private static void desmarcarAfk(ServerPlayer p, EstadoAfk e) {
+        long agora = System.currentTimeMillis();
+        Jogo.casa.afkMs.merge(p.getUUID().toString(), Math.max(0, agora - e.contadoAte), Long::sum);
         e.afk = false;
         e.parouDesde = System.currentTimeMillis();
         guardarPosicao(p, e);
@@ -101,7 +107,11 @@ public final class Extras {
                 e.parouDesde = agora;
                 guardarPosicao(p, e);
             } else if (!e.afk && limite > 0 && agora - e.parouDesde >= limite) {
-                marcarAfk(p, e);
+                marcarAfk(p, e, true);
+            }
+            if (e.afk) {
+                Jogo.casa.afkMs.merge(p.getUUID().toString(), Math.max(0, agora - e.contadoAte), Long::sum);
+                e.contadoAte = agora;
             }
         }
         AFK.keySet().removeIf(id -> !online.contains(id));

@@ -243,7 +243,11 @@ public final class Jogo {
         Path mundo = mundo();
         for (var e : casa.conhecidos.entrySet()) {
             String txt = Arquivos.ler(mundo, "stats", e.getKey());
-            if (txt != null) r.put(e.getValue(), StatCat.lerStats(txt));
+            if (txt != null) {
+                JsonObject st = StatCat.lerStats(txt);
+                StatCat.descontarAfk(st, casa.afkMs.getOrDefault(e.getKey(), 0L));
+                r.put(e.getValue(), st);
+            }
         }
         cacheStats = r;
         cacheEm = agora;

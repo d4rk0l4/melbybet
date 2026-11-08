@@ -255,6 +255,8 @@ public class Casa {
         public List<String> equip = new ArrayList<>();
     }
 
+    /** Tempo AFK acumulado por jogador (uuid -> ms); sai das horas online nas estatísticas. */
+    public Map<String, Long> afkMs = new LinkedHashMap<>();
     public List<Morte> historicoMortes = new ArrayList<>();
     public List<Corpo> corpos = new ArrayList<>();
     public int proximoCorpo = 1;

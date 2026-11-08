@@ -11,6 +11,8 @@ jobs:
     steps:
       - name: checkout repository
         uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
       - name: validate gradle wrapper
         uses: gradle/actions/wrapper-validation@v6
       - name: setup jdk
@@ -33,3 +35,25 @@ jobs:
         with:
           name: melbybet-jar
           path: build/libs/*.jar
+      - name: avisar a atualização no Discord (só quando a versão muda)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        continue-on-error: true
+        env:
+          WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_MOD }}
+          ANTES: ${{ github.event.before }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          if [ -z "$WEBHOOK" ]; then echo "sem webhook configurado"; exit 0; fi
+          VER=$(grep '^version=' gradle.properties | cut -d= -f2)
+          ANT=$(git show "$ANTES:gradle.properties" 2>/dev/null | grep '^version=' | cut -d= -f2 || true)
+          if [ "$VER" = "$ANT" ]; then echo "versão não mudou ($VER)"; exit 0; fi
+          JAR="build/libs/melbybet-$VER.jar"
+          if [ ! -f "$JAR" ]; then echo "jar $JAR não encontrado"; ls build/libs; exit 1; fi
+          NOTAS=$(awk -v v="## $VER" '$0==v{f=1;next} /^## /{f=0} f' CHANGELOG.md | head -c 1600)
+          TXT=$(printf '**MelbyCraft %s** saiu!\n%s\n\nBaixe o arquivo abaixo e troque na pasta mods. Quem usa o jar de cliente precisa atualizar também.\n%s' "$VER" "$NOTAS" "$RUN_URL")
+          TAM=$(stat -c %s "$JAR")
+          if [ "$TAM" -gt 24000000 ]; then
+            jq -n --arg c "$TXT (o arquivo passou do limite do Discord; baixe pelo link)" '{content: $c}' | curl -sS -H 'Content-Type: application/json' -d @- "$WEBHOOK"
+          else
+            curl -sS -F "payload_json=$(jq -n --arg c "$TXT" '{content: $c}')" -F "file=@$JAR" "$WEBHOOK"
+          fi
