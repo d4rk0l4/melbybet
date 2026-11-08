@@ -1,5 +1,8 @@
 # Versões do MelbyBet
 
+## 2.19.1
+- O corpo agora abre com a disposição do inventário: armadura e mão secundária na fileira de cima, mochila no meio e hotbar embaixo, cada item no lugar onde estava. Item sem lugar de origem (corpos antigos) vai para o primeiro espaço vazio. O botão **Transferir itens** leva tudo que couber. Funciona em qualquer cliente, sem o jar
+
 ## 2.19.0
 - Histórico de mortes (jar de cliente, tecla **M**): duas abas, **Corpos ativos** (os que ainda têm itens) e **Histórico** (todas as vezes que você morreu). Cada morte mostra data e hora, dimensão, coordenadas, distância, quantos itens ainda estão no corpo (ou "recuperados"), o tempo de proteção restante e o que você vestia e segurava (cabeça, peito, calça, bota e as duas mãos, com o nome ao passar o mouse). O botão **Itens** abre o corpo. Guarda as últimas 10 mortes
 
