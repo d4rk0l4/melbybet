@@ -37,7 +37,9 @@ import java.net.http.HttpResponse;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -168,6 +170,91 @@ public final class FotoMoldura {
         return 1;
     }
 
+
+    // ---------- imagem enviada pelo cliente (arquivo do PC) ----------
+
+    private static final class Upload {
+        int sessao, total, larg, alt, bytes;
+        String modo;
+        byte[][] partes;
+        int recebidas;
+        long inicio = System.currentTimeMillis();
+    }
+
+    private static final Map<UUID, Upload> UPLOADS = new HashMap<>();
+    private static final int MAX_UPLOAD = 2 * 1024 * 1024;
+
+    /** Recebe um pedaço da imagem; quando chegam todos, faz o mesmo que o comando com endereço. */
+    public static void receberParte(ServerPlayer p, ConstrucaoRede.FotoPartePayload v) {
+        if (v.total() < 1 || v.total() > 80 || v.indice() < 0 || v.indice() >= v.total()) return;
+        Upload u = UPLOADS.get(p.getUUID());
+        if (u == null || u.sessao != v.sessao() || System.currentTimeMillis() - u.inicio > 60_000) {
+            if (v.indice() != 0 && u != null && u.sessao == v.sessao()) return;
+            u = new Upload();
+            u.sessao = v.sessao();
+            u.total = v.total();
+            u.larg = v.larg();
+            u.alt = v.alt();
+            u.modo = v.modo();
+            u.partes = new byte[v.total()][];
+            UPLOADS.put(p.getUUID(), u);
+        }
+        if (v.total() != u.total || u.partes[v.indice()] != null) return;
+        u.bytes += v.dados().length;
+        if (u.bytes > MAX_UPLOAD) {
+            UPLOADS.remove(p.getUUID());
+            erro(p, "Imagem grande demais.");
+            return;
+        }
+        u.partes[v.indice()] = v.dados();
+        if (++u.recebidas < u.total) return;
+        UPLOADS.remove(p.getUUID());
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        for (byte[] b : u.partes) out.write(b, 0, b.length);
+        criarDeBytes(p, u.larg, u.alt, u.modo, out.toByteArray());
+    }
+
+    public static void aoSair(ServerPlayer p) {
+        UPLOADS.remove(p.getUUID());
+    }
+
+    private static void criarDeBytes(ServerPlayer p, int larg, int alt, String modo, byte[] bytes) {
+        if (larg < 1 || alt < 1 || larg > FotoDados.MAX_LADO || alt > FotoDados.MAX_LADO) {
+            erro(p, "Tamanho inválido.");
+            return;
+        }
+        if (!modo.equals(ImagemMapa.CORTAR) && !modo.equals(ImagemMapa.AJUSTAR) && !modo.equals(ImagemMapa.ESTICAR)) modo = ImagemMapa.CORTAR;
+        boolean op = Comandos.admin(p);
+        String err = dados.podeCriar(p.getUUID().toString(), op, larg * alt);
+        if (err != null) {
+            erro(p, err);
+            return;
+        }
+        if (OCUPADOS.contains(p.getUUID())) {
+            erro(p, "Ainda estou preparando a sua foto anterior. Espere terminar.");
+            return;
+        }
+        HitResult h = p.pick(6.0, 1.0F, false);
+        if (!(h instanceof BlockHitResult bh) || bh.getType() != HitResult.Type.BLOCK || !bh.getDirection().getAxis().isHorizontal()) {
+            erro(p, "Olhe para o lado de um bloco da parede (a até 6 blocos): ele será o canto inferior esquerdo da foto.");
+            return;
+        }
+        BlockPos base = bh.getBlockPos().relative(bh.getDirection());
+        Pedido ped = new Pedido(p.getUUID(), p.getGameProfile().name(), op, Corpos.dimDe((ServerLevel) p.level()), base, bh.getDirection(), larg, alt, "arquivo:pc", modo);
+        OCUPADOS.add(p.getUUID());
+        p.sendSystemMessage(Component.literal("Preparando a foto (" + larg + "x" + alt + ")...").withStyle(ChatFormatting.YELLOW), false);
+        EXEC.submit(() -> {
+            try {
+                BufferedImage img = ImagemMapa.ler(bytes);
+                byte[][] mapas = ImagemMapa.preparar(img, ped.larg, ped.alt, ped.modo, true);
+                Jogo.server.execute(() -> colocar(ped, mapas));
+            } catch (Exception e) {
+                String msg = e instanceof IllegalArgumentException || e instanceof IOException ? e.getMessage() : "Não consegui ler a imagem (" + e.getClass().getSimpleName() + ").";
+                Jogo.server.execute(() -> terminar(ped, msg));
+            }
+        });
+    }
+
     private static void terminar(Pedido ped, String erro) {
         OCUPADOS.remove(ped.jogador);
         ServerPlayer p = Jogo.server.getPlayerList().getPlayer(ped.jogador);
@@ -256,7 +343,7 @@ public final class FotoMoldura {
             g.z = ped.base.getZ();
             g.larg = ped.larg;
             g.alt = ped.alt;
-            g.site = URI.create(ped.url).getHost();
+            g.site = ped.url.startsWith("arquivo:") ? "arquivo do jogador" : URI.create(ped.url).getHost();
             for (int i = 0; i < molduras.size(); i++) {
                 ItemStack mapa = MapItem.create(nivel, CENTRO_LONGE, CENTRO_LONGE, (byte) 0, false, false);
                 MapItemSavedData md = MapItem.getSavedData(mapa, nivel);

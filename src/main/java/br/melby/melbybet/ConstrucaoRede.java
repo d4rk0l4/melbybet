@@ -191,4 +191,26 @@ public final class ConstrucaoRede {
             return TYPE;
         }
     }
+
+    /** Cliente -> servidor: um pedaço da imagem escolhida no PC para o /fotomoldura (a imagem já vem reduzida). */
+    public record FotoPartePayload(int sessao, int indice, int total, int larg, int alt, String modo, byte[] dados) implements CustomPacketPayload {
+        public static final int MAX_PARTE = 30_000;
+        public static final CustomPacketPayload.Type<FotoPartePayload> TYPE = novoTipo("foto_parte");
+        public static final StreamCodec<RegistryFriendlyByteBuf, FotoPartePayload> CODEC = StreamCodec.of(
+            (b, v) -> {
+                b.writeInt(v.sessao);
+                b.writeVarInt(v.indice);
+                b.writeVarInt(v.total);
+                b.writeByte(v.larg);
+                b.writeByte(v.alt);
+                b.writeUtf(v.modo, 16);
+                b.writeByteArray(v.dados);
+            },
+            b -> new FotoPartePayload(b.readInt(), b.readVarInt(), b.readVarInt(), b.readByte(), b.readByte(), b.readUtf(16), b.readByteArray(MAX_PARTE)));
+
+        @Override
+        public CustomPacketPayload.Type<? extends CustomPacketPayload> type() {
+            return TYPE;
+        }
+    }
 }

@@ -18,7 +18,7 @@ import com.mojang.blaze3d.platform.InputConstants;
 
 public class MelbybetClient implements ClientModInitializer {
 	private static KeyMapping teclaLista, teclaCriar, teclaTemp, teclaLigar;
-	private static KeyMapping teclaGuias, teclaRegua, teclaEspelho, teclaMateriais, teclaStand, teclaPlaca;
+	private static KeyMapping teclaGuias, teclaRegua, teclaEspelho, teclaMateriais, teclaStand, teclaPlaca, teclaLuz, teclaFoto, teclaZoom, teclaImagem;
 	private static int tick;
 
 	@Override
@@ -36,6 +36,11 @@ public class MelbybetClient implements ClientModInitializer {
 		teclaMateriais = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.melbybet.materiais", InputConstants.KEY_U, cons));
 		teclaStand = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.melbybet.armorstand", InputConstants.KEY_K, cons));
 		teclaPlaca = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.melbybet.placa", InputConstants.KEY_O, cons));
+
+		teclaLuz = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.melbybet.luz", InputConstants.KEY_L, cons));
+		teclaFoto = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.melbybet.modo_foto", InputConstants.KEY_F9, cons));
+		teclaZoom = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.melbybet.zoom", InputConstants.KEY_C, cons));
+		teclaImagem = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.melbybet.foto_parede", InputConstants.KEY_F8, cons));
 
 		ClientPlayNetworking.registerGlobalReceiver(ConstrucaoRede.MateriaisPayload.TYPE, (payload, ctx) -> {
 			ConstrucaoCliente.projeto = payload.nome();
@@ -114,6 +119,15 @@ public class MelbybetClient implements ClientModInitializer {
 			else mc.setScreenAndShow(new ArmorStandTela(a.getId(), 0));
 		}
 		while (teclaPlaca.consumeClick()) if (livre) PlacaTela.pedir();
+		while (teclaLuz.consumeClick()) {
+			if (!livre) continue;
+			LuzCliente.ativo = !LuzCliente.ativo;
+			WaypointStore.aviso("Luz dos monstros " + (LuzCliente.ativo ? "ligada (vermelho: nasce sempre; amarelo: nasce à noite)" : "desligada"));
+		}
+		while (teclaFoto.consumeClick()) if (livre) FotoModo.alternarHud(mc);
+		while (teclaImagem.consumeClick()) if (livre) mc.setScreenAndShow(new FotoTela());
+		FotoModo.zoom(mc, livre && teclaZoom.isDown());
+		LuzCliente.aCadaTick(mc);
 		if (++tick % 10 == 0 && WaypointStore.ativo()) {
 			var saiu = WaypointStore.dados.limparTemporarios(System.currentTimeMillis(), WaypointStore.dimAtual(mc), mc.player.getX(), mc.player.getY(), mc.player.getZ());
 			if (!saiu.isEmpty()) {

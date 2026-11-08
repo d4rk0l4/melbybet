@@ -23,6 +23,8 @@ public final class ConstrucaoServidor {
         PayloadTypeRegistry.serverboundPlay().register(ConstrucaoRede.PlacaPedirPayload.TYPE, ConstrucaoRede.PlacaPedirPayload.CODEC);
         PayloadTypeRegistry.serverboundPlay().register(ConstrucaoRede.PlacaAplicarPayload.TYPE, ConstrucaoRede.PlacaAplicarPayload.CODEC);
         PayloadTypeRegistry.serverboundPlay().register(ConstrucaoRede.PlacaRestaurarPayload.TYPE, ConstrucaoRede.PlacaRestaurarPayload.CODEC);
+        PayloadTypeRegistry.serverboundPlay().register(ConstrucaoRede.FotoPartePayload.TYPE, ConstrucaoRede.FotoPartePayload.CODEC);
+        ServerPlayNetworking.registerGlobalReceiver(ConstrucaoRede.FotoPartePayload.TYPE, (v, ctx) -> FotoMoldura.receberParte(ctx.player(), v));
         ServerPlayNetworking.registerGlobalReceiver(ConstrucaoRede.PosePayload.TYPE, (v, ctx) -> ArmorStands.aplicarDoCliente(ctx.player(), v));
         ServerPlayNetworking.registerGlobalReceiver(ConstrucaoRede.PlacaPedirPayload.TYPE, (v, ctx) -> HistoricoPlacas.enviarAoCliente(ctx.player(), new BlockPos(v.x(), v.y(), v.z())));
         ServerPlayNetworking.registerGlobalReceiver(ConstrucaoRede.PlacaAplicarPayload.TYPE, (v, ctx) -> HistoricoPlacas.aplicarDoCliente(ctx.player(), new BlockPos(v.x(), v.y(), v.z()), v.linhas()));
