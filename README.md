@@ -289,6 +289,9 @@ Os waypoints existem só no cliente: instale o mesmo `.jar` do servidor na pasta
 - **OP:** `/waypoint servidor ligar` ou `desligar` libera ou bloqueia os waypoints para todos.
 - **`/marcador`:** quem tem o jar de cliente vê o contorno em linhas de verdade, através das paredes. Sem o jar, continuam as partículas.
 
+## Ferramentas de construção (jar de cliente)
+Teclas configuráveis em Controles > MelbyCraft: Construção. **G** painel de guias (forma, régua, espelho, materiais), **R** régua, **Y** plano do espelho, **U** lista de materiais, **K** editor de armor stand (olhando para ele), **O** editor de placa (olhando para ela, até 8 blocos). Os editores mandam as mudanças ao servidor, que confere permissão e distância como nos comandos. A lista de materiais vem de `/catalogo hud <nome>`; a grade do mapa-arte aparece após `/mapart` e some com `/mapart esconder`.
+
 ## Marcador de áreas (`/marcador`)
 
 Escolhe uma região (dois cantos) para usar nos recursos de construção. Não precisa de nada no cliente.

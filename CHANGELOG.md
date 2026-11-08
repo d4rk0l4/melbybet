@@ -1,5 +1,13 @@
 # Versões do MelbyBet
 
+## 2.16.0
+- Ferramentas de construção (jar de cliente), tecla **G** abre o painel: guia de forma só com contorno (círculo, esfera, elipse, cúpula; centro no bloco olhado ou na sua posição, camada dos pés, estimativa de blocos e pilhas), **régua** (R marca A e B e mostra dx x dy x dz e distância), **espelho** (Y define o plano de simetria no bloco olhado e mostra o bloco espelhado)
+- Lista de materiais na tela (U liga/desliga): o `/catalogo hud [nome|limpar]` mostra o que falta de um projeto descontando o inventário
+- `/mapart`: grade numerada dos mapas no mundo (`/mapart esconder`)
+- Editor de armor stand (K olhando para ele): sliders de pose por parte, giro do corpo, braços, base e invisível, com efeito ao vivo
+- Editor de placa (O olhando para ela): 4 linhas com prévia colorida e histórico de versões com Restaurar
+- Todas as teclas são configuráveis em Controles > MelbyCraft: Construção
+
 ## 2.15.0
 - Inventário e baús (jar de cliente): botão **Organizar** no inventário e nos baús, que arruma a mochila e a hotbar pelo seu perfil e junta pilhas iguais. O botão **Perfil...** abre uma tela onde você escolhe o tipo (espada, machado, picareta, pá, comida, blocos e outros 17) e clica nos slots onde ele deve ficar; também dá para "Aprender da hotbar" ou "Aprender de tudo" a partir do inventário atual. Armadura e mão secundária nunca são mexidas. Há opções para o Organizar mexer ou não na hotbar
 - Nos baús e shulker boxes: **Guardar iguais** manda para o recipiente o que você tem e que já existe lá dentro (por padrão sem tocar na hotbar), e **Pegar iguais** traz tudo do recipiente de que você já tem pelo menos uma unidade (para quando o inventário encher e avisa)
