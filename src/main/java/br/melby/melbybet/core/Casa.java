@@ -41,6 +41,8 @@ public class Casa {
         public int rastroMin = 30;
         /** Distância do chat local, em blocos (0 = sem limite). */
         public int chatLocalRaio = 100;
+        /** Segundos depois da morte em que só o dono (ou um OP) pega os itens do corpo; depois qualquer um pega (0 = sem proteção). */
+        public int corpoProtecaoSeg = 30;
         /** Quanto o banco invisível do /sit fica abaixo dos pés, em blocos (maior = senta mais baixo). */
         public double bancoAltura = 1.6;
         /** De quantos em quantos minutos o servidor apaga os itens do chão (0 = desligado). */

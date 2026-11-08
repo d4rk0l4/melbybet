@@ -1,5 +1,8 @@
 # Versões do MelbyBet
 
+## 2.18.1
+- Corpo protegido nos primeiros 30 segundos depois da morte: só o dono (ou um OP) pega os itens; depois qualquer um pega, como antes. O tempo fica em `corpoProtecaoSeg` no casa.json (0 desliga)
+
 ## 2.18.0
 - Contador de farm (jar de cliente, tecla **V**): liga zerando e mostra no canto o que entrou no inventário e os itens por minuto; aperte de novo para parar. Mexer em baú ou inventário não conta
 - `/catalogo` agora conta o que você precisa levar: bandeiras e placas de parede viram a bandeira e a placa, planta em vaso vira vaso mais planta, caules e vinhas viram muda ou semente. A lista de materiais na tela usa a mesma conta. O padrão da bandeira não é contado, só a cor

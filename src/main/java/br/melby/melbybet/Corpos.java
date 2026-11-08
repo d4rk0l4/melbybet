@@ -196,7 +196,19 @@ public final class Corpos {
      * Pega um item do corpo. Se quem pega é o dono, o item volta para o slot onde estava (hotbar, armadura, mão
      * secundária) quando esse slot está livre; senão, ou para outros jogadores, vai para o primeiro espaço livre.
      */
+    /** Segundos que ainda faltam para o corpo ser liberado para quem não é o dono (0 = pode pegar). */
+    public static long protecaoRestante(ServerPlayer p, Casa.Corpo c) {
+        if (p.getUUID().toString().equals(c.uuid) || Comandos.admin(p)) return 0;
+        long ms = Jogo.casa.config.corpoProtecaoSeg * 1000L - (System.currentTimeMillis() - c.quando);
+        return ms <= 0 ? 0 : (ms + 999) / 1000;
+    }
+
     public static void pegar(ServerPlayer p, Casa.Corpo c, int indice) {
+        long resta = protecaoRestante(p, c);
+        if (resta > 0) {
+            p.sendSystemMessage(Component.literal("Esse corpo está protegido por mais " + resta + "s, só o dono pega agora.").withStyle(ChatFormatting.RED), true);
+            return;
+        }
         if (indice < 0 || indice >= c.itens.size()) return;
         ItemStack st = deJson(c.itens.get(indice));
         if (st.isEmpty()) {
