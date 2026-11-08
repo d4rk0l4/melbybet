@@ -244,6 +244,16 @@ public class Casa {
         return true;
     }
 
+    /** Uma morte no histórico (o corpo some quando é esvaziado, a morte fica). */
+    public static class Morte {
+        public int corpoId;
+        public String uuid = "", dim = "overworld";
+        public int x, y, z, itens;
+        public long quando;
+        public boolean recuperado;
+    }
+
+    public List<Morte> mortes = new ArrayList<>();
     public List<Corpo> corpos = new ArrayList<>();
     public int proximoCorpo = 1;
 

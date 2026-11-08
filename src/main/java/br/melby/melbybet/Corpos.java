@@ -185,9 +185,10 @@ public final class Corpos {
         nivel.addFreshEntity(boneco);
         c.boneco = boneco.getUUID().toString();
         WaypointsServidor.corpoCriado(p, c);
+        MortesServidor.registrarMorte(p, c);
         Jogo.salvar();
         p.sendSystemMessage(Component.literal("Seus itens ficaram no seu corpo em " + dim + " " + Math.round(x) + " " + Math.round(y) + " " + Math.round(z)
-            + ". Qualquer jogador pode abrir com o botão direito. Use /corpo para ver depois.").withStyle(ChatFormatting.YELLOW));
+            + ". Só você pega nos primeiros " + Jogo.casa.config.corpoProtecaoSeg + "s; depois qualquer jogador abre com o botão direito. Use /corpo para ver depois.").withStyle(ChatFormatting.YELLOW));
     }
 
     // ---------- pegar itens ----------
@@ -233,6 +234,7 @@ public final class Corpos {
         p.containerMenu.broadcastChanges();
         avisarDono(p, c);
         fecharSeVazio(c);
+        MortesServidor.corpoMudou(c, c.itens.isEmpty());
         Jogo.salvar();
     }
 

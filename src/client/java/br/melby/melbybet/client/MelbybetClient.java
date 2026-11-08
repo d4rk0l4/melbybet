@@ -1,6 +1,7 @@
 package br.melby.melbybet.client;
 
 import br.melby.melbybet.ConstrucaoRede;
+import br.melby.melbybet.MortesRede;
 import br.melby.melbybet.WaypointRede;
 import br.melby.melbybet.core.Waypoints;
 import net.fabricmc.api.ClientModInitializer;
@@ -18,7 +19,7 @@ import com.mojang.blaze3d.platform.InputConstants;
 
 public class MelbybetClient implements ClientModInitializer {
 	private static KeyMapping teclaLista, teclaCriar, teclaTemp, teclaLigar;
-	private static KeyMapping teclaGuias, teclaRegua, teclaEspelho, teclaMateriais, teclaStand, teclaPlaca, teclaLuz, teclaZoom, teclaImagem, teclaFarm;
+	private static KeyMapping teclaGuias, teclaRegua, teclaEspelho, teclaMateriais, teclaStand, teclaPlaca, teclaLuz, teclaZoom, teclaImagem, teclaFarm, teclaMortes;
 	private static int tick;
 
 	@Override
@@ -42,6 +43,8 @@ public class MelbybetClient implements ClientModInitializer {
 		teclaImagem = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.melbybet.foto_parede", InputConstants.KEY_F8, cons));
 
 		teclaFarm = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.melbybet.farm", InputConstants.KEY_V, cons));
+		teclaMortes = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.melbybet.mortes", InputConstants.KEY_M, cons));
+		ClientPlayNetworking.registerGlobalReceiver(MortesRede.ListaPayload.TYPE, (payload, ctx) -> MortesTela.receber(payload));
 		HudElementRegistry.addLast(Identifier.fromNamespaceAndPath("melbybet", "farm"), (g, tracker) -> FarmHud.desenhar(g));
 
 		ClientPlayNetworking.registerGlobalReceiver(ConstrucaoRede.MateriaisPayload.TYPE, (payload, ctx) -> {
@@ -133,6 +136,7 @@ public class MelbybetClient implements ClientModInitializer {
 			FarmHud.alternar(mc);
 			WaypointStore.aviso("Contador de farm " + (FarmHud.ativo ? "ligado (aperte de novo para parar)" : "desligado"));
 		}
+		while (teclaMortes.consumeClick()) if (livre) MortesTela.abrir();
 		FarmHud.aCadaTick(mc);
 		LuzCliente.aCadaTick(mc);
 		if (++tick % 10 == 0 && WaypointStore.ativo()) {
