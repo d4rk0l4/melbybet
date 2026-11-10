@@ -1,5 +1,11 @@
 # Versões do MelbyBet
 
+## 2.22.0
+- **Telas no cliente (jar).** `/bet`, `/gestos`, `/duelo` (sem argumentos) e `/cor` agora abrem telas próprias em vez de menus de baú. `/bet`: navegue pelos bolões, veja o pote de cada opção, digite o valor e clique na opção para apostar. `/duelo`: lista de quem está online, valor em diamantes ou duelo de itens. `/cor`: duas cores com prévia ao vivo do degradê no seu nick. Sem o jar, os menus de baú continuam funcionando
+- **Avisos no canto da tela.** Convite de duelo aparece num aviso no canto inferior direito
+- **Painel no HUD** (canto superior direito): seus bolões apostados com o tempo que falta, duelo em andamento e a contagem da proteção do seu corpo
+- Chat em abas ficou de fora: o servidor não marca mensagens locais/globais
+
 ## 2.21.0
 - **Corpo deitado.** O corpo agora é um manequim com a skin de quem morreu, deitado, com a armadura e os itens das mãos que a pessoa usava. O nome fica em cima. Botão direito abre os itens. A pose é `corpoPose` no casa.json (`sleeping` deitado de costas, `swimming` de bruços, `crouching`, `standing`). Funciona sem o jar
 - **Log de corpos** (OP): `/corpo log [nick]` mostra os últimos eventos: quem morreu e onde, quem pegou o quê do corpo de quem, expirações e recuperações
