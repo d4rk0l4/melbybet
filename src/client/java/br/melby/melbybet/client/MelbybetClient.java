@@ -39,7 +39,7 @@ public class MelbybetClient implements ClientModInitializer {
 		teclaStand = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.melbybet.armorstand", InputConstants.KEY_K, cons));
 		teclaPlaca = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.melbybet.placa", InputConstants.KEY_O, cons));
 
-		teclaLuz = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.melbybet.luz", InputConstants.KEY_L, cons));
+		teclaLuz = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.melbybet.luz", InputConstants.KEY_Z, cons));
 		teclaZoom = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.melbybet.zoom", InputConstants.KEY_C, cons));
 		teclaImagem = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.melbybet.foto_parede", InputConstants.KEY_F8, cons));
 

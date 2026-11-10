@@ -292,7 +292,7 @@ Os waypoints existem só no cliente: instale o mesmo `.jar` do servidor na pasta
 ## Ferramentas de construção (jar de cliente)
 Teclas configuráveis em Controles > MelbyCraft: Construção. **G** painel de guias (forma, régua, espelho, materiais), **R** régua, **Y** plano do espelho, **U** lista de materiais, **K** editor de armor stand (olhando para ele), **O** editor de placa (olhando para ela, até 8 blocos). Os editores mandam as mudanças ao servidor, que confere permissão e distância como nos comandos. A lista de materiais vem de `/catalogo hud <nome>`; a grade do mapa-arte aparece após `/mapart` e some com `/mapart esconder`.
 
-**L** mostra onde monstros nascem, **C** (segurar) dá zoom, **F8** abre a tela de foto na parede com arquivo do PC (o servidor valida tamanho, limite por jogador e permissão como no `/fotomoldura`).
+**Z** mostra onde monstros nascem, **C** (segurar) dá zoom, **F8** abre a tela de foto na parede com arquivo do PC (o servidor valida tamanho, limite por jogador e permissão como no `/fotomoldura`).
 
 **M** abre o histórico de mortes (corpos ativos e histórico, com data, local e o equipamento que você usava).
 

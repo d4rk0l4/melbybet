@@ -1,5 +1,8 @@
 # Versões do MelbyBet
 
+## 2.22.1
+- A luz dos monstros passou da tecla L (que no jogo é a tela de progressos) para a **Z**. Dá pra trocar em Controles
+
 ## 2.22.0
 - **Telas no cliente (jar).** `/bet`, `/gestos`, `/duelo` (sem argumentos) e `/cor` agora abrem telas próprias em vez de menus de baú. `/bet`: navegue pelos bolões, veja o pote de cada opção, digite o valor e clique na opção para apostar. `/duelo`: lista de quem está online, valor em diamantes ou duelo de itens. `/cor`: duas cores com prévia ao vivo do degradê no seu nick. Sem o jar, os menus de baú continuam funcionando
 - **Avisos no canto da tela.** Convite de duelo aparece num aviso no canto inferior direito
@@ -35,7 +38,7 @@
 - `/fotomoldura desfazer` apaga a última foto que você colocou, sem precisar olhar para ela
 
 ## 2.17.0
-- Luz dos monstros (jar de cliente, tecla **L**): quadrados no chão até 12 blocos de você. Vermelho = sem luz de bloco e sem céu (monstro nasce a qualquer hora); amarelo = sem luz de bloco mas com céu (nasce à noite)
+- Luz dos monstros (jar de cliente, tecla **Z**): quadrados no chão até 12 blocos de você. Vermelho = sem luz de bloco e sem céu (monstro nasce a qualquer hora); amarelo = sem luz de bloco mas com céu (nasce à noite)
 - Zoom segurando **C** (volta ao normal ao soltar). O F1 do jogo já esconde o HUD
 - Foto na parede por arquivo do seu computador (tecla **F8**): cole o caminho ou arraste o arquivo para a tela, escolha tamanho e modo. O jogo reduz a imagem e manda ao servidor em pedaços, então o servidor não precisa de internet. O `/fotomoldura <LxA> <endereço>` continua existindo
 
