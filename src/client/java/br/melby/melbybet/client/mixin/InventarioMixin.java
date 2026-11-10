@@ -87,7 +87,7 @@ public abstract class InventarioMixin extends Screen {
             .bounds(x, y, 78, 20).tooltip(Tooltip.create(Component.literal("Traz para você tudo daqui que você já tem pelo menos uma unidade."))).build());
     }
 
-    @Inject(method = "slotClicked", at = @At("HEAD"), cancellable = true, require = 0)
+    @Inject(method = "slotClicked(Lnet/minecraft/world/inventory/Slot;IILnet/minecraft/world/inventory/ContainerInput;)V", at = @At("HEAD"), cancellable = true, require = 0)
     private void melbybet$travas(Slot slot, int slotId, int button, ContainerInput input, CallbackInfo ci) {
         if (slot == null || !(slot.container instanceof Inventory)) return;
         int i = slot.getContainerSlot();

@@ -9,7 +9,7 @@
 		"ContainerTextoMixin"
 	],
 	"injectors": {
-		"defaultRequire": 1
+		"defaultRequire": 0
 	},
 	"overwrites": {
 		"requireAnnotations": true
