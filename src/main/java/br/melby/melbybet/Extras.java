@@ -123,6 +123,7 @@ public final class Extras {
         Prefixos.atualizarTodos();
         Presenca.aCadaSegundo();
         JarObrigatorio.aCadaSegundo();
+        TelasServidor.aCadaSegundo();
     }
 
     // ---------- fotos compartilhadas no chat ----------

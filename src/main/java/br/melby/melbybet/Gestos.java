@@ -66,7 +66,8 @@ public final class Gestos {
 
     public static void registrar(CommandDispatcher<CommandSourceStack> d) {
         d.register(literal("gestos").executes(c -> {
-            abrirMenu(c.getSource().getPlayerOrException());
+            ServerPlayer p = c.getSource().getPlayerOrException();
+            if (!TelasServidor.abrir(p, "gestos")) abrirMenu(p);
             return 1;
         }));
         d.register(literal("spin").executes(c -> girar(c.getSource().getPlayerOrException())));

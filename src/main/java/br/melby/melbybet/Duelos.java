@@ -95,6 +95,7 @@ public final class Duelos {
             .executes(c -> {
                 ServerPlayer p = c.getSource().getPlayerOrException();
                 Casa.Duelo x = Jogo.casa.duelAtivoDe(p.getUUID().toString());
+                if (x == null && TelasServidor.abrir(p, "duelo")) return 1;
                 if (x == null) {
                     p.sendSystemMessage(Jogo.prefixo("Use /duelo <nick> <valor> (diamantes) ou /duelo <nick> inv (itens do inventário do outro). Quem matar o outro primeiro leva tudo; /duelo desistir entrega a vitória."));
                 } else {
@@ -271,6 +272,7 @@ public final class Duelos {
             valor, System.currentTimeMillis());
         Jogo.salvar();
         a.sendSystemMessage(Jogo.prefixo("Convite enviado para " + b.getGameProfile().name() + " (vale 60 segundos)."));
+        TelasServidor.aviso(b, "Convite de duelo", a.getGameProfile().name() + " te chamou para um duelo de " + valor + " diamante(s).");
         b.sendSystemMessage(Jogo.prefixo(a.getGameProfile().name() + " te chamou para um duelo de " + valor + " diamante(s) cada. Quem matar o outro primeiro leva tudo. ")
             .copy().append(botao("Aceitar", ChatFormatting.GREEN, "/duelo aceitar " + x.id, "Põe " + valor + " diamante(s) e começa"))
             .append(Component.literal(" "))

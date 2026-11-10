@@ -42,6 +42,7 @@ public final class Comandos {
             ServerPlayer p = c.getSource().getPlayer();
             if (p == null) return erro(c, "Só jogadores podem abrir o menu.");
             Tutorial.primeiraVez(p);
+            if (TelasServidor.abrir(p, "bet")) return 1;
             MenuBet.abrir(p);
             return 1;
         }).then(literal("ajuda").executes(c -> {
@@ -450,7 +451,11 @@ public final class Comandos {
                 return l.size();
             })));
         d.register(literal("cor")
-            .executes(c -> ok(c, "Mude a cor do seu nick no chat: /cor <#cor1> [#cor2] ou um nome pronto (" + String.join(", ", Gradiente.NOMES_PRESETS) + "). /cor off tira."))
+            .executes(c -> {
+                ServerPlayer p = c.getSource().getPlayer();
+                if (p != null && TelasServidor.abrir(p, "cor")) return 1;
+                return ok(c, "Mude a cor do seu nick no chat: /cor <#cor1> [#cor2] ou um nome pronto (" + String.join(", ", Gradiente.NOMES_PRESETS) + "). /cor off tira.");
+            })
             .then(literal("off").executes(c -> {
                 Jogo.casa.config.cores.remove(c.getSource().getPlayerOrException().getGameProfile().name().toLowerCase());
                 Jogo.salvar();

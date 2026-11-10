@@ -48,6 +48,8 @@ public class MelbybetClient implements ClientModInitializer {
 		teclaEstat = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.melbybet.estat", InputConstants.KEY_F7, cons));
 		ClientPlayNetworking.registerGlobalReceiver(EstatRede.DadosPayload.TYPE, (payload, ctx) -> EstatTela.receber(payload));
 		ClientPlayNetworking.registerGlobalReceiver(MortesRede.ListaPayload.TYPE, (payload, ctx) -> MortesTela.receber(payload));
+		TelasCliente.registrar();
+		HudElementRegistry.addLast(Identifier.fromNamespaceAndPath("melbybet", "telas"), (g, tracker) -> TelasCliente.desenhar(g));
 		HudElementRegistry.addLast(Identifier.fromNamespaceAndPath("melbybet", "farm"), (g, tracker) -> FarmHud.desenhar(g));
 
 		ClientPlayNetworking.registerGlobalReceiver(ConstrucaoRede.MateriaisPayload.TYPE, (payload, ctx) -> {
