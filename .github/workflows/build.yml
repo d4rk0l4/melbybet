@@ -55,5 +55,5 @@ jobs:
           if [ "$TAM" -gt 24000000 ]; then
             jq -n --arg c "$TXT (o arquivo passou do limite do Discord; baixe pelo link)" '{content: $c}' | curl -sS -H 'Content-Type: application/json' -d @- "$WEBHOOK"
           else
-            curl -sS -F "payload_json=$(jq -n --arg c "$TXT" '{content: $c}')" -F "file=@$JAR" "$WEBHOOK"
+            curl -sS --fail-with-body --form-string "payload_json=$(jq -nc --arg c "$TXT" '{content: $c}')" -F "file=@$JAR" "$WEBHOOK"
           fi

@@ -1,5 +1,8 @@
 # Versões do MelbyBet
 
+## 2.22.4
+- Correção do envio automático do jar no Discord (a mensagem falhava quando as notas da versão tinham ponto e vírgula). Inclui tudo da 2.22.3
+
 ## 2.22.3
 - Mixin dos slots travados agora cobre as duas versões do método de clique do 26.3 (com botão int e com MouseButtonEvent); a que não existir na sua versão é ignorada
 
