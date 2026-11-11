@@ -18,6 +18,7 @@ import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.inventory.ShulkerBoxMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -69,23 +70,40 @@ public abstract class InventarioMixin extends Screen {
                 g.fill(sx + 16, sy, sx + 17, sy + 16, 0xFFFFC928);
             }
         });
-        this.addRenderableWidget(Button.builder(Component.literal("Organizar"), b -> melbybet$organizar())
-            .bounds(x, y, 78, 20).tooltip(Tooltip.create(Component.literal("Arruma o seu inventário pelo seu perfil e junta pilhas iguais."))).build());
-        y += 22;
-        this.addRenderableWidget(Button.builder(Component.literal("Travar slots"), b -> {
-            InventarioCliente.modoTrava = !InventarioCliente.modoTrava;
-            b.setMessage(Component.literal(InventarioCliente.modoTrava ? "Travar: clique" : "Travar slots"));
-        }).bounds(x, y, 78, 20).tooltip(Tooltip.create(Component.literal("Ligue e clique nos slots do seu inventário para travar ou destravar. Travado: o Organizar e o Guardar iguais não mexem, e o shift-clique e o drop não tiram o item."))).build());
-        y += 22;
-        this.addRenderableWidget(Button.builder(Component.literal("Perfil..."), b -> Minecraft.getInstance().setScreenAndShow(new PerfilTela()))
-            .bounds(x, y, 78, 20).tooltip(Tooltip.create(Component.literal("Escolha onde você gosta de cada tipo de item."))).build());
-        if (!recipiente) return;
-        y += 26;
-        this.addRenderableWidget(Button.builder(Component.literal("Guardar iguais"), b -> melbybet$guardarIguais())
-            .bounds(x, y, 78, 20).tooltip(Tooltip.create(Component.literal("Manda para cá o que você tem e que já existe aqui dentro."))).build());
-        y += 22;
-        this.addRenderableWidget(Button.builder(Component.literal("Pegar iguais"), b -> melbybet$pegarIguais())
-            .bounds(x, y, 78, 20).tooltip(Tooltip.create(Component.literal("Traz para você tudo daqui que você já tem pelo menos uma unidade."))).build());
+        // botões só com ícone, colados na borda direita da tela; o texto fica no tooltip
+        List<Object[]> icones = new ArrayList<>();
+        int bx = this.leftPos + this.imageWidth + 2;
+        melbybet$icone(icones, Items.HOPPER, bx, y, "Organizar", "Arruma o seu inventário pelo seu perfil e junta pilhas iguais.", b -> melbybet$organizar());
+        y += 21;
+        melbybet$icone(icones, Items.TRIPWIRE_HOOK, bx, y, "Travar slots", "Ligue e clique nos slots do seu inventário para travar ou destravar. Travado: o Organizar e o Guardar iguais não mexem, e o shift-clique e o drop não tiram o item.", b -> InventarioCliente.modoTrava = !InventarioCliente.modoTrava);
+        y += 21;
+        melbybet$icone(icones, Items.WRITABLE_BOOK, bx, y, "Perfil", "Escolha onde você gosta de cada tipo de item.", b -> Minecraft.getInstance().setScreenAndShow(new PerfilTela()));
+        if (recipiente) {
+            y += 25;
+            melbybet$icone(icones, Items.CHEST, bx, y, "Guardar iguais", "Manda para cá o que você tem e que já existe aqui dentro.", b -> melbybet$guardarIguais());
+            y += 21;
+            melbybet$icone(icones, Items.DROPPER, bx, y, "Pegar iguais", "Traz para você tudo daqui que você já tem pelo menos uma unidade.", b -> melbybet$pegarIguais());
+        }
+        this.addRenderableOnly((g, mx, my, d) -> {
+            for (Object[] ic : icones) {
+                int ix = (Integer) ic[1], iy = (Integer) ic[2];
+                if (ic[0] == Items.TRIPWIRE_HOOK && InventarioCliente.modoTrava) {
+                    g.fill(ix, iy, ix + 20, iy + 1, 0xFFFFC928);
+                    g.fill(ix, iy + 19, ix + 20, iy + 20, 0xFFFFC928);
+                    g.fill(ix, iy, ix + 1, iy + 20, 0xFFFFC928);
+                    g.fill(ix + 19, iy, ix + 20, iy + 20, 0xFFFFC928);
+                }
+                g.item(new ItemStack((net.minecraft.world.item.Item) ic[0]), ix + 2, iy + 2);
+            }
+        });
+    }
+
+    @Unique
+    private void melbybet$icone(List<Object[]> icones, net.minecraft.world.item.Item item, int x, int y, String titulo, String texto, java.util.function.Consumer<Button> acao) {
+        this.addRenderableWidget(Button.builder(Component.empty(), b -> acao.accept(b))
+            .bounds(x, y, 20, 20)
+            .tooltip(Tooltip.create(Component.literal(titulo + "\n" + texto))).build());
+        icones.add(new Object[] {item, x, y});
     }
 
     /** Versão com o botão como int (protegida). Se não existir nesta versão do jogo, é ignorada. */

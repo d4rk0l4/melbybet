@@ -1,5 +1,8 @@
 # Versões do MelbyBet
 
+## 2.22.5
+- Botões do inventário e dos baús viraram ícones pequenos colados na borda direita da tela (funil = Organizar, gancho = Travar slots, livro = Perfil, baú = Guardar iguais, ejetor = Pegar iguais). O nome e a explicação aparecem ao passar o mouse; o Travar slots fica com contorno dourado quando ligado
+
 ## 2.22.4
 - Correção do envio automático do jar no Discord (a mensagem falhava quando as notas da versão tinham ponto e vírgula). Inclui tudo da 2.22.3
 
