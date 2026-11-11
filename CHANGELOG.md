@@ -1,5 +1,8 @@
 # Versões do MelbyBet
 
+## 2.22.3
+- Mixin dos slots travados agora cobre as duas versões do método de clique do 26.3 (com botão int e com MouseButtonEvent); a que não existir na sua versão é ignorada
+
 ## 2.22.2
 - **Corrigido crash ao abrir o Minecraft** (Lunar): o mixin dos slots travados mirava um método com duas versões no 26.3; agora aponta para a certa. Mixins do cliente que não casarem deixam de derrubar o jogo, só ficam desligados
 

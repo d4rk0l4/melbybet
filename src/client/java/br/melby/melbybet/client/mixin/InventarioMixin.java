@@ -10,6 +10,7 @@ import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.ChestMenu;
@@ -87,21 +88,34 @@ public abstract class InventarioMixin extends Screen {
             .bounds(x, y, 78, 20).tooltip(Tooltip.create(Component.literal("Traz para você tudo daqui que você já tem pelo menos uma unidade."))).build());
     }
 
+    /** Versão com o botão como int (protegida). Se não existir nesta versão do jogo, é ignorada. */
     @Inject(method = "slotClicked(Lnet/minecraft/world/inventory/Slot;IILnet/minecraft/world/inventory/ContainerInput;)V", at = @At("HEAD"), cancellable = true, require = 0)
     private void melbybet$travas(Slot slot, int slotId, int button, ContainerInput input, CallbackInfo ci) {
-        if (slot == null || !(slot.container instanceof Inventory)) return;
+        if (melbybet$travar(slot, input)) ci.cancel();
+    }
+
+    /** Versão com MouseButtonEvent (privada). Se não existir nesta versão do jogo, é ignorada. A decisão é a mesma da outra, então rodar nas duas é seguro. */
+    @Inject(method = "slotClicked(Lnet/minecraft/world/inventory/Slot;ILnet/minecraft/client/input/MouseButtonEvent;Lnet/minecraft/world/inventory/ContainerInput;)V", at = @At("HEAD"), cancellable = true, require = 0)
+    private void melbybet$travasEvento(Slot slot, int slotId, MouseButtonEvent event, ContainerInput input, CallbackInfo ci) {
+        if (melbybet$travar(slot, input)) ci.cancel();
+    }
+
+    /** true = cancela o clique. */
+    @Unique
+    private static boolean melbybet$travar(Slot slot, ContainerInput input) {
+        if (slot == null || !(slot.container instanceof Inventory)) return false;
         int i = slot.getContainerSlot();
-        if (i < 0 || i >= Organizar.SLOTS) return;
+        if (i < 0 || i >= Organizar.SLOTS) return false;
         if (InventarioCliente.modoTrava) {
             InventarioCliente.perfil.alternarTrava(i);
             InventarioCliente.salvar();
-            ci.cancel();
-            return;
+            return true;
         }
         if (InventarioCliente.perfil.travado(i) && (input == ContainerInput.QUICK_MOVE || input == ContainerInput.THROW)) {
             InventarioCliente.aviso("Slot travado. Use o botão Travar slots para destravar.");
-            ci.cancel();
+            return true;
         }
+        return false;
     }
 
     /** Os slots do jogador (0 a 8 hotbar, 9 a 35 mochila) pela posição no inventário. */
