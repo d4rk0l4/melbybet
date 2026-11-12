@@ -71,31 +71,43 @@ public final class MenuMelby {
 
     // ---------- principal ----------
 
+    /** Slots de uma linha com n itens centralizados e um espaço vazio entre eles (ex.: -X-X-X-). */
+    private static int[] espacados(int n, int linha) {
+        int[] r = new int[n];
+        int inicio = (9 - (2 * n - 1)) / 2;
+        for (int i = 0; i < n; i++) r[i] = linha * 9 + inicio + i * 2;
+        return r;
+    }
+
     public static void principal(ServerPlayer p) {
-        SimpleGui g = tela(p, 3, "Melby");
-        g.setSlot(10, btn(Items.GOLD_INGOT, "Apostas", ChatFormatting.GOLD, "Bolões, ranking e histórico")
-            .setCallback((i, ty, a, gg) -> MenuBet.abrir(p)).build());
-        g.setSlot(11, btn(Items.COMPASS, "Ranking de stats", ChatFormatting.AQUA, "Quem andou, minerou e morreu mais")
-            .setCallback((i, ty, a, gg) -> MenuTop.abrir(p)).build());
-        g.setSlot(12, new GuiElementBuilder(Items.PLAYER_HEAD).setProfile(p.getGameProfile().name())
+        boolean staff = Comandos.staff(p);
+        boolean adm = Comandos.admin(p);
+        SimpleGui g = tela(p, staff ? 4 : 3, "Melby");
+        List<GuiElementBuilder> base = new ArrayList<>();
+        base.add(btn(Items.GOLD_INGOT, "Apostas", ChatFormatting.GOLD, "Bolões, ranking e histórico")
+            .setCallback((i, ty, a, gg) -> MenuBet.abrir(p)));
+        base.add(btn(Items.COMPASS, "Ranking de stats", ChatFormatting.AQUA, "Quem andou, minerou e morreu mais")
+            .setCallback((i, ty, a, gg) -> MenuTop.abrir(p)));
+        base.add(new GuiElementBuilder(Items.PLAYER_HEAD).setProfile(p.getGameProfile().name())
             .setName(t("Meu perfil", ChatFormatting.GREEN, ChatFormatting.BOLD))
             .addLoreLine(t("Cor do nick, chat e AFK", ChatFormatting.GRAY))
-            .setCallback((i, ty, a, gg) -> perfil(p)).build());
-        g.setSlot(13, btn(Items.BOOK, "Ajuda", ChatFormatting.YELLOW, "Livro de boas-vindas")
-            .setCallback((i, ty, a, gg) -> Tutorial.ajuda(p)).build());
-        if (Comandos.staff(p)) {
-            g.setSlot(15, btn(Items.SHIELD, "Moderação", ChatFormatting.RED, "Jogadores e inventários")
-                .setCallback((i, ty, a, gg) -> jogadores(p)).build());
+            .setCallback((i, ty, a, gg) -> perfil(p)));
+        base.add(btn(Items.BOOK, "Ajuda", ChatFormatting.YELLOW, "Livro de boas-vindas")
+            .setCallback((i, ty, a, gg) -> Tutorial.ajuda(p)));
+        int[] s1 = espacados(base.size(), 1);
+        for (int i = 0; i < s1.length; i++) g.setSlot(s1[i], base.get(i).build());
+        if (staff) {
+            List<GuiElementBuilder> eq = new ArrayList<>();
+            eq.add(btn(Items.SHIELD, "Moderação", ChatFormatting.RED, "Jogadores e inventários")
+                .setCallback((i, ty, a, gg) -> jogadores(p)));
+            eq.add(btn(Items.CROSSBOW, "Duelos", ChatFormatting.GOLD, "Log, rastro do prêmio e anulação")
+                .setCallback((i, ty, a, gg) -> MenuDuelosStaff.lista(p, 0, () -> principal(p))));
+            if (adm) eq.add(btn(Items.COMMAND_BLOCK, "Administração", ChatFormatting.LIGHT_PURPLE, "Bolões, mensagens e configurações")
+                .setCallback((i, ty, a, gg) -> admin(p)));
+            int[] s2 = espacados(eq.size(), 2);
+            for (int i = 0; i < s2.length; i++) g.setSlot(s2[i], eq.get(i).build());
         }
-        if (Comandos.staff(p)) {
-            g.setSlot(14, btn(Items.CROSSBOW, "Duelos", ChatFormatting.GOLD, "Log, rastro do prêmio e anulação")
-                .setCallback((i, ty, a, gg) -> MenuDuelosStaff.lista(p, 0, () -> principal(p))).build());
-        }
-        if (Comandos.admin(p)) {
-            g.setSlot(16, btn(Items.COMMAND_BLOCK, "Administração", ChatFormatting.LIGHT_PURPLE, "Bolões, mensagens e configurações")
-                .setCallback((i, ty, a, gg) -> admin(p)).build());
-        }
-        g.setSlot(22, btn(Items.BARRIER, "Fechar", ChatFormatting.RED).setCallback((i, ty, a, gg) -> gg.close()).build());
+        g.setSlot(staff ? 31 : 22, btn(Items.BARRIER, "Fechar", ChatFormatting.RED).setCallback((i, ty, a, gg) -> gg.close()).build());
         g.open();
     }
 

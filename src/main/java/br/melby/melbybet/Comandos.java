@@ -84,7 +84,6 @@ public final class Comandos {
             ServerPlayer p = c.getSource().getPlayer();
             if (p == null) return erro(c, "Só jogadores podem abrir o menu.");
             Chat.cancelarPergunta(p);
-            if (TelasServidor.abrir(p, "melby")) return 1;
             MenuMelby.principal(p);
             return 1;
         })

@@ -1,5 +1,9 @@
 # Versões do MelbyBet
 
+## 2.23.1
+- `/melby` voltou a ser o menu de baú (a tela própria ficou feia). Os itens agora ficam espaçados com um vazio entre eles (-X-X-X-): linha de cima para todos, e uma linha da moderação/administração só para quem tem permissão
+- Tela de apostas: setas de trocar de bolão passaram para a linha de baixo (com contador 1/3) e o campo "Valor" não sobrepõe mais o texto
+
 ## 2.23.0
 - **Tela do /melby (jar):** menu central em tela própria com Apostas, Ranking, Estatísticas, Mortes, Perfil, Cor do nick, Gestos, Duelo e Ajuda; moderação e administração aparecem só para quem pode. Botão "Menu clássico" volta ao de baú (`/melby classico`). Sem o jar, `/melby` continua em baú
 - **Avisos no canto da tela:** bolão resolvido (quem acertou recebe o valor) e marcos de horas online

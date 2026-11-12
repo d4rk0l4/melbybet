@@ -34,17 +34,20 @@ public class BetTela extends Screen {
         }
         if (bolao >= dados.boloes().size()) bolao = 0;
         int x = this.width / 2 - 150;
-        this.addRenderableWidget(Button.builder(Component.literal("<"), b -> {
-            bolao = (bolao + dados.boloes().size() - 1) % dados.boloes().size();
-            this.rebuildWidgets();
-        }).bounds(x, 22, 24, 20).build());
-        this.addRenderableWidget(Button.builder(Component.literal(">"), b -> {
-            bolao = (bolao + 1) % dados.boloes().size();
-            this.rebuildWidgets();
-        }).bounds(x + 276, 22, 24, 20).build());
         TelasRede.BolaoInfo b = dados.boloes().get(bolao);
+        int ybase = 60 + b.opcoes().size() * 24 + 8;
+        if (dados.boloes().size() > 1) {
+            this.addRenderableWidget(Button.builder(Component.literal("<"), bt -> {
+                bolao = (bolao + dados.boloes().size() - 1) % dados.boloes().size();
+                this.rebuildWidgets();
+            }).bounds(x + 88, ybase, 24, 20).build());
+            this.addRenderableWidget(Button.builder(Component.literal(">"), bt -> {
+                bolao = (bolao + 1) % dados.boloes().size();
+                this.rebuildWidgets();
+            }).bounds(x + 148, ybase, 24, 20).build());
+        }
         String antigo = valor == null ? "1" : valor.getValue();
-        valor = new EditBox(this.font, x + 190, 60 + b.opcoes().size() * 24 + 8, 110, 20, Component.literal("Valor"));
+        valor = new EditBox(this.font, x + 230, 60 + b.opcoes().size() * 24 + 8, 70, 20, Component.literal("Valor"));
         valor.setValue(antigo);
         this.addRenderableWidget(valor);
         for (int i = 0; i < b.opcoes().size(); i++) {
@@ -77,7 +80,8 @@ public class BetTela extends Screen {
             + (b.maxAposta() > 0 ? " | máx " + b.maxAposta() : "")
             + (b.restanteMs() >= 0 ? " | fecha em " + (b.restanteMs() / 60000) + " min" : "");
         g.centeredText(this.font, Component.literal(info), this.width / 2, 46, 0xFFFFFFFF);
-        g.text(this.font, "Valor:", this.width / 2 + 40, 60 + b.opcoes().size() * 24 + 14, 0xFFAAAAAA);
+        g.text(this.font, "Valor:", this.width / 2 + 80 - this.font.width("Valor:") - 4, 60 + b.opcoes().size() * 24 + 14, 0xFFAAAAAA);
+        if (dados.boloes().size() > 1) g.centeredText(this.font, Component.literal((bolao + 1) + "/" + dados.boloes().size()), this.width / 2 - 150 + 130, 60 + b.opcoes().size() * 24 + 14, 0xFFFFFFFF);
         g.centeredText(this.font, Component.literal("Cofre " + dados.cofre() + " | Jackpot " + dados.jackpot() + " | clique numa opção para apostar"), this.width / 2, 60 + b.opcoes().size() * 24 + 36, 0xFF888888);
     }
 }
