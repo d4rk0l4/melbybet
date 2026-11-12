@@ -1,5 +1,8 @@
 # Versões do MelbyBet
 
+## 2.23.2
+- `/bet` e `/gestos` voltaram aos menus de baú (as telas novas não agradaram). `/duelo` e `/cor` continuam com tela própria quando você tem o jar
+
 ## 2.23.1
 - `/melby` voltou a ser o menu de baú (a tela própria ficou feia). Os itens agora ficam espaçados com um vazio entre eles (-X-X-X-): linha de cima para todos, e uma linha da moderação/administração só para quem tem permissão
 - Tela de apostas: setas de trocar de bolão passaram para a linha de baixo (com contador 1/3) e o campo "Valor" não sobrepõe mais o texto

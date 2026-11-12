@@ -42,7 +42,6 @@ public final class Comandos {
             ServerPlayer p = c.getSource().getPlayer();
             if (p == null) return erro(c, "Só jogadores podem abrir o menu.");
             Tutorial.primeiraVez(p);
-            if (TelasServidor.abrir(p, "bet")) return 1;
             MenuBet.abrir(p);
             return 1;
         }).then(literal("ajuda").executes(c -> {
