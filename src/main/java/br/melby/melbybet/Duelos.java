@@ -96,7 +96,7 @@ public final class Duelos {
                 ServerPlayer p = c.getSource().getPlayerOrException();
                 Casa.Duelo x = Jogo.casa.duelAtivoDe(p.getUUID().toString());
                 if (x == null) {
-                    MenuDuelo.abrir(p);
+                    MenuDuelar.abrir(p);
                 } else {
                     p.sendSystemMessage(Jogo.prefixo("Duelo: " + x.nomeA + " x " + x.nomeB + (x.itens ? " (itens)" : ", " + x.valor + " diamante(s) cada") + ". Vence quem matar o outro."));
                 }

@@ -6,88 +6,76 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
-/** /duelo sem argumentos: cabeças dos jogadores online; clique em uma para escolher o tipo de duelo. */
-public final class MenuDuelo {
+/** Janela para escolher, no inventário do adversário, os itens que ele vai apostar no duelo. */
+final class MenuDuelo {
     private MenuDuelo() {}
 
-    private static Component t(String s, ChatFormatting... f) {
-        return Component.literal(s).withStyle(f);
-    }
-
-    public static void abrir(ServerPlayer p) {
-        List<ServerPlayer> alvos = new ArrayList<>();
-        for (ServerPlayer o : Jogo.server.getPlayerList().getPlayers()) if (!o.getUUID().equals(p.getUUID())) alvos.add(o);
-        SimpleGui g = new SimpleGui(MenuType.GENERIC_9x4, p, false);
-        g.setTitle(t("Duelo: escolha quem desafiar", ChatFormatting.GOLD));
-        if (alvos.isEmpty()) {
-            g.setSlot(13, new GuiElementBuilder(Items.BARRIER).setName(t("Ninguém online para desafiar", ChatFormatting.GRAY)).hideDefaultTooltip().build());
-        }
-        int slot = 0;
-        for (ServerPlayer o : alvos) {
-            if (slot >= 27) break;
-            String nick = o.getGameProfile().name();
-            g.setSlot(slot++, new GuiElementBuilder(Items.PLAYER_HEAD).setProfile(nick)
-                .setName(t(nick, ChatFormatting.YELLOW, ChatFormatting.BOLD))
-                .addLoreLine(t("Clique para desafiar", ChatFormatting.GRAY))
-                .setCallback((i, ty, a, gg) -> tipo(p, nick)).build());
-        }
-        g.setSlot(31, new GuiElementBuilder(Items.BARRIER).setName(t("Fechar", ChatFormatting.RED, ChatFormatting.BOLD)).hideDefaultTooltip()
-            .setCallback((i, ty, a, gg) -> gg.close()).build());
+    static void abrir(ServerPlayer quem, ServerPlayer dono, Duelos.Itens st, boolean souA) {
+        SimpleGui g = new SimpleGui(MenuType.GENERIC_9x6, quem, false);
+        g.setTitle(Component.literal("Itens de " + dono.getGameProfile().name()));
+        Set<Integer> escolhidos = new LinkedHashSet<>();
+        desenhar(g, quem, dono, st, souA, escolhidos);
         g.open();
     }
 
-    private static ServerPlayer achar(String nick) {
-        return Jogo.server.getPlayerList().getPlayerByName(nick);
-    }
-
-    private static void tipo(ServerPlayer p, String nick) {
-        SimpleGui g = new SimpleGui(MenuType.GENERIC_9x3, p, false);
-        g.setTitle(t("Duelo contra " + nick, ChatFormatting.GOLD));
-        int[] valores = {1, 5, 10, 32};
-        int[] pos = {10, 11, 12, 13};
-        for (int k = 0; k < valores.length; k++) {
-            int v = valores[k];
-            g.setSlot(pos[k], new GuiElementBuilder(Items.DIAMOND).setCount(Math.min(v, 64))
-                .setName(t(v + " diamante(s) cada", ChatFormatting.AQUA, ChatFormatting.BOLD)).hideDefaultTooltip()
-                .addLoreLine(t("Quem matar o outro primeiro leva tudo", ChatFormatting.GRAY))
-                .setCallback((i, ty, a, gg) -> {
-                    gg.close();
-                    ServerPlayer alvo = achar(nick);
-                    if (alvo == null) p.sendSystemMessage(Jogo.prefixo(nick + " saiu."));
-                    else Duelos.propor(p, alvo, v);
-                }).build());
+    private static void desenhar(SimpleGui g, ServerPlayer quem, ServerPlayer dono, Duelos.Itens st, boolean souA, Set<Integer> escolhidos) {
+        for (int slot = 0; slot < 54; slot++) {
+            int idx = Vista.indiceDoInventario(slot);
+            ItemStack item = idx >= 0 && idx < dono.getInventory().getContainerSize() ? dono.getInventory().getItem(idx) : ItemStack.EMPTY;
+            if (item.isEmpty()) {
+                g.setSlot(slot, Vista.enfeite().build());
+                continue;
+            }
+            boolean marcado = escolhidos.contains(idx);
+            GuiElementBuilder e = GuiElementBuilder.from(item.copy());
+            e.addLoreLine(Component.literal(marcado ? "ESCOLHIDO. Clique para tirar" : "Clique para escolher").withStyle(marcado ? ChatFormatting.GREEN : ChatFormatting.YELLOW));
+            if (marcado) e.glow();
+            e.setCallback((i, ty, a, gg) -> {
+                if (escolhidos.contains(idx)) {
+                    escolhidos.remove(idx);
+                } else if (escolhidos.size() >= Duelos.MAX_ITENS) {
+                    quem.sendSystemMessage(Jogo.prefixo("No máximo " + Duelos.MAX_ITENS + " itens."));
+                } else {
+                    escolhidos.add(idx);
+                }
+                desenhar(g, quem, dono, st, souA, escolhidos);
+            });
+            g.setSlot(slot, e.build());
         }
-        g.setSlot(14, new GuiElementBuilder(Items.NAME_TAG).setName(t("Outro valor", ChatFormatting.GREEN, ChatFormatting.BOLD)).hideDefaultTooltip()
-            .addLoreLine(t("Você digita no chat", ChatFormatting.GRAY))
+        g.setSlot(9, new GuiElementBuilder(Items.BARRIER).setName(Component.literal("Cancelar duelo").withStyle(ChatFormatting.RED, ChatFormatting.BOLD))
             .setCallback((i, ty, a, gg) -> {
                 gg.close();
-                Chat.perguntar(p, "Quantos diamantes cada um? (digite o número)", txt -> {
-                    try {
-                        int v = Integer.parseInt(txt.trim());
-                        ServerPlayer alvo = achar(nick);
-                        if (v < 1) p.sendSystemMessage(Jogo.prefixo("Use um número maior que zero."));
-                        else if (alvo == null) p.sendSystemMessage(Jogo.prefixo(nick + " saiu."));
-                        else Duelos.propor(p, alvo, v);
-                    } catch (NumberFormatException e) {
-                        p.sendSystemMessage(Jogo.prefixo("Isso não é um número."));
-                    }
-                });
+                Duelos.cancelarEscolha(quem, st);
             }).build());
-        g.setSlot(16, new GuiElementBuilder(Items.CHEST).setName(t("Duelo de itens", ChatFormatting.GOLD, ChatFormatting.BOLD)).hideDefaultTooltip()
-            .addLoreLine(t("Aposta itens escolhidos do inventário do outro", ChatFormatting.GRAY))
-            .setCallback((i, ty, a, gg) -> {
+        boolean pronto = !escolhidos.isEmpty();
+        GuiElementBuilder ok = new GuiElementBuilder(pronto ? Items.EMERALD : Items.BARRIER)
+            .setName(Component.literal(pronto ? "Confirmar escolha (" + escolhidos.size() + ")" : "Escolha pelo menos 1 item")
+                .withStyle(pronto ? ChatFormatting.GREEN : ChatFormatting.GRAY, ChatFormatting.BOLD));
+        if (pronto) {
+            ok.addLoreLine(Component.literal("Nada sai agora. Só o perdedor entrega, depois do duelo.").withStyle(ChatFormatting.GRAY));
+            ok.setCallback((i, ty, a, gg) -> {
+                List<ItemStack> lista = new ArrayList<>();
+                for (int idx : escolhidos) {
+                    ItemStack it = dono.getInventory().getItem(idx);
+                    if (!it.isEmpty()) lista.add(it.copy());
+                }
                 gg.close();
-                ServerPlayer alvo = achar(nick);
-                if (alvo == null) p.sendSystemMessage(Jogo.prefixo(nick + " saiu."));
-                else Duelos.proporItens(p, alvo);
-            }).build());
-        g.setSlot(18, new GuiElementBuilder(Items.ARROW).setName(t("Voltar", ChatFormatting.GRAY, ChatFormatting.BOLD)).hideDefaultTooltip()
-            .setCallback((i, ty, a, gg) -> abrir(p)).build());
-        g.open();
+                if (lista.isEmpty()) {
+                    quem.sendSystemMessage(Jogo.prefixo("Esses itens não estão mais com " + dono.getGameProfile().name() + "."));
+                    Duelos.cancelarEscolha(quem, st);
+                    return;
+                }
+                Duelos.confirmarEscolha(quem, st, souA, lista);
+            });
+        }
+        g.setSlot(13, ok.build());
     }
 }
