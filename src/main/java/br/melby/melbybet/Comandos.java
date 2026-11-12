@@ -84,13 +84,39 @@ public final class Comandos {
             ServerPlayer p = c.getSource().getPlayer();
             if (p == null) return erro(c, "Só jogadores podem abrir o menu.");
             Chat.cancelarPergunta(p);
+            if (TelasServidor.abrir(p, "melby")) return 1;
             MenuMelby.principal(p);
             return 1;
-        }));
+        })
+            .then(literal("classico").executes(c -> {
+                ServerPlayer p = c.getSource().getPlayerOrException();
+                Chat.cancelarPergunta(p);
+                MenuMelby.principal(p);
+                return 1;
+            }))
+            .then(literal("mod").executes(c -> {
+                ServerPlayer p = c.getSource().getPlayerOrException();
+                if (!staff(p)) return erro(c, "Só a moderação.");
+                MenuMelby.moderacao(p);
+                return 1;
+            }))
+            .then(literal("duelos").executes(c -> {
+                ServerPlayer p = c.getSource().getPlayerOrException();
+                if (!staff(p)) return erro(c, "Só a moderação.");
+                MenuMelby.duelosStaff(p);
+                return 1;
+            }))
+            .then(literal("adm").executes(c -> {
+                ServerPlayer p = c.getSource().getPlayerOrException();
+                if (!admin(p)) return erro(c, "Só admin.");
+                MenuMelby.administracao(p);
+                return 1;
+            })));
         extras(d);
         Coords.registrar(d);
         Capsulas.registrar(d);
         Gestos.registrar(d);
+        Lapide.registrar(d);
         Duelos.registrar(d);
         Perfil.registrar(d);
         apelido(d);

@@ -37,6 +37,7 @@ public final class MarcosOnline {
                     .append(Prefixos.degrade(nome + " completou " + marco + " horas de servidor! Parabéns!", 0xFFD700, 0xFF8A24));
                 Jogo.server.getPlayerList().broadcastSystemMessage(msg, false);
                 Jogo.som(p, "minecraft:entity.player.levelup", 1.0f);
+                TelasServidor.avisoTodos("Marco de horas", nome + " completou " + marco + " horas!");
                 Jogo.webhook("⏱️ **" + nome + "** completou **" + marco + " horas** de servidor!");
             }
         }

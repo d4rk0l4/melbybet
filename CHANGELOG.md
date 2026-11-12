@@ -1,5 +1,11 @@
 # Versões do MelbyBet
 
+## 2.23.0
+- **Tela do /melby (jar):** menu central em tela própria com Apostas, Ranking, Estatísticas, Mortes, Perfil, Cor do nick, Gestos, Duelo e Ajuda; moderação e administração aparecem só para quem pode. Botão "Menu clássico" volta ao de baú (`/melby classico`). Sem o jar, `/melby` continua em baú
+- **Avisos no canto da tela:** bolão resolvido (quem acertou recebe o valor) e marcos de horas online
+- **/lapide [texto]:** uma lápide decorativa de pedra (dois blocos de muro de tijolos) com o texto flutuante "Aqui jaz ...". `/lapide remover` tira o texto da sua lápide mais próxima; as pedras você quebra normalmente. Só funciona com 2 blocos de ar livres e chão firme à frente
+- README: linha do jar corrigida
+
 ## 2.22.5
 - Botões do inventário e dos baús viraram ícones pequenos colados na borda direita da tela (funil = Organizar, gancho = Travar slots, livro = Perfil, baú = Guardar iguais, ejetor = Pegar iguais). O nome e a explicação aparecem ao passar o mouse; o Travar slots fica com contorno dourado quando ligado
 

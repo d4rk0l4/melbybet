@@ -78,6 +78,22 @@ public final class TelasServidor {
         ServerPlayNetworking.send(p, new TelasRede.BoloesPayload(Jogo.contar(p), (int) Jogo.casa.cofre, (int) Jogo.casa.jackpot, l));
     }
 
+    /** Aviso para um jogador online pelo UUID (texto). */
+    public static void avisoUuid(String uuid, String titulo, String texto) {
+        if (Jogo.server == null) return;
+        try {
+            aviso(Jogo.server.getPlayerList().getPlayer(UUID.fromString(uuid)), titulo, texto);
+        } catch (IllegalArgumentException ignorado) {
+            // uuid inválido
+        }
+    }
+
+    /** Aviso para todos que têm o jar. */
+    public static void avisoTodos(String titulo, String texto) {
+        if (Jogo.server == null) return;
+        for (ServerPlayer p : Jogo.server.getPlayerList().getPlayers()) aviso(p, titulo, texto);
+    }
+
     /** Aviso no canto da tela (só para quem tem o jar). */
     public static void aviso(ServerPlayer p, String titulo, String texto) {
         if (p == null || !temJar(p)) return;

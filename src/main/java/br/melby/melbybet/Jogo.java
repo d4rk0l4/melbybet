@@ -202,6 +202,7 @@ public final class Jogo {
             for (Casa.Pagamento x : pag) sb.append(x.nome).append(" +").append(x.valor).append("  ");
             avisar("Bolão \"" + b.titulo + "\": " + vencedor + " ganhou! " + sb.toString().trim());
         }
+        for (Casa.Pagamento x : pag) TelasServidor.avisoUuid(x.uuid, "Você acertou!", "+" + x.valor + " 💎 no bolão " + b.titulo);
         for (Casa.Pagamento x : casa.bonusRecentes) avisar("Combinada de " + x.nome + " acertou tudo! Bônus de " + x.valor + " diamante(s).");
         entregarTodos();
         salvar();

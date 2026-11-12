@@ -24,6 +24,7 @@ public final class TelasCliente {
                 case "gestos" -> mc.setScreenAndShow(new GestosTela());
                 case "duelo" -> mc.setScreenAndShow(new DueloTela());
                 case "cor" -> mc.setScreenAndShow(new CorTela());
+                case "melby" -> mc.setScreenAndShow(new MelbyTela());
                 default -> {}
             }
         });

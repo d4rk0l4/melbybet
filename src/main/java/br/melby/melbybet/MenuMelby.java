@@ -99,6 +99,18 @@ public final class MenuMelby {
         g.open();
     }
 
+    public static void moderacao(ServerPlayer p) {
+        jogadores(p);
+    }
+
+    public static void administracao(ServerPlayer p) {
+        admin(p);
+    }
+
+    public static void duelosStaff(ServerPlayer p) {
+        MenuDuelosStaff.lista(p, 0, () -> principal(p));
+    }
+
     // ---------- perfil (todos) ----------
 
     private static void perfil(ServerPlayer p) {
