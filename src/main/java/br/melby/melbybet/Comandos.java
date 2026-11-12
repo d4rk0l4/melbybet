@@ -476,8 +476,6 @@ public final class Comandos {
             })));
         d.register(literal("cor")
             .executes(c -> {
-                ServerPlayer p = c.getSource().getPlayer();
-                if (p != null && TelasServidor.abrir(p, "cor")) return 1;
                 return ok(c, "Mude a cor do seu nick no chat: /cor <#cor1> [#cor2] ou um nome pronto (" + String.join(", ", Gradiente.NOMES_PRESETS) + "). /cor off tira.");
             })
             .then(literal("off").executes(c -> {

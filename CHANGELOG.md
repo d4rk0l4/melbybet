@@ -1,5 +1,9 @@
 # Versões do MelbyBet
 
+## 2.23.3
+- `/duelo` sem argumentos abre um menu de baú com a cabeça de cada jogador online (o nick no nome). Clicar numa cabeça leva a: 1, 5, 10 ou 32 diamantes, outro valor (digitado no chat) ou duelo de itens
+- `/cor` sem argumentos voltou a só explicar o comando. As telas próprias de apostas, gestos, duelo e cor foram removidas. Continuam com o jar: avisos no canto, painel do HUD, estatísticas (F7), mortes (M)
+
 ## 2.23.2
 - `/bet` e `/gestos` voltaram aos menus de baú (as telas novas não agradaram). `/duelo` e `/cor` continuam com tela própria quando você tem o jar
 

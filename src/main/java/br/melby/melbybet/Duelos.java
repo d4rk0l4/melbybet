@@ -95,9 +95,8 @@ public final class Duelos {
             .executes(c -> {
                 ServerPlayer p = c.getSource().getPlayerOrException();
                 Casa.Duelo x = Jogo.casa.duelAtivoDe(p.getUUID().toString());
-                if (x == null && TelasServidor.abrir(p, "duelo")) return 1;
                 if (x == null) {
-                    p.sendSystemMessage(Jogo.prefixo("Use /duelo <nick> <valor> (diamantes) ou /duelo <nick> inv (itens do inventário do outro). Quem matar o outro primeiro leva tudo; /duelo desistir entrega a vitória."));
+                    MenuDuelo.abrir(p);
                 } else {
                     p.sendSystemMessage(Jogo.prefixo("Duelo: " + x.nomeA + " x " + x.nomeB + (x.itens ? " (itens)" : ", " + x.valor + " diamante(s) cada") + ". Vence quem matar o outro."));
                 }
@@ -258,7 +257,7 @@ public final class Duelos {
 
     // ---------- duelo em diamantes ----------
 
-    private static void propor(ServerPlayer a, ServerPlayer b, int valor) {
+    static void propor(ServerPlayer a, ServerPlayer b, int valor) {
         String erro = Jogo.casa.validarDuelo(a.getUUID().toString(), b.getUUID().toString(), valor);
         if (erro != null) {
             a.sendSystemMessage(Jogo.prefixo(erro));
@@ -281,7 +280,7 @@ public final class Duelos {
 
     // ---------- duelo em itens ----------
 
-    private static void proporItens(ServerPlayer a, ServerPlayer b) {
+    static void proporItens(ServerPlayer a, ServerPlayer b) {
         String erro = Jogo.casa.validarDuelo(a.getUUID().toString(), b.getUUID().toString(), 1);
         if (erro != null) {
             a.sendSystemMessage(Jogo.prefixo(erro));

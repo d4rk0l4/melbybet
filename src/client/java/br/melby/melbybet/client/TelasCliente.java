@@ -18,16 +18,8 @@ public final class TelasCliente {
 
     public static void registrar() {
         ClientPlayNetworking.registerGlobalReceiver(TelasRede.AbrirPayload.TYPE, (p, ctx) -> {
-            Minecraft mc = Minecraft.getInstance();
-            switch (p.tela()) {
-                case "bet" -> mc.setScreenAndShow(new BetTela());
-                case "gestos" -> mc.setScreenAndShow(new GestosTela());
-                case "duelo" -> mc.setScreenAndShow(new DueloTela());
-                case "cor" -> mc.setScreenAndShow(new CorTela());
-                default -> {}
-            }
+            // as telas próprias foram removidas; o servidor não abre mais nenhuma
         });
-        ClientPlayNetworking.registerGlobalReceiver(TelasRede.BoloesPayload.TYPE, (p, ctx) -> BetTela.receber(p));
         ClientPlayNetworking.registerGlobalReceiver(TelasRede.AvisoPayload.TYPE, (p, ctx) -> {
             synchronized (avisos) {
                 avisos.add(new Aviso(p.titulo(), p.texto(), System.currentTimeMillis() + 6000));
